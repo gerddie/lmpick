@@ -24,9 +24,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cc\
-        mainwindow.cc
+        mainwindow.cc \
+    mainopenglview.cc
 
-HEADERS  += mainwindow.hh
+HEADERS  += mainwindow.hh \
+    mainopenglview.hh
 
 FORMS    += mainwindow.ui
 
