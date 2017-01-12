@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>icons/auto_snapshot_on.png</file>
+        <file>icons/auto_snapshot.png</file>
+        <file>icons/document-open.png</file>
+        <file>icons/document-save-as.png</file>
+        <file>icons/document-save.png</file>
+        <file>icons/snapshot.png</file>
+        <file>icons/document-open-volume.png</file>
+    </qresource>
+</RCC>
