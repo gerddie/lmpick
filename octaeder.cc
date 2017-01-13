@@ -55,12 +55,7 @@ void Octaeder::draw(QOpenGLShaderProgram& program)
                 qWarning() << "vertex loction attribute not found";
 
         program.enableAttributeArray(vertexLocation);
-        auto error = glGetError();
-        qDebug() << "program.enableAttributeArray(Vertex): " << error;
-
         program.setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
-        error = glGetError();
-        qDebug() << "program.setAttributeBuffer(Vertex): " << error;
 
 
         // Offset for normals
@@ -68,11 +63,7 @@ void Octaeder::draw(QOpenGLShaderProgram& program)
         int normalLocation = program.attributeLocation("qt_Normal");
         if (normalLocation != -1) {
                 program.enableAttributeArray(normalLocation);
-                error = glGetError();
-                qDebug() << "program.enableAttributeArray(Normal): " << error;
                 program.setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
-                error = glGetError();
-                qDebug() << "program.setAttributeBuffer(Normal): " << error;
         }else
                 qWarning() << "'normal' loction attribute not found";
 
@@ -83,13 +74,8 @@ void Octaeder::draw(QOpenGLShaderProgram& program)
 
         program.enableAttributeArray(colorLocation);
         program.setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
-        error = glGetError();
-        qDebug() << "program.setAttributeBuffer(Color): " << error;
-
 
         m_indexBuf.bind();
         // Draw cube geometry using indices from VBO 1
         glDrawElements(GL_TRIANGLE_STRIP, 12, GL_UNSIGNED_SHORT, 0);
-
-        qDebug() << "glDrawElements returned " << error;
 }

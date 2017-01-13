@@ -2,6 +2,7 @@
 #include "octaeder.hh"
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
 #include <QMatrix4x4>
 #include <cassert>
 #include <memory>
@@ -25,6 +26,8 @@ private:
         QMatrix4x4 m_modelview;
         QOpenGLShaderProgram m_view_program;
         std::unique_ptr<Octaeder> m_octaeder;
+
+        QOpenGLVertexArrayObject m_vao;
 };
 
 MainopenGLView::MainopenGLView(QWidget *parent):
@@ -66,7 +69,7 @@ RenderingThread::RenderingThread(QWidget *parent):
         m_context(nullptr)
 {
         m_modelview.setToIdentity();
-        m_modelview.lookAt(QVector3D(-20, 0, 0), QVector3D(0,0,0),QVector3D(0,0,1));
+        m_modelview.lookAt(QVector3D(-10, -5, 0), QVector3D(0,0,0),QVector3D(0,0,1));
         qDebug() << "m_modelview= " << m_modelview;
 }
 
@@ -88,8 +91,10 @@ void RenderingThread::initialize()
         glEnable(GL_DEPTH_TEST);
 
         // Enable back face culling
-        glEnable(GL_CULL_FACE);
+        // glEnable(GL_CULL_FACE);
 
+        m_vao.create();
+        m_vao.bind();
 
         m_octaeder.reset(new Octaeder);
 }
@@ -102,7 +107,7 @@ void RenderingThread::paint()
         if (!m_view_program.bind())
                 qWarning() << "Error binding m_view_program', view will be clobbered\n";;
 
-        QVector3D ld(-1, -1, 1);
+        QVector3D ld(1, 1, 1);
         ld.normalize();
 
         m_view_program.setUniformValue("qt_mvp", m_projection * m_modelview);
@@ -130,7 +135,7 @@ void RenderingThread::resize(int w, int h)
 {
         glViewport(0,0,w,h);
         m_projection.setToIdentity();
-        m_projection.perspective(45.0f, w/static_cast<float>(h), 10, 30);
+        m_projection.perspective(15.0f, w/static_cast<float>(h), 10, 30);
         qDebug() << "m_perspective = " << m_projection;
 }
 
