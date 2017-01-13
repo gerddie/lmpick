@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui opengl
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 5): QT += widgets
 
 TARGET = lmpick
 TEMPLATE = app
@@ -40,3 +40,8 @@ DISTFILES += \
 
 RESOURCES += \
     lmpick.qrc
+
+CONFIG += link_pkgconfig
+PKGCONFIG += miamesh-2.4
+
+

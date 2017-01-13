@@ -1,5 +1,6 @@
 #include "mainopenglview.hh"
 #include "octaeder.hh"
+#include <mia/3d/camera.hh>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
@@ -28,6 +29,11 @@ private:
         std::unique_ptr<Octaeder> m_octaeder;
 
         QOpenGLVertexArrayObject m_vao;
+
+        QVector3D m_camera_location;
+        QVector3D m_rotation_center;
+        QQuaternion m_rotation;
+        float m_zoom;
 };
 
 MainopenGLView::MainopenGLView(QWidget *parent):
@@ -66,10 +72,17 @@ void MainopenGLView::resizeGL(int w, int h)
 
 RenderingThread::RenderingThread(QWidget *parent):
         m_parent(parent),
-        m_context(nullptr)
+        m_context(nullptr),
+        m_camera_location(0,0,-250),
+        m_rotation_center(0, 0, 0),
+        m_rotation(0,0,0,1),
+        m_zoom(1.0)
 {
         m_modelview.setToIdentity();
-        m_modelview.lookAt(QVector3D(-10, -5, 0), QVector3D(0,0,0),QVector3D(0,0,1));
+        m_modelview.translate(m_camera_location);
+        m_modelview.rotate(m_rotation);
+        m_modelview.translate(m_rotation_center);
+
         qDebug() << "m_modelview= " << m_modelview;
 }
 
@@ -91,7 +104,7 @@ void RenderingThread::initialize()
         glEnable(GL_DEPTH_TEST);
 
         // Enable back face culling
-        // glEnable(GL_CULL_FACE);
+         glEnable(GL_CULL_FACE);
 
         m_vao.create();
         m_vao.bind();
@@ -135,7 +148,15 @@ void RenderingThread::resize(int w, int h)
 {
         glViewport(0,0,w,h);
         m_projection.setToIdentity();
-        m_projection.perspective(15.0f, w/static_cast<float>(h), 10, 30);
+        float zw, zh;
+        if (w > h) {
+               zw = m_zoom * w / h;
+               zh = m_zoom;
+        }else{
+                zh = m_zoom * h / w;
+                zw = m_zoom;
+        }
+        m_projection.frustum(-zw, zw, -zh, zh, 200, 300);
         qDebug() << "m_perspective = " << m_projection;
 }
 

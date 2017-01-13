@@ -18,7 +18,7 @@ static const VertexData vertices[] = {
 };
 
 static const unsigned short indices[] = {
-   1, 2, 0, 4, 2, 3, 3, 4, 5, 0, 1, 3
+   1, 0, 2, 4, 3, 5, 5, 1, 0, 0, 4, 5
 };
 
 Octaeder::Octaeder():
