@@ -4,6 +4,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
+#include <QMouseEvent>
 #include <QMatrix4x4>
 #include <cassert>
 #include <memory>
@@ -19,7 +20,10 @@ public:
         void paint();
 
         void resize(int w, int h);
+
+        bool mouse_tracking(QMouseEvent *ev);
 private:
+        void update_rotation(QMouseEvent *ev);
         QWidget *m_parent;
         QOpenGLContext *m_context;
 
@@ -34,6 +38,11 @@ private:
         QVector3D m_rotation_center;
         QQuaternion m_rotation;
         float m_zoom;
+
+	bool m_mouse1_is_down;
+	QPointF m_mouse_old_position; 
+
+	QVector2D m_viewport; 
 };
 
 MainopenGLView::MainopenGLView(QWidget *parent):
@@ -70,13 +79,23 @@ void MainopenGLView::resizeGL(int w, int h)
         m_rendering->resize(w,h);
 }
 
+void MainopenGLView::mouseMoveEvent(QMouseEvent *ev)
+{
+	if (!m_rendering->mouse_tracking(ev)) {
+		// handle mouse here
+		
+	}
+}
+
 RenderingThread::RenderingThread(QWidget *parent):
         m_parent(parent),
         m_context(nullptr),
         m_camera_location(0,0,-250),
         m_rotation_center(0, 0, 0),
         m_rotation(0,0,0,1),
-        m_zoom(1.0)
+        m_zoom(1.0),
+	m_mouse1_is_down(false)
+	
 {
         m_modelview.setToIdentity();
         m_modelview.translate(m_camera_location);
@@ -144,6 +163,47 @@ void RenderingThread::paint()
 
 }
 
+void RenderingThread::update_rotation(QMouseEvent *ev)
+{
+    QVector2D pos(ev->localPos());
+    QVector2D old_pos(m_mouse_old_position);
+
+	auto rel_pos = (2 * pos - m_viewport) / m_viewport;
+	auto old_rel_pos = (2 * old_pos - m_viewport) / m_viewport;
+
+	// implement trackball 
+
+	
+	
+}
+
+bool RenderingThread::mouse_tracking(QMouseEvent *ev)
+{
+	switch (ev->button()) {
+	case Qt::LeftButton:
+		switch (ev->type()) {
+		case QEvent::MouseButtonPress:
+			m_mouse1_is_down = true; 
+			m_mouse_old_position = ev->localPos();
+			break;
+		case QEvent::MouseButtonRelease:
+			m_mouse1_is_down = false;
+			break;
+		case QEvent::MouseMove:
+			if (m_mouse1_is_down) {
+                update_rotation(ev);
+				m_mouse_old_position = ev->localPos();
+			}
+		default:
+			return false;
+		}
+	default:
+		return false; 
+	}
+	return true; 
+}
+
+
 void RenderingThread::resize(int w, int h)
 {
         glViewport(0,0,w,h);
@@ -158,6 +218,8 @@ void RenderingThread::resize(int w, int h)
         }
         m_projection.frustum(-zw, zw, -zh, zh, 200, 300);
         qDebug() << "m_perspective = " << m_projection;
+
+    m_viewport = QVector2D(w, h);
 }
 
 void RenderingThread::run()

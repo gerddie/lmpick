@@ -16,6 +16,8 @@ private:
         virtual void paintGL();
         virtual void resizeGL(int w, int h);
 
+	void mouseMoveEvent(QMouseEvent *ev); 
+	
         RenderingThread *m_rendering;
 };
 
