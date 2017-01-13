@@ -25,14 +25,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cc\
         mainwindow.cc \
-    mainopenglview.cc
+    mainopenglview.cc \
+    octaeder.cc
 
 HEADERS  += mainwindow.hh \
-    mainopenglview.hh
+    mainopenglview.hh \
+    octaeder.hh
 
 FORMS    += mainwindow.ui
 
-DISTFILES +=
+DISTFILES += \
+    view.glsl \
+    basic_frag.glsl
 
 RESOURCES += \
     lmpick.qrc

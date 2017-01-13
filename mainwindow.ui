@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>904</width>
-    <height>584</height>
+    <height>603</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -44,7 +44,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QOpenGLWidget" name="mainview">
+        <widget class="MainopenGLView" name="mainview">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -383,6 +383,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>MainopenGLView</class>
+   <extends>QOpenGLWidget</extends>
+   <header>mainopenglview.hh</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="lmpick.qrc"/>
  </resources>

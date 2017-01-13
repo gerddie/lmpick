@@ -8,4 +8,8 @@
         <file>icons/snapshot.png</file>
         <file>icons/document-open-volume.png</file>
     </qresource>
+    <qresource prefix="/shaders">
+        <file>view.glsl</file>
+        <file>basic_frag.glsl</file>
+    </qresource>
 </RCC>
