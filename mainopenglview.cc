@@ -8,6 +8,7 @@
 #include <QMatrix4x4>
 #include <cassert>
 #include <memory>
+#include <cmath>
 
 class RenderingThread : private QOpenGLFunctions {
 public:
@@ -21,6 +22,7 @@ public:
 
         void resize(int w, int h);
 
+        bool mouse_press(QMouseEvent *ev);
         bool mouse_tracking(QMouseEvent *ev);
 private:
         void update_rotation(QMouseEvent *ev);
@@ -55,8 +57,7 @@ MainopenGLView::MainopenGLView(QWidget *parent):
         format.setProfile(QSurfaceFormat::CoreProfile);
         setFormat(format);
         m_rendering = new RenderingThread(this);
-
-
+        setMouseTracking( true );
 }
 
 MainopenGLView::~MainopenGLView()
@@ -85,6 +86,24 @@ void MainopenGLView::mouseMoveEvent(QMouseEvent *ev)
 		// handle mouse here
 		
 	}
+    update();
+}
+
+void MainopenGLView::mouseReleaseEvent(QMouseEvent *ev)
+{
+    if (!m_rendering->mouse_press(ev)) {
+        // handle mouse here
+
+    }
+}
+
+void MainopenGLView::mousePressEvent(QMouseEvent *ev)
+{
+    if (!m_rendering->mouse_press(ev)) {
+        // handle mouse here
+
+    }
+    update();
 }
 
 RenderingThread::RenderingThread(QWidget *parent):
@@ -94,7 +113,7 @@ RenderingThread::RenderingThread(QWidget *parent):
         m_rotation_center(0, 0, 0),
         m_rotation(0,0,0,1),
         m_zoom(1.0),
-	m_mouse1_is_down(false)
+        m_mouse1_is_down(false)
 	
 {
         m_modelview.setToIdentity();
@@ -123,7 +142,7 @@ void RenderingThread::initialize()
         glEnable(GL_DEPTH_TEST);
 
         // Enable back face culling
-         glEnable(GL_CULL_FACE);
+      //   glEnable(GL_CULL_FACE);
 
         m_vao.create();
         m_vao.bind();
@@ -133,8 +152,12 @@ void RenderingThread::initialize()
 
 void RenderingThread::paint()
 {
+    m_modelview.setToIdentity();
+    m_modelview.translate(m_camera_location);
+    m_modelview.rotate(m_rotation);
+    m_modelview.translate(m_rotation_center);
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (!m_view_program.bind())
                 qWarning() << "Error binding m_view_program', view will be clobbered\n";;
@@ -143,16 +166,8 @@ void RenderingThread::paint()
         ld.normalize();
 
         m_view_program.setUniformValue("qt_mvp", m_projection * m_modelview);
-        auto error = glGetError();
-        qDebug() << "m_view_program.setUniformValue(qt_mvp: " << error;
-
         m_view_program.setUniformValue("qt_mv", m_modelview);
-        error = glGetError();
-        qDebug() << "m_view_program.setUniformValue(qt_mv: " << error;
-
         m_view_program.setUniformValue("qt_LightDirection", ld);
-        error = glGetError();
-        qDebug() << "m_view_program.setUniformValue(qt_LightDirection: " << error;
 
         if (m_octaeder)
                 m_octaeder->draw(m_view_program);
@@ -163,44 +178,80 @@ void RenderingThread::paint()
 
 }
 
+float z_map_sphere(const QVector2D& x)
+{
+    const float inv_sqrt2 = 1.0f/std::sqrt(2.0f);
+    auto length = x.length();
+    if (length < inv_sqrt2) {
+        return std::sqrt(1.0 - x.lengthSquared());
+    }else{
+        return 0.5 / length;
+    }
+ }
+
 void RenderingThread::update_rotation(QMouseEvent *ev)
 {
     QVector2D pos(ev->localPos());
     QVector2D old_pos(m_mouse_old_position);
 
-	auto rel_pos = (2 * pos - m_viewport) / m_viewport;
-	auto old_rel_pos = (2 * old_pos - m_viewport) / m_viewport;
+    auto rel_pos = QVector2D((2 * pos.x() - m_viewport.x()) / m_viewport.x(),
+                             (m_viewport.y() - 2 * pos.y()) / m_viewport.y());
+
+    auto old_rel_pos = QVector2D((2 * old_pos.x() - m_viewport.x()) / m_viewport.x(),
+                                 (m_viewport.y() - 2 * old_pos.y()) / m_viewport.y());
 
 	// implement trackball 
+    QVector3D pnew( rel_pos.x(), rel_pos.y(), z_map_sphere(rel_pos));
+    QVector3D pold( old_rel_pos.x(), old_rel_pos.y(), z_map_sphere(old_rel_pos));
 
+    auto delta = pnew - pold;
+    auto cross = QVector3D::crossProduct(pold, pnew);
 	
-	
+    auto d = delta.length() / 2.0;
+    if (d > 1.0 )
+        d = 1.0;
+    else if (d < -1.0)
+        d = -1.0;
+
+    auto angle = std::asin(d);
+    m_rotation += QQuaternion(angle, cross);
+    m_rotation.normalize();
+}
+
+bool RenderingThread::mouse_press(QMouseEvent *ev)
+{
+    qDebug() << "Mouse press ";
+    switch (ev->button()) {
+    case Qt::LeftButton:{
+        qDebug() << "LeftButton";
+        switch (ev->type()) {
+        case QEvent::MouseButtonPress:
+            qDebug() << "  down";
+            m_mouse1_is_down = true;
+            m_mouse_old_position = ev->localPos();
+            break;
+        case QEvent::MouseButtonRelease:
+            qDebug() << "   up";
+            m_mouse1_is_down = false;
+            break;
+        default:
+            return false;
+        }
+    }
+    default:
+        return false;
+    }
+    return true;
 }
 
 bool RenderingThread::mouse_tracking(QMouseEvent *ev)
 {
-	switch (ev->button()) {
-	case Qt::LeftButton:
-		switch (ev->type()) {
-		case QEvent::MouseButtonPress:
-			m_mouse1_is_down = true; 
-			m_mouse_old_position = ev->localPos();
-			break;
-		case QEvent::MouseButtonRelease:
-			m_mouse1_is_down = false;
-			break;
-		case QEvent::MouseMove:
-			if (m_mouse1_is_down) {
-                update_rotation(ev);
-				m_mouse_old_position = ev->localPos();
-			}
-		default:
-			return false;
-		}
-	default:
-		return false; 
-	}
-	return true; 
+    if (!m_mouse1_is_down)
+        return false;
+    update_rotation(ev);
+    m_mouse_old_position = ev->localPos();
+    return true;
+
 }
 
 
@@ -217,7 +268,6 @@ void RenderingThread::resize(int w, int h)
                 zw = m_zoom;
         }
         m_projection.frustum(-zw, zw, -zh, zh, 200, 300);
-        qDebug() << "m_perspective = " << m_projection;
 
     m_viewport = QVector2D(w, h);
 }
