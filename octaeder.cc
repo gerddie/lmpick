@@ -41,42 +41,59 @@ Octaeder::Octaeder():
         m_indexBuf.bind();
         m_indexBuf.allocate(indices, sizeof(indices));
 
-}
+        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/view.glsl"))
+                qWarning() << "Error compiling ':/shaders/view.glsl', view will be clobbered\n";
 
-void Octaeder::draw(QOpenGLShaderProgram& program)
-{
-        assert(m_arrayBuf.bind());
+        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/basic_frag.glsl"))
+                qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
+
+        if (!m_program.link())
+                qWarning() << "Error linking m_view_program', view will be clobbered\n";;
+
 
         // Offset for position
         int offset = 0;
 
         // Tell OpenGL programmable pipeline how to locate vertex position data
-        int vertexLocation = program.attributeLocation("qt_Vertex");
+        int vertexLocation = m_program.attributeLocation("qt_Vertex");
         if (vertexLocation == -1)
                 qWarning() << "vertex loction attribute not found";
 
-        program.enableAttributeArray(vertexLocation);
-        program.setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+        m_program.enableAttributeArray(vertexLocation);
+        m_program.setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
 
         // Offset for normals
         offset += sizeof(QVector3D);
-        int normalLocation = program.attributeLocation("qt_Normal");
+        int normalLocation = m_program.attributeLocation("qt_Normal");
         if (normalLocation != -1) {
-                program.enableAttributeArray(normalLocation);
-                program.setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+                m_program.enableAttributeArray(normalLocation);
+                m_program.setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
         }else
                 qWarning() << "'normal' loction attribute not found";
 
         offset += sizeof(QVector3D);
-        int colorLocation = program.attributeLocation("qt_Color");
+        int colorLocation = m_program.attributeLocation("qt_Color");
         if (colorLocation == -1)
                 qWarning() << "color loction attribute not found";
+        m_program.enableAttributeArray(colorLocation);
+        m_program.setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
-        program.enableAttributeArray(colorLocation);
-        program.setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
+
+}
+
+void Octaeder::draw(const GlobalSceneState& state)
+{
+        auto modelview = state.get_modelview_matrix();
+        m_program.setUniformValue("qt_mvp", state.projection * modelview);
+        m_program.setUniformValue("qt_mv", modelview);
+        m_program.setUniformValue("qt_LightDirection", state.light_source);
+
+        m_program.bind();
+        m_arrayBuf.bind();
         m_indexBuf.bind();
+
         // Draw cube geometry using indices from VBO 1
         glDrawElements(GL_TRIANGLE_STRIP, 14, GL_UNSIGNED_SHORT, 0);
 }

@@ -26,11 +26,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cc\
         mainwindow.cc \
     mainopenglview.cc \
-    octaeder.cc
+    octaeder.cc \
+    globalscenestate.cc
 
 HEADERS  += mainwindow.hh \
     mainopenglview.hh \
-    octaeder.hh
+    octaeder.hh \
+    globalscenestate.hh
 
 FORMS    += mainwindow.ui
 

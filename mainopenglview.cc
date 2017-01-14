@@ -1,4 +1,5 @@
 #include "mainopenglview.hh"
+#include "globalscenestate.hh"
 #include "octaeder.hh"
 #include <mia/3d/camera.hh>
 #include <QOpenGLFunctions>
@@ -9,6 +10,8 @@
 #include <cassert>
 #include <memory>
 #include <cmath>
+
+
 
 /*
   This class implemnts the actuaal OpenGL rendering. It is planned
@@ -38,17 +41,19 @@ private:
         QWidget *m_parent;
         QOpenGLContext *m_context;
 
-        QMatrix4x4 m_projection;
-        QOpenGLShaderProgram m_view_program;
-        std::unique_ptr<Octaeder> m_octaeder;
+        GlobalSceneState m_state;
 
+        // some OpenGL stuff globally required
         QOpenGLVertexArrayObject m_vao;
 
-        QVector3D m_camera_location;
-        QVector3D m_rotation_center;
-        QQuaternion m_rotation;
-        float m_zoom;
+        // the shader (must be moved into the actual geometries
+        QOpenGLShaderProgram m_view_program;
 
+        // the geometry to be drawn
+        std::unique_ptr<Octaeder> m_octaeder;
+
+
+        // used for mouse tracking
 	bool m_mouse1_is_down;
 	QPointF m_mouse_old_position; 
 
@@ -118,10 +123,7 @@ void MainopenGLView::mousePressEvent(QMouseEvent *ev)
 RenderingThread::RenderingThread(QWidget *parent):
         m_parent(parent),
         m_context(nullptr),
-        m_camera_location(0,0,-550),
-        m_rotation_center(0, 0, 0),
-        m_rotation(1,0,0,0),
-        m_zoom(1.0),
+
         m_mouse1_is_down(false)
 	
 {
@@ -131,14 +133,7 @@ void RenderingThread::initialize()
 {
         initializeOpenGLFunctions();
         m_context =  QOpenGLContext::currentContext();
-        if (!m_view_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/view.glsl"))
-                qWarning() << "Error compiling ':/shaders/view.glsl', view will be clobbered\n";
 
-        if (!m_view_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/basic_frag.glsl"))
-                qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
-
-        if (!m_view_program.link())
-                qWarning() << "Error linking m_view_program', view will be clobbered\n";;
 
         glClearColor(0,0.1,0,1);
 
@@ -155,27 +150,11 @@ void RenderingThread::initialize()
 
 void RenderingThread::paint()
 {
-        QMatrix4x4 modelview;
-
-        modelview.setToIdentity();
-        modelview.translate(m_camera_location);
-        modelview.rotate(m_rotation);
-        modelview.translate(m_rotation_center);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (!m_view_program.bind())
-                qWarning() << "Error binding m_view_program', view will be clobbered\n";;
-
-        QVector3D ld(1, 1, 1);
-        ld.normalize();
-
-        m_view_program.setUniformValue("qt_mvp", m_projection * modelview);
-        m_view_program.setUniformValue("qt_mv", modelview);
-        m_view_program.setUniformValue("qt_LightDirection", ld);
-
         if (m_octaeder)
-                m_octaeder->draw(m_view_program);
+                m_octaeder->draw(m_state);
         else
                 qDebug() << "nothing to draw\n";
 
@@ -202,7 +181,7 @@ void RenderingThread::update_rotation(QMouseEvent *ev)
         // trackball like rotation
         QVector3D pnew = get_mapped_point(ev->localPos());
         QVector3D pold = get_mapped_point(m_mouse_old_position);
-        m_rotation  = QQuaternion::rotationTo(pold, pnew) * m_rotation;
+        m_state.rotation  = QQuaternion::rotationTo(pold, pnew) * m_state.rotation;
 }
 
 bool RenderingThread::mouse_press(QMouseEvent *ev)
@@ -249,16 +228,16 @@ bool RenderingThread::mouse_tracking(QMouseEvent *ev)
 void RenderingThread::resize(int w, int h)
 {
         glViewport(0,0,w,h);
-        m_projection.setToIdentity();
+        m_state.projection.setToIdentity();
         float zw, zh;
         if (w > h) {
-               zw = m_zoom * w / h;
-               zh = m_zoom;
+               zw = m_state.zoom * w / h;
+               zh = m_state.zoom;
         }else{
-                zh = m_zoom * h / w;
-                zw = m_zoom;
+                zh = m_state.zoom * h / w;
+                zw = m_state.zoom;
         }
-        m_projection.frustum(-zw, zw, -zh, zh, 500, 600);
+        m_state.projection.frustum(-zw, zw, -zh, zh, 500, 600);
 
     m_viewport = QVector2D(w, h);
 }
