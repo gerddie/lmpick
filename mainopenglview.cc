@@ -53,9 +53,6 @@ private:
         // the shader (must be moved into the actual geometries
         QOpenGLShaderProgram m_view_program;
 
-        // the geometry to be drawn
-        Octaeder m_octaeder;
-
 
         // used for mouse tracking
 	bool m_mouse1_is_down;
@@ -63,6 +60,8 @@ private:
 
 
 	QVector2D m_viewport; 
+
+        std::vector<Drawable::Pointer> m_objects;
 };
 
 MainopenGLView::MainopenGLView(QWidget *parent):
@@ -139,11 +138,13 @@ RenderingThread::RenderingThread(QWidget *parent):
         m_mouse1_is_down(false)
 	
 {
+        m_objects.push_back(Drawable::Pointer(new Octaeder));
 }
 
 RenderingThread::~RenderingThread()
 {
-        m_octaeder.detach_gl();
+        for (auto d: m_objects)
+                d->detach_gl();
 }
 
 void RenderingThread::initialize()
@@ -151,26 +152,23 @@ void RenderingThread::initialize()
         initializeOpenGLFunctions();
         m_context =  QOpenGLContext::currentContext();
 
-
         glClearColor(0.1,0.1,0.1,1);
 
         glEnable(GL_DEPTH_TEST);
-
-        // Enable back face culling
         glEnable(GL_CULL_FACE);
 
         m_vao.create();
         m_vao.bind();
 
-        m_octaeder.attach_gl();
+        for (auto d: m_objects)
+                d->attach_gl();
 }
 
 void RenderingThread::paint()
 {
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_octaeder.draw(m_state);
-
+        for (auto d: m_objects)
+                d->draw(m_state, *this);
 }
 
 QVector3D RenderingThread::get_mapped_point(const QPointF& localPos) const

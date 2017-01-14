@@ -1,26 +1,25 @@
 #ifndef OCTAEDER_HH
 #define OCTAEDER_HH
 
-#include "globalscenestate.hh"
+#include "drawable.hh"
 
-#include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 
-
-class Octaeder : private QOpenGLFunctions {
+class Octaeder : public  Drawable {
 public:
         Octaeder();
 
-        void draw(const GlobalSceneState& state);
 
         virtual void attach_gl();
         virtual void detach_gl();
 private:
+        void do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const override;
 
-        QOpenGLBuffer m_arrayBuf;
-        QOpenGLBuffer m_indexBuf;
-        QOpenGLShaderProgram m_program;
+        mutable QOpenGLBuffer m_arrayBuf;
+        mutable QOpenGLBuffer m_indexBuf;
+        mutable QOpenGLShaderProgram m_program;
 };
+
 
 #endif // OCTAEDER_HH

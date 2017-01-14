@@ -27,12 +27,14 @@ SOURCES += main.cc\
         mainwindow.cc \
     mainopenglview.cc \
     octaeder.cc \
-    globalscenestate.cc
+    globalscenestate.cc \
+    drawable.cc
 
 HEADERS  += mainwindow.hh \
     mainopenglview.hh \
     octaeder.hh \
-    globalscenestate.hh
+    globalscenestate.hh \
+    drawable.hh
 
 FORMS    += mainwindow.ui
 
