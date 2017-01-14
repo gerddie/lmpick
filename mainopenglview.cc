@@ -10,6 +10,12 @@
 #include <memory>
 #include <cmath>
 
+/*
+  This class implemnts the actuaal OpenGL rendering. It is planned
+  to move the OpenGL handling to a separate thread that will be
+  encaapuslated by this here.
+*/
+
 class RenderingThread : private QOpenGLFunctions {
 public:
         RenderingThread(QWidget *widget);
@@ -23,6 +29,7 @@ public:
         void resize(int w, int h);
 
         bool mouse_press(QMouseEvent *ev);
+
         bool mouse_tracking(QMouseEvent *ev);
 private:
         void update_rotation(QMouseEvent *ev);
@@ -111,7 +118,7 @@ void MainopenGLView::mousePressEvent(QMouseEvent *ev)
 RenderingThread::RenderingThread(QWidget *parent):
         m_parent(parent),
         m_context(nullptr),
-        m_camera_location(0,0,-250),
+        m_camera_location(0,0,-550),
         m_rotation_center(0, 0, 0),
         m_rotation(1,0,0,0),
         m_zoom(1.0),
@@ -138,7 +145,7 @@ void RenderingThread::initialize()
         glEnable(GL_DEPTH_TEST);
 
         // Enable back face culling
-      //   glEnable(GL_CULL_FACE);
+         glEnable(GL_CULL_FACE);
 
         m_vao.create();
         m_vao.bind();
@@ -192,22 +199,10 @@ QVector3D RenderingThread::get_mapped_point(const QPointF& localPos) const
 
 void RenderingThread::update_rotation(QMouseEvent *ev)
 {
-    // implement trackball
+        // trackball like rotation
         QVector3D pnew = get_mapped_point(ev->localPos());
         QVector3D pold = get_mapped_point(m_mouse_old_position);
-
-        auto delta = pnew - pold;
-        auto cross = QVector3D::crossProduct(pold, pnew);
-
-        auto d = delta.length() / 2.0;
-        if (d > 1.0 )
-                d = 1.0;
-        else if (d < -1.0)
-                d = -1.0;
-
-        auto angle = std::asin(d);
-        m_rotation += QQuaternion(angle, cross);
-        m_rotation.normalize();
+        m_rotation  = QQuaternion::rotationTo(pold, pnew) * m_rotation;
 }
 
 bool RenderingThread::mouse_press(QMouseEvent *ev)
@@ -221,7 +216,7 @@ bool RenderingThread::mouse_press(QMouseEvent *ev)
                 case QEvent::MouseButtonPress:
                         qDebug() << "  down";
                         m_mouse1_is_down = true;
-                    m_mouse_old_position = ev->localPos();
+                        m_mouse_old_position = ev->localPos();
                         break;
                 case QEvent::MouseButtonRelease:
                         qDebug() << "   up";
@@ -263,7 +258,7 @@ void RenderingThread::resize(int w, int h)
                 zh = m_zoom * h / w;
                 zw = m_zoom;
         }
-        m_projection.frustum(-zw, zw, -zh, zh, 200, 300);
+        m_projection.frustum(-zw, zw, -zh, zh, 500, 600);
 
     m_viewport = QVector2D(w, h);
 }

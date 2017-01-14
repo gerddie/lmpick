@@ -10,15 +10,16 @@ struct VertexData
 
 static const VertexData vertices[] = {
         { 1, 0, 0, /**/ 1, 0, 0, /**/1, 0, 0},
-        { 0, 1, 0, /**/ 0, 1, 0, /**/0, 1, 0},
-        { 0, 0, 1, /**/ 0, 0, 1, /**/0, 0, 1},
-        {-1, 0, 0, /**/-1, 0, 0, /**/1, 1, 0},
-        { 0,-1, 0, /**/ 0,-1, 0, /**/0, 1, 1},
-        { 0, 0,-1, /**/ 0, 0,-1, /**/1, 0, 1}
+        { 0, 1, 0, /**/ 0, 1, 0, /**/1, 0.5, 0},
+        { 0, 0, 1, /**/ 0, 0, 1, /**/1, 0, 0.5},
+        {-1, 0, 0, /**/-1, 0, 0, /**/0, 0, 1},
+        { 0,-1, 0, /**/ 0,-1, 0, /**/0, 0.5, 1},
+        { 0, 0,-1, /**/ 0, 0,-1, /**/0.5, 0, 1}
 };
 
 static const unsigned short indices[] = {
-   1, 0, 2, 4, 3, 5, 5, 1, 0, 0, 4, 5
+   1, 2, 0, 4, 5, 3, 3, 4, 2, 2, 3, 1, 5, 0
+
 };
 
 Octaeder::Octaeder():
@@ -77,5 +78,5 @@ void Octaeder::draw(QOpenGLShaderProgram& program)
 
         m_indexBuf.bind();
         // Draw cube geometry using indices from VBO 1
-        glDrawElements(GL_TRIANGLE_STRIP, 12, GL_UNSIGNED_SHORT, 0);
+        glDrawElements(GL_TRIANGLE_STRIP, 14, GL_UNSIGNED_SHORT, 0);
 }
