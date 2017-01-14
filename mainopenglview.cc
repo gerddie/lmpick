@@ -22,6 +22,7 @@
 class RenderingThread : private QOpenGLFunctions {
 public:
         RenderingThread(QWidget *widget);
+        ~RenderingThread();
 
         void initialize();
 
@@ -34,9 +35,12 @@ public:
         bool mouse_press(QMouseEvent *ev);
 
         bool mouse_tracking(QMouseEvent *ev);
+
+        bool mouse_wheel(QWheelEvent *ev);
 private:
         void update_rotation(QMouseEvent *ev);
         QVector3D get_mapped_point(const QPointF& localPos) const;
+        void update_projection();
 
         QWidget *m_parent;
         QOpenGLContext *m_context;
@@ -50,7 +54,7 @@ private:
         QOpenGLShaderProgram m_view_program;
 
         // the geometry to be drawn
-        std::unique_ptr<Octaeder> m_octaeder;
+        Octaeder m_octaeder;
 
 
         // used for mouse tracking
@@ -120,6 +124,14 @@ void MainopenGLView::mousePressEvent(QMouseEvent *ev)
     update();
 }
 
+void MainopenGLView::wheelEvent(QWheelEvent *ev)
+{
+        if (m_rendering->mouse_wheel(ev))
+                update();
+        else
+                ev->ignore();
+}
+
 RenderingThread::RenderingThread(QWidget *parent):
         m_parent(parent),
         m_context(nullptr),
@@ -129,36 +141,35 @@ RenderingThread::RenderingThread(QWidget *parent):
 {
 }
 
+RenderingThread::~RenderingThread()
+{
+        m_octaeder.detach_gl();
+}
+
 void RenderingThread::initialize()
 {
         initializeOpenGLFunctions();
         m_context =  QOpenGLContext::currentContext();
 
 
-        glClearColor(0,0.1,0,1);
+        glClearColor(0.1,0.1,0.1,1);
 
         glEnable(GL_DEPTH_TEST);
 
         // Enable back face culling
-         glEnable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
 
         m_vao.create();
         m_vao.bind();
 
-        m_octaeder.reset(new Octaeder);
+        m_octaeder.attach_gl();
 }
 
 void RenderingThread::paint()
 {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        if (m_octaeder)
-                m_octaeder->draw(m_state);
-        else
-                qDebug() << "nothing to draw\n";
-
-
+        m_octaeder.draw(m_state);
 
 }
 
@@ -186,7 +197,7 @@ void RenderingThread::update_rotation(QMouseEvent *ev)
 
 bool RenderingThread::mouse_press(QMouseEvent *ev)
 {
-        qDebug() << "Mouse press ";
+        qDebug() << "Mouse press " << ev->button();
         switch (ev->button()) {
         case Qt::LeftButton:{
 
@@ -224,22 +235,40 @@ bool RenderingThread::mouse_tracking(QMouseEvent *ev)
         return true;
 }
 
+bool RenderingThread::mouse_wheel(QWheelEvent *ev)
+{
+        auto delta = ev->angleDelta();
+
+        if (delta.y() < 0) {
+                m_state.zoom *= -1.05 * delta.y() / 120.0;
+        }else if (delta.y() > 0) {
+                m_state.zoom *= 0.9 * delta.y() / 120.0;
+        }else
+                return false;
+
+        update_projection();
+        return true;
+}
 
 void RenderingThread::resize(int w, int h)
 {
         glViewport(0,0,w,h);
+        m_viewport = QVector2D(w, h);
+        update_projection();
+}
+
+void RenderingThread::update_projection()
+{
         m_state.projection.setToIdentity();
         float zw, zh;
-        if (w > h) {
-               zw = m_state.zoom * w / h;
-               zh = m_state.zoom;
+        if (m_viewport.x() > m_viewport.y()) {
+                zw = m_state.zoom * m_viewport.x() / m_viewport.y();
+                zh = m_state.zoom;
         }else{
-                zh = m_state.zoom * h / w;
+                zh = m_state.zoom * m_viewport.y() / m_viewport.x();
                 zw = m_state.zoom;
         }
         m_state.projection.frustum(-zw, zw, -zh, zh, 500, 600);
-
-    m_viewport = QVector2D(w, h);
 }
 
 void RenderingThread::run()

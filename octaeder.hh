@@ -13,6 +13,9 @@ public:
         Octaeder();
 
         void draw(const GlobalSceneState& state);
+
+        virtual void attach_gl();
+        virtual void detach_gl();
 private:
 
         QOpenGLBuffer m_arrayBuf;

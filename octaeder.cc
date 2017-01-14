@@ -26,6 +26,10 @@ Octaeder::Octaeder():
         m_arrayBuf(QOpenGLBuffer::VertexBuffer),
         m_indexBuf(QOpenGLBuffer::IndexBuffer)
 {
+}
+
+void Octaeder::attach_gl()
+{
         initializeOpenGLFunctions();
 
         // Generate 2 VBOs
@@ -78,9 +82,13 @@ Octaeder::Octaeder():
                 qWarning() << "color loction attribute not found";
         m_program.enableAttributeArray(colorLocation);
         m_program.setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+}
 
-
-
+void Octaeder::detach_gl()
+{
+        m_arrayBuf.destroy();
+        m_indexBuf.destroy();
+        m_program.release();
 }
 
 void Octaeder::draw(const GlobalSceneState& state)

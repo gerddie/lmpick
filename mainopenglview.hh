@@ -12,13 +12,13 @@ public:
 
         ~MainopenGLView();
 private:
-        virtual void initializeGL();
-        virtual void paintGL();
-        virtual void resizeGL(int w, int h);
-
-        void mouseMoveEvent(QMouseEvent *ev);
-        void mousePressEvent(QMouseEvent *ev);
-        void mouseReleaseEvent(QMouseEvent *ev);
+        void initializeGL()override;
+        void paintGL()override;
+        void resizeGL(int w, int h)override;
+        void mouseMoveEvent(QMouseEvent *ev) override;
+        void mousePressEvent(QMouseEvent *ev) override;
+        void mouseReleaseEvent(QMouseEvent *ev) override;
+        void wheelEvent(QWheelEvent *ev) override;
 	
         RenderingThread *m_rendering;
 };
