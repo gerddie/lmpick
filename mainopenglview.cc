@@ -26,11 +26,12 @@ public:
         bool mouse_tracking(QMouseEvent *ev);
 private:
         void update_rotation(QMouseEvent *ev);
+        QVector3D get_mapped_point(const QPointF& localPos) const;
+
         QWidget *m_parent;
         QOpenGLContext *m_context;
 
         QMatrix4x4 m_projection;
-        QMatrix4x4 m_modelview;
         QOpenGLShaderProgram m_view_program;
         std::unique_ptr<Octaeder> m_octaeder;
 
@@ -43,6 +44,7 @@ private:
 
 	bool m_mouse1_is_down;
 	QPointF m_mouse_old_position; 
+
 
 	QVector2D m_viewport; 
 };
@@ -111,17 +113,11 @@ RenderingThread::RenderingThread(QWidget *parent):
         m_context(nullptr),
         m_camera_location(0,0,-250),
         m_rotation_center(0, 0, 0),
-        m_rotation(0,0,0,1),
+        m_rotation(1,0,0,0),
         m_zoom(1.0),
         m_mouse1_is_down(false)
 	
 {
-        m_modelview.setToIdentity();
-        m_modelview.translate(m_camera_location);
-        m_modelview.rotate(m_rotation);
-        m_modelview.translate(m_rotation_center);
-
-        qDebug() << "m_modelview= " << m_modelview;
 }
 
 void RenderingThread::initialize()
@@ -152,12 +148,14 @@ void RenderingThread::initialize()
 
 void RenderingThread::paint()
 {
-    m_modelview.setToIdentity();
-    m_modelview.translate(m_camera_location);
-    m_modelview.rotate(m_rotation);
-    m_modelview.translate(m_rotation_center);
+        QMatrix4x4 modelview;
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        modelview.setToIdentity();
+        modelview.translate(m_camera_location);
+        modelview.rotate(m_rotation);
+        modelview.translate(m_rotation_center);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (!m_view_program.bind())
                 qWarning() << "Error binding m_view_program', view will be clobbered\n";;
@@ -165,8 +163,8 @@ void RenderingThread::paint()
         QVector3D ld(1, 1, 1);
         ld.normalize();
 
-        m_view_program.setUniformValue("qt_mvp", m_projection * m_modelview);
-        m_view_program.setUniformValue("qt_mv", m_modelview);
+        m_view_program.setUniformValue("qt_mvp", m_projection * modelview);
+        m_view_program.setUniformValue("qt_mv", modelview);
         m_view_program.setUniformValue("qt_LightDirection", ld);
 
         if (m_octaeder)
@@ -178,80 +176,78 @@ void RenderingThread::paint()
 
 }
 
-float z_map_sphere(const QVector2D& x)
+QVector3D RenderingThread::get_mapped_point(const QPointF& localPos) const
 {
-    const float inv_sqrt2 = 1.0f/std::sqrt(2.0f);
-    auto length = x.length();
-    if (length < inv_sqrt2) {
-        return std::sqrt(1.0 - x.lengthSquared());
-    }else{
-        return 0.5 / length;
-    }
- }
+        double x = (2 * localPos.x() - m_viewport.x()) / m_viewport.x();
+        double y = (m_viewport.y() - 2 * localPos.y()) / m_viewport.y();
+        double z;
+        auto l2 = x * x + y * y;
+        if (l2 < 0.5) {
+                z = std::sqrt(1.0 - l2);
+        } else {
+                z = 0.5 / std::sqrt(l2);
+        }
+        return QVector3D(x,y,z);
+}
 
 void RenderingThread::update_rotation(QMouseEvent *ev)
 {
-    QVector2D pos(ev->localPos());
-    QVector2D old_pos(m_mouse_old_position);
+    // implement trackball
+        QVector3D pnew = get_mapped_point(ev->localPos());
+        QVector3D pold = get_mapped_point(m_mouse_old_position);
 
-    auto rel_pos = QVector2D((2 * pos.x() - m_viewport.x()) / m_viewport.x(),
-                             (m_viewport.y() - 2 * pos.y()) / m_viewport.y());
+        auto delta = pnew - pold;
+        auto cross = QVector3D::crossProduct(pold, pnew);
 
-    auto old_rel_pos = QVector2D((2 * old_pos.x() - m_viewport.x()) / m_viewport.x(),
-                                 (m_viewport.y() - 2 * old_pos.y()) / m_viewport.y());
+        auto d = delta.length() / 2.0;
+        if (d > 1.0 )
+                d = 1.0;
+        else if (d < -1.0)
+                d = -1.0;
 
-	// implement trackball 
-    QVector3D pnew( rel_pos.x(), rel_pos.y(), z_map_sphere(rel_pos));
-    QVector3D pold( old_rel_pos.x(), old_rel_pos.y(), z_map_sphere(old_rel_pos));
-
-    auto delta = pnew - pold;
-    auto cross = QVector3D::crossProduct(pold, pnew);
-	
-    auto d = delta.length() / 2.0;
-    if (d > 1.0 )
-        d = 1.0;
-    else if (d < -1.0)
-        d = -1.0;
-
-    auto angle = std::asin(d);
-    m_rotation += QQuaternion(angle, cross);
-    m_rotation.normalize();
+        auto angle = std::asin(d);
+        m_rotation += QQuaternion(angle, cross);
+        m_rotation.normalize();
 }
 
 bool RenderingThread::mouse_press(QMouseEvent *ev)
 {
-    qDebug() << "Mouse press ";
-    switch (ev->button()) {
-    case Qt::LeftButton:{
-        qDebug() << "LeftButton";
-        switch (ev->type()) {
-        case QEvent::MouseButtonPress:
-            qDebug() << "  down";
-            m_mouse1_is_down = true;
-            m_mouse_old_position = ev->localPos();
-            break;
-        case QEvent::MouseButtonRelease:
-            qDebug() << "   up";
-            m_mouse1_is_down = false;
-            break;
-        default:
-            return false;
+        qDebug() << "Mouse press ";
+        switch (ev->button()) {
+        case Qt::LeftButton:{
+
+                qDebug() << "LeftButton";
+                switch (ev->type()) {
+                case QEvent::MouseButtonPress:
+                        qDebug() << "  down";
+                        m_mouse1_is_down = true;
+                    m_mouse_old_position = ev->localPos();
+                        break;
+                case QEvent::MouseButtonRelease:
+                        qDebug() << "   up";
+                        if (!m_mouse1_is_down)
+                                return false;
+                        m_mouse1_is_down = false;
+                        update_rotation(ev);
+                        m_mouse_old_position = ev->localPos();
+                        break;
+                default:
+                        return false;
+                }
         }
-    }
-    default:
-        return false;
-    }
-    return true;
+        default:
+                return false;
+        }
+        return true;
 }
 
 bool RenderingThread::mouse_tracking(QMouseEvent *ev)
 {
-    if (!m_mouse1_is_down)
-        return false;
-    update_rotation(ev);
-    m_mouse_old_position = ev->localPos();
-    return true;
-
+        if (!m_mouse1_is_down)
+                return false;
+        update_rotation(ev);
+        m_mouse_old_position = ev->localPos();
+        return true;
 }
 
 
