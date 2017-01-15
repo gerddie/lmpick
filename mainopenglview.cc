@@ -253,6 +253,7 @@ void RenderingThread::resize(int w, int h)
         glViewport(0,0,w,h);
         m_viewport = QVector2D(w, h);
         update_projection();
+        m_state.viewport = QSize(w,h);
 }
 
 void RenderingThread::update_projection()

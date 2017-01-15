@@ -1,6 +1,6 @@
-varying highp vec3 color;
+varying highp vec4 color;
 
 void main(void)
 {
-    gl_FragColor = vec4(color.x, color.y, color.z, 1.0);
+    gl_FragColor = color;
 }

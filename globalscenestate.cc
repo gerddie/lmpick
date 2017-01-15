@@ -5,7 +5,8 @@ GlobalSceneState::GlobalSceneState():
         rotation_center(0, 0, 0),
         light_source(1,1,1),
         rotation(1,0,0,0),
-        zoom(1.0)
+        zoom(1.0),
+        viewport(0,0)
 {
         light_source.normalize();
 }

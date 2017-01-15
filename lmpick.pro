@@ -28,19 +28,25 @@ SOURCES += main.cc\
     mainopenglview.cc \
     octaeder.cc \
     globalscenestate.cc \
-    drawable.cc
+    drawable.cc \
+    volumedata.cc
 
 HEADERS  += mainwindow.hh \
     mainopenglview.hh \
     octaeder.hh \
     globalscenestate.hh \
-    drawable.hh
+    drawable.hh \
+    volumedata.hh
 
 FORMS    += mainwindow.ui
 
 DISTFILES += \
     view.glsl \
-    basic_frag.glsl
+    basic_frag.glsl \
+    README.md \
+    volume_x_slices.glsl \
+    volume_frament.glsl \
+    view_cube.glsl
 
 RESOURCES += \
     lmpick.qrc
