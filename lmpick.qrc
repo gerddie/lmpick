@@ -11,5 +11,7 @@
     <qresource prefix="/shaders">
         <file>view.glsl</file>
         <file>basic_frag.glsl</file>
+        <file>view_cube.glsl</file>
+        <file>volume_frament.glsl</file>
     </qresource>
 </RCC>

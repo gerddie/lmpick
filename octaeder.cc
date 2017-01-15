@@ -28,7 +28,7 @@ Octaeder::Octaeder():
 {
 }
 
-void Octaeder::attach_gl()
+void Octaeder::do_attach_gl()
 {
         // Generate 2 VBOs
         assert(m_arrayBuf.create());
@@ -103,4 +103,8 @@ void Octaeder::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) con
 
         // Draw cube geometry using indices from VBO 1
         ogl.glDrawElements(GL_TRIANGLE_STRIP, 14, GL_UNSIGNED_SHORT, 0);
+
+        m_arrayBuf.release();
+        m_indexBuf.release();
+
 }

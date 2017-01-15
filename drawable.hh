@@ -3,6 +3,7 @@
 
 #include "globalscenestate.hh"
 #include <QOpenGLFunctions>
+#include <QOpenGLVertexArrayObject>
 #include <memory>
 
 class Drawable {
@@ -13,10 +14,14 @@ public:
         virtual ~Drawable();
 
         void draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const;
-        virtual void attach_gl() = 0;
+        void attach_gl();
         virtual void detach_gl() = 0;
 private:
+        virtual void do_attach_gl() = 0;
         virtual void do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const = 0;
+
+        // some OpenGL stuff globally required
+        mutable QOpenGLVertexArrayObject m_vao;
 };
 
 

@@ -76,29 +76,30 @@ static const VertexData cube_vertices[] = {
 };
 
 static const unsigned short cube_indices[] = {
-        0, 1, 2,
-        1, 2, 3,
+        0, 2, 1,
+        3, 2, 0,
 
-        4, 5, 6,
-        5, 6, 7,
+        4, 6, 5,
+        7, 6, 4,
 
-        8, 9, 10,
-        9, 10, 11,
+        8, 10, 9,
+       11, 10, 8,
 
-        12, 13, 14,
-        13, 14, 15,
+        12, 14, 13,
+        15, 14, 12,
 
-        16, 17, 18,
-        17, 18, 19,
+        16, 18, 17,
+        19, 18, 16,
 
-        20, 21, 22,
-        21, 22, 23
+        20, 22, 21,
+        23, 22, 20
 
 };
 
 
-void VolumeData::attach_gl()
+void VolumeData::do_attach_gl()
 {
+        /*
         // prepare the texture
         m_volume_texture.setSize(m_image->get_size().x, m_image->get_size().y, m_image->get_size().z);
         m_volume_texture.setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Linear);
@@ -113,20 +114,21 @@ void VolumeData::attach_gl()
         m_volume_texture.setData(QOpenGLTexture::Luminance, QOpenGLTexture::UInt8,
                                  &img(0,0,0));
 
+        */
         assert(m_arrayBuf.create());
         assert(m_indexBuf.create());
 
         // Initializes cube geometry and transfers it to VBOs
         m_arrayBuf.bind();
         m_arrayBuf.setUsagePattern(QOpenGLBuffer::StaticDraw);
-        m_arrayBuf.allocate(cube_vertices, 8 * sizeof(QVector3D));
+        m_arrayBuf.allocate(cube_vertices, sizeof(cube_vertices));
 
         // Transfer index data to VBO 1
         m_indexBuf.bind();
         m_indexBuf.allocate(cube_indices, sizeof(cube_indices));
 
-        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/view_cube.glsl"))
-                qWarning() << "Error compiling ':/shaders/view.glsl', view will be clobbered\n";
+        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/view.glsl"))
+                qWarning() << "Error compiling ':/shaders/view_cube.glsl', view will be clobbered\n";
 
         if (!m_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/basic_frag.glsl"))
                 qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
@@ -153,6 +155,8 @@ void VolumeData::attach_gl()
                 qWarning() << "color loction attribute not found";
         m_program.enableAttributeArray(colorLocation);
         m_program.setAttributeBuffer(colorLocation, GL_FLOAT, 6 * sizeof(float), 3, sizeof(VertexData));
+
+
 
 }
 
@@ -189,16 +193,20 @@ void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) c
         fbo_ray_start.release();
         */
 
+
+
+        auto modelview = state.get_modelview_matrix();
+        m_program.setUniformValue("qt_mvp", state.projection * modelview);
+        m_program.setUniformValue("qt_mv", modelview);
+        m_program.setUniformValue("qt_LightDirection", state.light_source);
+
+        m_program.bind();
         m_arrayBuf.bind();
         m_indexBuf.bind();
 
         ogl.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
 
-
         m_arrayBuf.release();
         m_indexBuf.release();
-
-
-
 }
 

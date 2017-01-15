@@ -11,12 +11,14 @@
 class VolumeData : public Drawable
 {
 public:
+        typedef std::shared_ptr<VolumeData> Pointer;
+
         VolumeData(mia::P3DImage data);
 
-        virtual void attach_gl() override;
         virtual void detach_gl() override;
 private:
         virtual void do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const override;
+        virtual void do_attach_gl() override;
 
         mutable QOpenGLBuffer m_arrayBuf;
         mutable QOpenGLBuffer m_indexBuf;

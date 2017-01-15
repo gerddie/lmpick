@@ -1,7 +1,9 @@
 #ifndef MAINWINDOW_HH
 #define MAINWINDOW_HH
 
+#include <mainopenglview.hh>
 #include <QMainWindow>
+
 
 namespace Ui {
 class MainWindow;
@@ -22,6 +24,7 @@ private slots:
 
 private:
         Ui::MainWindow *ui;
+        MainopenGLView *m_glview;
 };
 
 #endif // MAINWINDOW_HH

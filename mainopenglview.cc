@@ -37,6 +37,8 @@ public:
         bool mouse_tracking(QMouseEvent *ev);
 
         bool mouse_wheel(QWheelEvent *ev);
+
+        void setVolume(VolumeData::Pointer volume);
 private:
         void update_rotation(QMouseEvent *ev);
         QVector3D get_mapped_point(const QPointF& localPos) const;
@@ -47,8 +49,6 @@ private:
 
         GlobalSceneState m_state;
 
-        // some OpenGL stuff globally required
-        QOpenGLVertexArrayObject m_vao;
 
         // the shader (must be moved into the actual geometries
         QOpenGLShaderProgram m_view_program;
@@ -62,6 +62,8 @@ private:
 	QVector2D m_viewport; 
 
         std::vector<Drawable::Pointer> m_objects;
+        VolumeData::Pointer m_volume;
+
 };
 
 MainopenGLView::MainopenGLView(QWidget *parent):
@@ -75,6 +77,13 @@ MainopenGLView::MainopenGLView(QWidget *parent):
         setFormat(format);
         m_rendering = new RenderingThread(this);
         setMouseTracking( true );
+}
+
+void MainopenGLView::setVolume(VolumeData::Pointer volume)
+{
+        makeCurrent();
+        m_rendering->setVolume(volume);
+        doneCurrent();
 }
 
 MainopenGLView::~MainopenGLView()
@@ -157,18 +166,28 @@ void RenderingThread::initialize()
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
 
-        m_vao.create();
-        m_vao.bind();
 
         for (auto d: m_objects)
                 d->attach_gl();
 }
 
+void RenderingThread::setVolume(VolumeData::Pointer volume)
+{
+        m_volume = volume;
+        m_volume->attach_gl();
+}
+
 void RenderingThread::paint()
 {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for (auto d: m_objects)
-                d->draw(m_state, *this);
+
+        if (m_volume)
+                m_volume->draw(m_state, *this);
+        else
+                for (auto d: m_objects)
+                        d->draw(m_state, *this);
+
+
 }
 
 QVector3D RenderingThread::get_mapped_point(const QPointF& localPos) const

@@ -1,11 +1,17 @@
 #include "mainwindow.hh"
+#include "volumedata.hh"
 #include "ui_mainwindow.h"
+
+#include <QFileDialog>
+#include <mia/3d/imageio.hh>
+#include <sstream>
 
 MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::MainWindow)
 {
         ui->setupUi(this);
+        m_glview = findChild<MainopenGLView*>();
 }
 
 MainWindow::~MainWindow()
@@ -20,5 +26,30 @@ void MainWindow::on_actionE_xit_triggered()
 
 void MainWindow::on_actionOpen_Volume_triggered()
 {
+        const auto& imageio  = mia::C3DImageIOPluginHandler::instance();
+        auto file_types = imageio.get_supported_suffix_set();
+        std::ostringstream filetypes;
+
+        QStringList filters;
+        filetypes << "(";
+        for (auto i: file_types)
+                filetypes << "*." << i.c_str() << " ";
+        filetypes << ")";
+        QFileDialog dialog(this, "Open volume data set", ".", filetypes.str().c_str());
+
+        if (dialog.exec()) {
+            auto fileNames = dialog.selectedFiles();
+            if ( fileNames.length() > 1) {
+                    qWarning() << "Open volume data:  selected " << fileNames.length()
+                               << "files, only first one will be used";
+            }else if (fileNames.empty()) {
+                    qWarning() << "Open volume data:  no files selected";
+                    return;
+            }
+            auto volume = mia::load_image3d(fileNames.first().toStdString());
+            VolumeData::Pointer obj = std::make_shared<VolumeData>(volume);
+            m_glview->setVolume(obj);
+        }
+
 
 }

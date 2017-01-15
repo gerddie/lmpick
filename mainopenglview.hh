@@ -1,6 +1,7 @@
 #ifndef MAINOPENGLVIEW_HH
 #define MAINOPENGLVIEW_HH
 
+#include "volumedata.hh"
 #include <QOpenGLWidget>
 
 class RenderingThread;
@@ -11,6 +12,8 @@ public:
         MainopenGLView(QWidget *parent);
 
         ~MainopenGLView();
+
+        void setVolume(VolumeData::Pointer volume);
 private:
         void initializeGL()override;
         void paintGL()override;
