@@ -99,19 +99,19 @@ void MainopenGLView::resizeGL(int w, int h)
 
 void MainopenGLView::mouseMoveEvent(QMouseEvent *ev)
 {
-	if (!m_rendering->mouse_tracking(ev)) {
-		// handle mouse here
-		
-	}
-    update();
+        if (!m_rendering->mouse_tracking(ev)) {
+                // handle mouse here
+
+        }
+        update();
 }
 
 void MainopenGLView::mouseReleaseEvent(QMouseEvent *ev)
 {
-    if (!m_rendering->mouse_press(ev)) {
-        // handle mouse here
+        if (!m_rendering->mouse_press(ev)) {
+                // handle mouse here
 
-    }
+        }
 }
 
 void MainopenGLView::mousePressEvent(QMouseEvent *ev)
