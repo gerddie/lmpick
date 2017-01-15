@@ -127,7 +127,7 @@ void VolumeData::do_attach_gl()
         m_indexBuf.bind();
         m_indexBuf.allocate(cube_indices, sizeof(cube_indices));
 
-        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/view.glsl"))
+        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/view_cube.glsl"))
                 qWarning() << "Error compiling ':/shaders/view_cube.glsl', view will be clobbered\n";
 
         if (!m_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/basic_frag.glsl"))
@@ -144,17 +144,19 @@ void VolumeData::do_attach_gl()
         m_program.enableAttributeArray(vertexLocation);
         m_program.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(VertexData));
 
+        /*
         int normalLocation = m_program.attributeLocation("qt_Normal");
         if (normalLocation == -1)
                 qWarning() << "normal loction attribute not found";
         m_program.enableAttributeArray(normalLocation);
         m_program.setAttributeBuffer(normalLocation, GL_FLOAT, 3 * sizeof(float), 3, sizeof(VertexData));
 
-        int colorLocation = m_program.attributeLocation("qt_Color");
+      //  int colorLocation = m_program.attributeLocation("qt_Color");
         if (colorLocation == -1)
                 qWarning() << "color loction attribute not found";
         m_program.enableAttributeArray(colorLocation);
         m_program.setAttributeBuffer(colorLocation, GL_FLOAT, 6 * sizeof(float), 3, sizeof(VertexData));
+        */
 
 
 
@@ -198,7 +200,6 @@ void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) c
         auto modelview = state.get_modelview_matrix();
         m_program.setUniformValue("qt_mvp", state.projection * modelview);
         m_program.setUniformValue("qt_mv", modelview);
-        m_program.setUniformValue("qt_LightDirection", state.light_source);
 
         m_program.bind();
         m_arrayBuf.bind();
