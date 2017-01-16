@@ -22,13 +22,13 @@ VolumeData::VolumeData(mia::P3DImage data):
         auto v = m_image->get_voxel_size();
 
         QVector3D size(s.x * v.x, s.y * v.y, s.z * v.z);
-        float max_coord = size.x();
-        if (max_coord < size.y())
-                max_coord = size.y();
-        if (max_coord < size.z())
-                max_coord = size.z();
+        m_max_coord = size.x();
+        if (m_max_coord < size.y())
+                m_max_coord = size.y();
+        if (m_max_coord < size.z())
+                m_max_coord = size.z();
 
-        m_scale = size / max_coord;
+        m_scale = size / m_max_coord;
         m_end = 0.5 * m_scale;
         m_start = -m_end;
 
@@ -264,6 +264,15 @@ void VolumeData::do_attach_gl()
 
         if (error_nr)
                 qWarning() << "Some error Error (2)" << error_nr;
+
+        m_volume_program.bind();
+        auto spacing_param = m_volume_program.uniformLocation("step_length");
+        assert(spacing_param != -1);
+        m_volume_program.setUniformValue(spacing_param, static_cast<float>(1.0f / m_max_coord));
+
+        auto iso_value_param = m_volume_program.uniformLocation("step_length");
+        assert(iso_value_param != -1);
+        m_volume_program.setUniformValue(iso_value_param, 0.f);
 
         auto vertex_location = m_volume_program.attributeLocation("qt_Vertex");
         if (vertex_location >= 0) {

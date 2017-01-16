@@ -31,6 +31,7 @@ private:
         QVector3D m_start;
         QVector3D m_end;
         QVector3D m_scale;
+        float m_max_coord;
         mutable QOpenGLVertexArrayObject m_vao;
 
         mutable QOpenGLBuffer m_arrayBuf_2nd_pass;

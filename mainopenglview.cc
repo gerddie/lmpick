@@ -96,7 +96,19 @@ void MainopenGLView::initializeGL()
 {
         m_rendering->initialize();
 #ifndef NDEBUG
-        VolumeData::Pointer v(new VolumeData(mia::P3DImage(new mia::C3DFImage(mia::C3DBounds(32,64,32)))));
+        auto img = new mia::C3DFImage(mia::C3DBounds(32,64,32));
+
+        auto i = img->begin();
+        for (unsigned int z = 0; z < 32; ++z) {
+                float fz = sin (z * M_PI / 32);
+                for (unsigned int y = 0; y < 64; ++y) {
+                        float fy = sin (2 * y * M_PI / 64) * fz;
+                        for (unsigned int x = 0; x < 32; ++x, ++i)  {
+                                *i = fy * sin (4 * x * M_PI / 32) * fz;
+                        }
+                }
+        }
+        VolumeData::Pointer v(new VolumeData(mia::P3DImage(img)));
         m_rendering->setVolume(v);
 #endif
 }
