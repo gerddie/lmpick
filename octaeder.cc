@@ -33,6 +33,8 @@ void Octaeder::do_attach_gl()
         // Generate 2 VBOs
         assert(m_arrayBuf.create());
         assert(m_indexBuf.create());
+        m_vao.create();
+        m_vao.bind();
 
         // Initializes cube geometry and transfers it to VBOs
         m_arrayBuf.bind();
@@ -80,6 +82,10 @@ void Octaeder::do_attach_gl()
                 qWarning() << "color loction attribute not found";
         m_program.enableAttributeArray(colorLocation);
         m_program.setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+
+        m_arrayBuf.release();
+        m_indexBuf.release();
+        m_vao.release();
 }
 
 void Octaeder::detach_gl()
@@ -91,6 +97,7 @@ void Octaeder::detach_gl()
 
 void Octaeder::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const
 {
+        m_vao.bind();
         auto modelview = state.get_modelview_matrix();
         m_program.setUniformValue("qt_mvp", state.projection * modelview);
         m_program.setUniformValue("qt_mv", modelview);
@@ -106,5 +113,5 @@ void Octaeder::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) con
 
         m_arrayBuf.release();
         m_indexBuf.release();
-
+        m_vao.release();
 }

@@ -1,3 +1,4 @@
+#version 330
 uniform sampler3D VolumeTexture;
 uniform highp vec4 light_source;
 uniform vec3 GradientScale;

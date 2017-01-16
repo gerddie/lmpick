@@ -46,7 +46,9 @@ DISTFILES += \
     README.md \
     volume_x_slices.glsl \
     volume_frament.glsl \
-    view_cube.glsl
+    view_cube.glsl \
+    volume_2nd_pass_vtx.glsl \
+    volume_2nd_pss_frag.glsl
 
 RESOURCES += \
     lmpick.qrc

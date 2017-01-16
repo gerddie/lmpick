@@ -8,8 +8,13 @@
 VolumeData::VolumeData(mia::P3DImage data):
         m_arrayBuf(QOpenGLBuffer::VertexBuffer),
         m_indexBuf(QOpenGLBuffer::IndexBuffer),
-        m_volume_texture(QOpenGLTexture::Target3D),
-        m_image(data)
+        m_volume_tex(0),
+        m_image(data),
+        m_arrayBuf_2nd_pass(QOpenGLBuffer::VertexBuffer),
+        m_indexBuf_2nd_pass(QOpenGLBuffer::IndexBuffer),
+        m_voltex_param(-1),
+        m_ray_start_param(-1),
+        m_ray_end_param(-1)
 {
         assert(m_image);
 
@@ -34,6 +39,51 @@ struct VertexData
     GLfloat px, py, pz;
     GLfloat nx, ny, nz;
     GLfloat cr, cg, cb;
+};
+
+struct PrepVertexData {
+        QVector3D v;
+        QVector3D t;
+};
+
+static const PrepVertexData plain_cube_vertices[] = {
+        {{-1, -1, -1}, {0,0,0}},
+        {{ 1, -1, -1}, {1,0,0}},
+        {{ 1,  1, -1}, {1,1,0}},
+        {{-1,  1, -1}, {0,1,0}},
+        {{ -1, -1, 1}, {0,0,1}},
+        {{  1, -1, 1}, {1,0,1}},
+        {{  1,  1, 1}, {1,1,1}},
+        {{ -1,  1, 1}, {0,1,1}}
+};
+
+static const QVector2D screenspace_quad[] {
+   {0,0}, {0,1}, {1,1}, {1,0}
+};
+
+static const unsigned short screenspace_fan_idx[] {
+   0, 1, 2, 3
+};
+
+static const unsigned short plain_cube_indices[] = {
+        0, 2, 1,
+        3, 2, 0,
+
+        1, 2, 5,
+        5, 2, 6,
+
+        0, 5, 4,
+        5, 0, 1,
+
+        3, 0, 4,
+        4, 7, 3,
+
+        3, 7, 6,
+        6, 2, 3,
+
+        4, 5, 6,
+        7, 4, 6
+
 };
 
 
@@ -99,115 +149,254 @@ static const unsigned short cube_indices[] = {
 
 void VolumeData::do_attach_gl()
 {
-        /*
-        // prepare the texture
-        m_volume_texture.setSize(m_image->get_size().x, m_image->get_size().y, m_image->get_size().z);
-        m_volume_texture.setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Linear);
-        m_volume_texture.setWrapMode(QOpenGLTexture::ClampToEdge);
-        m_volume_texture.allocateStorage();
-        m_volume_texture.bind();
 
-        auto converter = mia::produce_3dimage_filter("convert:repn=ubyte");
+        int error_nr;
+
+        error_nr = glGetError(); if (error_nr)  qWarning() << "Incomming " << error_nr;
+
+        m_vao.create();
+
+        glGenTextures(1, &m_volume_tex);
+        glBindTexture(GL_TEXTURE_3D, m_volume_tex);
+
+        auto converter = mia::produce_3dimage_filter("convert:repn=float,map=copy");
         auto pimage = converter->filter(m_image);
-        const mia::C3DUBImage& img = dynamic_cast<const mia::C3DUBImage&>(*pimage);
+        const mia::C3DFImage& img = dynamic_cast<const mia::C3DFImage&>(*pimage);
+        glTexImage3D (GL_TEXTURE_3D, 0, GL_RED,
+                      m_image->get_size().x, m_image->get_size().y, m_image->get_size().z,
+                      0, GL_RED,
+                      GL_FLOAT, &img(0,0,0));
 
-        m_volume_texture.setData(QOpenGLTexture::Luminance, QOpenGLTexture::UInt8,
-                                 &img(0,0,0));
 
-        */
+        error_nr = glGetError(); if (error_nr)  qWarning() << "glTexImage3D " << error_nr;
+
         assert(m_arrayBuf.create());
         assert(m_indexBuf.create());
+
+        m_vao.bind();
 
         // Initializes cube geometry and transfers it to VBOs
         m_arrayBuf.bind();
         m_arrayBuf.setUsagePattern(QOpenGLBuffer::StaticDraw);
-        m_arrayBuf.allocate(cube_vertices, sizeof(cube_vertices));
+
+        std::vector<PrepVertexData> vertices(8);
+        transform(plain_cube_vertices, &plain_cube_vertices[8], vertices.begin(),
+                        [this](const PrepVertexData& v){
+                             PrepVertexData r = v;
+                             r.v *= m_scale;
+                             return r;}
+        );
+
+        m_arrayBuf.allocate(&vertices[0], 8 * sizeof(PrepVertexData));
+        error_nr = glGetError(); if (error_nr)  qWarning() << "m_arrayBuf.allocate " << error_nr;
 
         // Transfer index data to VBO 1
         m_indexBuf.bind();
-        m_indexBuf.allocate(cube_indices, sizeof(cube_indices));
+        m_indexBuf.allocate(plain_cube_indices, sizeof(plain_cube_indices));
 
-        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/view_cube.glsl"))
+        if (!m_prep_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/view_cube.glsl"))
                 qWarning() << "Error compiling ':/shaders/view_cube.glsl', view will be clobbered\n";
 
-        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/basic_frag.glsl"))
+        if (!m_prep_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/basic_frag.glsl"))
                 qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
 
-        if (!m_program.link())
+        if (!m_prep_program.link())
+                qWarning() << "Error linking m_view_program', view will be clobbered\n";;
+
+        if (!m_volume_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/volume_2nd_pass_vtx.glsl"))
+                qWarning() << "Error compiling ':/shaders/view_cube.glsl', view will be clobbered\n";
+
+        if (!m_volume_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_2nd_pss_frag.glsl"))
+                qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
+
+        if (!m_volume_program.link())
                 qWarning() << "Error linking m_view_program', view will be clobbered\n";;
 
 
+        m_voltex_param = m_volume_program.uniformLocation("volume");
+        if (m_voltex_param == -1)
+                qWarning() << "Can't find volume parameter";
+
+        m_ray_start_param = m_volume_program.uniformLocation("ray_start");
+        if (m_ray_start_param == -1)
+                qWarning() << "Can't find ray_start parameter";
+
+        m_ray_end_param = m_volume_program.uniformLocation("ray_end");
+        if (m_ray_end_param == -1)
+                qWarning() << "Can't find ray_end parameter";
+
         // Tell OpenGL programmable pipeline how to locate vertex position data
-        int vertexLocation = m_program.attributeLocation("qt_Vertex");
+        int vertexLocation = m_prep_program.attributeLocation("qt_Vertex");
         if (vertexLocation == -1)
                 qWarning() << "vertex loction attribute not found";
-        m_program.enableAttributeArray(vertexLocation);
-        m_program.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(VertexData));
+        m_prep_program.enableAttributeArray(vertexLocation);
+        m_prep_program.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(PrepVertexData));
 
-        /*
-        int normalLocation = m_program.attributeLocation("qt_Normal");
-        if (normalLocation == -1)
-                qWarning() << "normal loction attribute not found";
-        m_program.enableAttributeArray(normalLocation);
-        m_program.setAttributeBuffer(normalLocation, GL_FLOAT, 3 * sizeof(float), 3, sizeof(VertexData));
+        int texLocation = m_prep_program.attributeLocation("qt_Texture");
+        if (texLocation == -1)
+                qWarning() << "tex loction attribute not found";
+        m_prep_program.enableAttributeArray(texLocation);
+        m_prep_program.setAttributeBuffer(texLocation, GL_FLOAT, sizeof(QVector3D), 3, sizeof(PrepVertexData));
 
-      //  int colorLocation = m_program.attributeLocation("qt_Color");
-        if (colorLocation == -1)
-                qWarning() << "color loction attribute not found";
-        m_program.enableAttributeArray(colorLocation);
-        m_program.setAttributeBuffer(colorLocation, GL_FLOAT, 6 * sizeof(float), 3, sizeof(VertexData));
-        */
+        error_nr = glGetError();
+        if (error_nr)
+                qWarning() << "Some error Error -1 " << error_nr;
 
+        m_arrayBuf.release();
+        m_indexBuf.release();
+        m_vao.release();
 
+        error_nr = glGetError();
+        if (error_nr)
+                qWarning() << "Some error Error " << error_nr; // gl_FragColor = vec4(1,1,0,1);
 
+        m_vao_2nd_pass.create();
+        m_vao_2nd_pass.bind();
+
+        m_arrayBuf_2nd_pass.create();
+        m_arrayBuf_2nd_pass.bind();
+        m_arrayBuf_2nd_pass.setUsagePattern(QOpenGLBuffer::StaticDraw);
+        m_arrayBuf_2nd_pass.allocate(screenspace_quad, sizeof(screenspace_quad));
+
+        m_indexBuf_2nd_pass.create();
+        m_indexBuf_2nd_pass.bind();
+        m_indexBuf_2nd_pass.allocate(screenspace_fan_idx, sizeof(screenspace_fan_idx));
+
+        if (error_nr)
+                qWarning() << "Some error Error (2)" << error_nr;
+
+        auto vertex_location = m_volume_program.attributeLocation("qt_Vertex");
+        if (vertex_location >= 0) {
+                m_volume_program.enableAttributeArray(vertex_location);
+                error_nr = glGetError();
+                if (error_nr)
+                        qWarning() << "m_volume_program.enableAttributeArray(vertex_location): Error " << error_nr;
+                m_volume_program.setAttributeBuffer(vertex_location, GL_FLOAT, 0, 2);
+                error_nr = glGetError();
+                if (error_nr)
+                        qWarning() << "m_volume_program.setAttributeBuffer(vertex_location): Error " << error_nr;
+        } else {
+                qWarning() << "qt_Vertex not found, rendering will fail";
+        }
+
+        m_vao_2nd_pass.release();
 }
 
 void VolumeData::detach_gl()
 {
-        m_volume_texture.destroy();
+        glDeleteTextures(1, &m_volume_tex);
         m_arrayBuf.destroy();
         m_indexBuf.destroy();
-        m_program.release();
+        m_prep_program.release();
 }
+
 
 void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const
 {
-        //        m_volume_texture.bind();
-
-
-        // draw to two FBOs to get display range
-        /*
-        QOpenGLFramebufferObjectFormat fboformat;
-        fboformat.setInternalTextureFormat(GL_FLOAT);
-
-        QOpenGLFramebufferObject fbo_ray_start(state.viewport, fboformat);
-        QOpenGLFramebufferObject fbo_ray_stop(state.viewport, fboformat);
-
-        fbo_ray_start.bind();
-
-
-        ogl.glEnable(GL_CULL_FACE);
-        ogl.glCullFace(GL_BACK);
-
-
-
-
-        fbo_ray_start.release();
-        */
-
-
+        int  error_nr;
 
         auto modelview = state.get_modelview_matrix();
-        m_program.setUniformValue("qt_mvp", state.projection * modelview);
-        m_program.setUniformValue("qt_mv", modelview);
 
-        m_program.bind();
+        static int index= 0;
+
+        glClearColor(0,0,0,1);
+        glEnable(GL_DEPTH);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+
+        m_vao.bind();
+        m_prep_program.bind();
         m_arrayBuf.bind();
         m_indexBuf.bind();
 
+        m_prep_program.setUniformValue("qt_mvp", state.projection * modelview);
+        m_prep_program.setUniformValue("qt_mv", modelview);
+
+      //  ogl.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+
+        QOpenGLFramebufferObjectFormat fboformat;
+        fboformat.setTextureTarget(GL_TEXTURE_2D);
+        fboformat.setInternalTextureFormat(GL_FLOAT);
+        QOpenGLFramebufferObject fbo_ray_start(state.viewport, GL_TEXTURE_2D);
+        QOpenGLFramebufferObject fbo_ray_end(state.viewport, GL_TEXTURE_2D);
+
+        glDisable(GL_DEPTH);
+
+
+        fbo_ray_start.bind();
+        glClearColor(0,0,0.5,1);
+        ogl.glClear(GL_COLOR_BUFFER_BIT);
         ogl.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+        fbo_ray_start.release();
+
+        glCullFace(GL_FRONT);
+        fbo_ray_end.bind();
+        glClearColor(0.5,0,0,1);
+        ogl.glClear(GL_COLOR_BUFFER_BIT);
+        ogl.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+        fbo_ray_end.release();
+
+        std::ostringstream name;
+        name << "ray_start" << index++ << ".png";
+
+        fbo_ray_start.toImage().save(name.str().c_str());
 
         m_arrayBuf.release();
         m_indexBuf.release();
+        m_vao.release();
+        m_prep_program.release();
+
+        if (!m_volume_program.bind())
+            qWarning() << "Unable to bind m_volume_program\n";
+
+        ogl.glActiveTexture(GL_TEXTURE0);
+        ogl.glBindTexture(GL_TEXTURE_2D, fbo_ray_start.texture());
+        error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glBindTexture (start)" << error_nr;
+
+        ogl.glActiveTexture(GL_TEXTURE1);
+        ogl.glBindTexture(GL_TEXTURE_2D, fbo_ray_end.texture());
+        error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glBindTexture (end)" << error_nr;
+
+
+
+        ogl.glDisable(GL_DEPTH_TEST);
+        ogl.glDisable(GL_CULL_FACE);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glDisable(GL_CULL_FACE);" << error_nr;
+
+
+        // now draw the volume
+        if (m_voltex_param > -1) {
+                ogl.glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_3D, m_volume_tex);
+                error_nr = glGetError(); if (error_nr)  qWarning() << "glBindTexture" << error_nr;
+                m_volume_program.setUniformValue(m_voltex_param, 2);
+                error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(volume)" << error_nr;
+        }
+
+        m_volume_program.setUniformValue(m_ray_start_param, 0);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(ray_start)" << error_nr;
+        m_volume_program.setUniformValue(m_ray_end_param, 1);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(ray_end)" << error_nr;
+
+
+
+        ogl.glDisable(GL_CULL_FACE);
+        ogl.glDisable(GL_DEPTH_TEST);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glDisable(GL_DEPTH_TEST);" << error_nr;
+
+
+        m_vao_2nd_pass.bind();
+        m_arrayBuf_2nd_pass.bind();
+        m_indexBuf_2nd_pass.bind();
+
+        ogl.glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, 0);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glDrawElements" << error_nr;
+
+        m_indexBuf_2nd_pass.release();
+        m_arrayBuf_2nd_pass.release();
+        m_vao_2nd_pass.release();
+        m_volume_program.release();
+
+
 }
 

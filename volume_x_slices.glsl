@@ -1,4 +1,4 @@
-
+#version 330
 attribute highp vec4 vertex;
 attribute highp vec3 tex_in;
 

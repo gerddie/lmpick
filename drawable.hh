@@ -20,8 +20,7 @@ private:
         virtual void do_attach_gl() = 0;
         virtual void do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const = 0;
 
-        // some OpenGL stuff globally required
-        mutable QOpenGLVertexArrayObject m_vao;
+
 };
 
 

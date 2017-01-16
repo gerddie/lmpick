@@ -72,7 +72,8 @@ MainopenGLView::MainopenGLView(QWidget *parent):
 {
         QSurfaceFormat format;
         format.setDepthBufferSize(24);
-        format.setVersion(3, 2);
+        format.setVersion(3, 3);
+        format.setRenderableType(QSurfaceFormat::OpenGL);
         format.setProfile(QSurfaceFormat::CoreProfile);
         setFormat(format);
         m_rendering = new RenderingThread(this);
@@ -94,6 +95,10 @@ MainopenGLView::~MainopenGLView()
 void MainopenGLView::initializeGL()
 {
         m_rendering->initialize();
+#ifndef NDEBUG
+        VolumeData::Pointer v(new VolumeData(mia::P3DImage(new mia::C3DFImage(mia::C3DBounds(32,64,32)))));
+        m_rendering->setVolume(v);
+#endif
 }
 
 void MainopenGLView::paintGL()
@@ -108,11 +113,12 @@ void MainopenGLView::resizeGL(int w, int h)
 
 void MainopenGLView::mouseMoveEvent(QMouseEvent *ev)
 {
-        if (!m_rendering->mouse_tracking(ev)) {
+        if (m_rendering->mouse_tracking(ev)) {
+                update();
+        }else{
                 // handle mouse here
-
         }
-        update();
+
 }
 
 void MainopenGLView::mouseReleaseEvent(QMouseEvent *ev)
@@ -161,7 +167,8 @@ void RenderingThread::initialize()
         initializeOpenGLFunctions();
         m_context =  QOpenGLContext::currentContext();
 
-        glClearColor(0.1,0.1,0.1,1);
+        qDebug() << "OpenGL: " << (char*)glGetString(GL_VERSION);
+
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -179,6 +186,7 @@ void RenderingThread::setVolume(VolumeData::Pointer volume)
 
 void RenderingThread::paint()
 {
+        glClearColor(1,1,1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (m_volume)

@@ -23,13 +23,24 @@ private:
         mutable QOpenGLBuffer m_arrayBuf;
         mutable QOpenGLBuffer m_indexBuf;
 
-        mutable QOpenGLShaderProgram m_program;
-        mutable QOpenGLTexture m_volume_texture;
+        mutable QOpenGLShaderProgram m_prep_program;
+        mutable QOpenGLShaderProgram m_volume_program;
+        GLuint m_volume_tex;
 
         mia::P3DImage m_image;
         QVector3D m_start;
         QVector3D m_end;
         QVector3D m_scale;
+        mutable QOpenGLVertexArrayObject m_vao;
+
+        mutable QOpenGLBuffer m_arrayBuf_2nd_pass;
+        mutable QOpenGLBuffer m_indexBuf_2nd_pass;
+        mutable QOpenGLVertexArrayObject m_vao_2nd_pass;
+
+        GLint m_voltex_param;
+        GLint m_ray_start_param;
+        GLint m_ray_end_param;
+
 };
 
 #endif // VOLUMEDATA_HH

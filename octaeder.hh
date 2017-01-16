@@ -18,6 +18,9 @@ private:
         mutable QOpenGLBuffer m_arrayBuf;
         mutable QOpenGLBuffer m_indexBuf;
         mutable QOpenGLShaderProgram m_program;
+
+        // some OpenGL stuff globally required
+        mutable QOpenGLVertexArrayObject m_vao;
 };
 
 
