@@ -302,7 +302,7 @@ void VolumeData::do_attach_gl(QOpenGLContext& context)
         m_volume_program.bind();
         auto spacing_param = m_volume_program.uniformLocation("step_length");
         assert(spacing_param != -1);
-        float step_length = 1.0f / m_max_coord;
+        float step_length = 2.0f / m_max_coord;
         qDebug() << "step_length= " << step_length;
 
         m_volume_program.setUniformValue(spacing_param, m_gradient_delta);
@@ -436,14 +436,14 @@ void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLContext& context)
 
         auto iso_value_param = m_volume_program.uniformLocation("iso_value");
         assert(iso_value_param != -1);
-        m_volume_program.setUniformValue(iso_value_param, 0.5f);
+        m_volume_program.setUniformValue(iso_value_param, 0.3f);
 
         ogl.glDisable(GL_CULL_FACE);
         ogl.glDisable(GL_DEPTH_TEST);
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glDisable(GL_DEPTH_TEST);" << error_nr;
 
         auto light_source_param = m_volume_program.uniformLocation("light_source");
-        m_volume_program.setUniformValue(light_source_param, state.light_source.normalized());
+        m_volume_program.setUniformValue(light_source_param, state.light_source);
 
         auto mv_param = m_volume_program.uniformLocation("qt_mv");
         m_volume_program.setUniformValue(mv_param, modelview);

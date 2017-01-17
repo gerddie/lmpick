@@ -28,19 +28,23 @@ void main(void)
                 vec3 step = dir / n;
 
                 vec3 r = vec3(0,0,0);
-                vec3 x = start.xyz;
+
                 for (int a = 0; a < n; ++a)  {
+                        vec3 x = start.xyz + a * step;
                         vec4 color = texture3D(volume, x);
                         if (color.r > iso_value) {
-                                float cx = -(texture3D(volume, vec3(x.x + step_length.x, x.y, x.z)).r - color.r)/ step_length.x;
-                                float cy = -(texture3D(volume, vec3(x.x, x.y + step_length.y, x.z)).r - color.r)/ step_length.y;
-                                float cz = -(texture3D(volume, vec3(x.x, x.y, x.z + step_length.z)).r - color.r)/ step_length.z;
+                                float cx = (texture3D(volume, vec3(x.x + step_length.x, x.y, x.z)).r -
+                                            texture3D(volume, vec3(x.x - step_length.x, x.y, x.z)).r)/ step_length.x;
+                                float cy = (texture3D(volume, vec3(x.x, x.y + step_length.y, x.z)).r -
+                                            texture3D(volume, vec3(x.x, x.y - step_length.y, x.z)).r)/ step_length.y;
+                                float cz = (texture3D(volume, vec3(x.x, x.y, x.z + step_length.z)).r -
+                                            texture3D(volume, vec3(x.x, x.y, x.z - step_length.z)).r)/ step_length.z;
                                 vec3 normal = normalize(vec3(cx, cy, cz));
+
                                 vec4 n = qt_mv * vec4(normal.x, normal.y, normal.z, 1);
                                 r = n.xyz;
                                 break;
                         }
-                        x = x + step;
                 }
                 result = vec4(r.r, r.g, r.b, 1);
 

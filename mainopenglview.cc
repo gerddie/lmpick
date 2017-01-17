@@ -96,15 +96,15 @@ void MainopenGLView::initializeGL()
 {
         m_rendering->initialize();
 #ifndef NDEBUG
-        auto img = new mia::C3DFImage(mia::C3DBounds(32,64,32));
+        auto img = new mia::C3DFImage(mia::C3DBounds(128,256,128));
 
         auto i = img->begin();
-        for (unsigned int z = 0; z < 32; ++z) {
-                float fz = sin (z * M_PI / 31);
-                for (unsigned int y = 0; y < 64; ++y) {
-                        float fy = sin (y * M_PI / 63) * fz;
-                        for (unsigned int x = 0; x < 32; ++x, ++i)  {
-                                *i = fy * sin (x * M_PI / 31);
+        for (unsigned int z = 0; z < 128; ++z) {
+                float fz = sin (z * M_PI / 127);
+                for (unsigned int y = 0; y < 256; ++y) {
+                        float fy = sin (y * M_PI / 255) * fz;
+                        for (unsigned int x = 0; x < 128; ++x, ++i)  {
+                                *i = fy * sin (x * M_PI / 127);
                         }
                 }
         }
@@ -279,9 +279,11 @@ bool RenderingThread::mouse_wheel(QWheelEvent *ev)
         auto delta = ev->angleDelta();
 
         if (delta.y() < 0) {
-                m_state.zoom *= -1.05 * delta.y() / 120.0;
+                if (m_state.zoom < 10)
+                        m_state.zoom *= (-1.05 * delta.y()) / 120.0;
         }else if (delta.y() > 0) {
-                m_state.zoom *= 0.9 * delta.y() / 120.0;
+                if (m_state.zoom > 0.1)
+                        m_state.zoom *= (0.9 * delta.y()) / 120.0;
         }else
                 return false;
 
