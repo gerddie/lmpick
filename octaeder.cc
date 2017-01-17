@@ -28,7 +28,7 @@ Octaeder::Octaeder():
 {
 }
 
-void Octaeder::do_attach_gl()
+void Octaeder::do_attach_gl(QOpenGLFunctions& ogl)
 {
         // Generate 2 VBOs
         assert(m_arrayBuf.create());
@@ -88,7 +88,7 @@ void Octaeder::do_attach_gl()
         m_vao.release();
 }
 
-void Octaeder::detach_gl()
+void Octaeder::detach_gl(QOpenGLFunctions& ogl)
 {
         m_arrayBuf.destroy();
         m_indexBuf.destroy();

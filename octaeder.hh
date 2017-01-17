@@ -10,10 +10,10 @@ class Octaeder : public  Drawable {
 public:
         Octaeder();
 
-        virtual void detach_gl();
+        virtual void detach_gl(QOpenGLFunctions& ogl);
 private:
         void do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const override;
-        virtual void do_attach_gl() override;
+        virtual void do_attach_gl(QOpenGLFunctions& ogl) override;
 
         mutable QOpenGLBuffer m_arrayBuf;
         mutable QOpenGLBuffer m_indexBuf;

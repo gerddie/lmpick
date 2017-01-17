@@ -15,10 +15,10 @@ public:
 
         VolumeData(mia::P3DImage data);
 
-        virtual void detach_gl() override;
+        virtual void detach_gl(QOpenGLFunctions& ogl) override;
 private:
         virtual void do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const override;
-        virtual void do_attach_gl() override;
+        virtual void do_attach_gl(QOpenGLFunctions& ogl) override;
 
         mutable QOpenGLBuffer m_arrayBuf;
         mutable QOpenGLBuffer m_indexBuf;

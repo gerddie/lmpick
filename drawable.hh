@@ -14,10 +14,10 @@ public:
         virtual ~Drawable();
 
         void draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const;
-        void attach_gl();
-        virtual void detach_gl() = 0;
+        void attach_gl(QOpenGLFunctions& ogl);
+        virtual void detach_gl(QOpenGLFunctions& ogl) = 0;
 private:
-        virtual void do_attach_gl() = 0;
+        virtual void do_attach_gl(QOpenGLFunctions& ogl) = 0;
         virtual void do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const = 0;
 
 

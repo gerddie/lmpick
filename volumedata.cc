@@ -1,5 +1,6 @@
 #include "volumedata.hh"
 #include <mia/3d/filter.hh>
+#include <mia/3d/imageio.hh>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLFramebufferObjectFormat>
 #include <QPainter>
@@ -147,7 +148,7 @@ static const unsigned short cube_indices[] = {
 };
 
 
-void VolumeData::do_attach_gl()
+void VolumeData::do_attach_gl(QOpenGLFunctions& ogl)
 {
 
         int error_nr;
@@ -156,16 +157,21 @@ void VolumeData::do_attach_gl()
 
         m_vao.create();
 
-        glGenTextures(1, &m_volume_tex);
-        glBindTexture(GL_TEXTURE_3D, m_volume_tex);
+        ogl.glActiveTexture(GL_TEXTURE0);
+        ogl.glGenTextures(1, &m_volume_tex);
 
-        auto converter = mia::produce_3dimage_filter("convert:repn=float,map=copy");
+
+        auto converter = mia::produce_3dimage_filter("convert:repn=ushort");
         auto pimage = converter->filter(m_image);
-        const mia::C3DFImage& img = dynamic_cast<const mia::C3DFImage&>(*pimage);
-        glTexImage3D (GL_TEXTURE_3D, 0, GL_RED,
+        const mia::C3DUSImage& img = dynamic_cast<const mia::C3DUSImage&>(*pimage);
+        mia::save_image("test_volume.v",pimage);
+
+
+        ogl.glBindTexture(GL_TEXTURE_3D, m_volume_tex);
+        glTexImage3D(GL_TEXTURE_3D, 0, GL_R16UI,
                       m_image->get_size().x, m_image->get_size().y, m_image->get_size().z,
-                      0, GL_RED,
-                      GL_FLOAT, &img(0,0,0));
+                      0, GL_RED_INTEGER,
+                       GL_UNSIGNED_SHORT, &img[0]);
 
 
         error_nr = glGetError(); if (error_nr)  qWarning() << "glTexImage3D " << error_nr;
@@ -188,7 +194,7 @@ void VolumeData::do_attach_gl()
         );
 
         m_arrayBuf.allocate(&vertices[0], 8 * sizeof(PrepVertexData));
-        error_nr = glGetError(); if (error_nr)  qWarning() << "m_arrayBuf.allocate " << error_nr;
+        error_nr = ogl.glGetError(); if (error_nr)  qWarning() << "m_arrayBuf.allocate " << error_nr;
 
         // Transfer index data to VBO 1
         m_indexBuf.bind();
@@ -268,11 +274,14 @@ void VolumeData::do_attach_gl()
         m_volume_program.bind();
         auto spacing_param = m_volume_program.uniformLocation("step_length");
         assert(spacing_param != -1);
-        m_volume_program.setUniformValue(spacing_param, static_cast<float>(1.0f / m_max_coord));
+        float step_length = 1.0f / m_max_coord;
+        qDebug() << "step_length= " << step_length;
 
-        auto iso_value_param = m_volume_program.uniformLocation("step_length");
+        m_volume_program.setUniformValue(spacing_param, step_length);
+
+        auto iso_value_param = m_volume_program.uniformLocation("iso_value");
         assert(iso_value_param != -1);
-        m_volume_program.setUniformValue(iso_value_param, 0.f);
+        m_volume_program.setUniformValue(iso_value_param, 0.5f);
 
         auto vertex_location = m_volume_program.attributeLocation("qt_Vertex");
         if (vertex_location >= 0) {
@@ -291,9 +300,9 @@ void VolumeData::do_attach_gl()
         m_vao_2nd_pass.release();
 }
 
-void VolumeData::detach_gl()
+void VolumeData::detach_gl(QOpenGLFunctions& ogl)
 {
-        glDeleteTextures(1, &m_volume_tex);
+        ogl.glDeleteTextures(1, &m_volume_tex);
         m_arrayBuf.destroy();
         m_indexBuf.destroy();
         m_prep_program.release();
@@ -308,10 +317,10 @@ void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) c
 
         static int index= 0;
 
-        glClearColor(0,0,0,1);
-        glEnable(GL_DEPTH);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
+        ogl.glClearColor(0,0,0,1);
+        ogl.glEnable(GL_DEPTH);
+        ogl.glEnable(GL_CULL_FACE);
+        ogl.glCullFace(GL_BACK);
 
         m_vao.bind();
         m_prep_program.bind();
@@ -329,18 +338,18 @@ void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) c
         QOpenGLFramebufferObject fbo_ray_start(state.viewport, GL_TEXTURE_2D);
         QOpenGLFramebufferObject fbo_ray_end(state.viewport, GL_TEXTURE_2D);
 
-        glDisable(GL_DEPTH);
+        ogl.glDisable(GL_DEPTH);
 
 
         fbo_ray_start.bind();
-        glClearColor(0,0,0.5,1);
+        ogl.glClearColor(0,0,0,1);
         ogl.glClear(GL_COLOR_BUFFER_BIT);
         ogl.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
         fbo_ray_start.release();
 
         glCullFace(GL_FRONT);
         fbo_ray_end.bind();
-        glClearColor(0.5,0,0,1);
+        ogl.glClearColor(0,0,0,1);
         ogl.glClear(GL_COLOR_BUFFER_BIT);
         ogl.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
         fbo_ray_end.release();
@@ -358,36 +367,47 @@ void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) c
         if (!m_volume_program.bind())
             qWarning() << "Unable to bind m_volume_program\n";
 
+
+        // now draw the volume
         ogl.glActiveTexture(GL_TEXTURE0);
+
+        //ogl.glEnable(GL_TEXTURE_3D);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glEnable(GL_TEXTURE_3D);" << error_nr;
+
+        // using an integer valued texture requires this
+        ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glTexParameterf: GL_TEXTURE_*_FILTER: " << error_nr;
+
+        ogl.glBindTexture(GL_TEXTURE_3D, m_volume_tex);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "glBindTexture" << error_nr;
+
+        m_volume_program.setUniformValue(m_voltex_param, 0);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(volume)" << error_nr;
+
+        ogl.glActiveTexture(GL_TEXTURE0 + 1);
         ogl.glBindTexture(GL_TEXTURE_2D, fbo_ray_start.texture());
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glBindTexture (start)" << error_nr;
+        m_volume_program.setUniformValue(m_ray_start_param, 1);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(ray_start)" << error_nr;
 
-        ogl.glActiveTexture(GL_TEXTURE1);
+        ogl.glActiveTexture(GL_TEXTURE0 + 2);
         ogl.glBindTexture(GL_TEXTURE_2D, fbo_ray_end.texture());
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glBindTexture (end)" << error_nr;
+        m_volume_program.setUniformValue(m_ray_end_param, 2);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(ray_end)" << error_nr;
 
 
-
+        //ogl.glEnable(GL_TEXTURE_2D);
         ogl.glDisable(GL_DEPTH_TEST);
         ogl.glDisable(GL_CULL_FACE);
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glDisable(GL_CULL_FACE);" << error_nr;
 
 
-        // now draw the volume
-        if (m_voltex_param > -1) {
-                ogl.glActiveTexture(GL_TEXTURE2);
-                glBindTexture(GL_TEXTURE_3D, m_volume_tex);
-                error_nr = glGetError(); if (error_nr)  qWarning() << "glBindTexture" << error_nr;
-                m_volume_program.setUniformValue(m_voltex_param, 2);
-                error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(volume)" << error_nr;
-        }
-
-        m_volume_program.setUniformValue(m_ray_start_param, 0);
-        error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(ray_start)" << error_nr;
-        m_volume_program.setUniformValue(m_ray_end_param, 1);
-        error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(ray_end)" << error_nr;
-
-
+        auto iso_value_param = m_volume_program.uniformLocation("iso_value");
+        assert(iso_value_param != -1);
+        m_volume_program.setUniformValue(iso_value_param, 0.5f);
 
         ogl.glDisable(GL_CULL_FACE);
         ogl.glDisable(GL_DEPTH_TEST);
@@ -405,7 +425,7 @@ void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) c
         m_arrayBuf_2nd_pass.release();
         m_vao_2nd_pass.release();
         m_volume_program.release();
-
+        ogl.glDisable(GL_TEXTURE_3D);
 
 }
 

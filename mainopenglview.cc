@@ -100,11 +100,11 @@ void MainopenGLView::initializeGL()
 
         auto i = img->begin();
         for (unsigned int z = 0; z < 32; ++z) {
-                float fz = sin (z * M_PI / 32) + 1;
+                float fz = sin (z * M_PI / 31);
                 for (unsigned int y = 0; y < 64; ++y) {
-                        float fy = (sin (2 * y * M_PI / 64) +1) * fz;
+                        float fy = sin (y * M_PI / 63) * fz;
                         for (unsigned int x = 0; x < 32; ++x, ++i)  {
-                                *i = fy * (sin (4 * x * M_PI / 32) +1);
+                                *i = fy * sin (x * M_PI / 31);
                         }
                 }
         }
@@ -171,7 +171,7 @@ RenderingThread::RenderingThread(QWidget *parent):
 RenderingThread::~RenderingThread()
 {
         for (auto d: m_objects)
-                d->detach_gl();
+                d->detach_gl(*this);
 }
 
 void RenderingThread::initialize()
@@ -187,18 +187,18 @@ void RenderingThread::initialize()
 
 
         for (auto d: m_objects)
-                d->attach_gl();
+                d->attach_gl(*this);
 }
 
 void RenderingThread::setVolume(VolumeData::Pointer volume)
 {
         m_volume = volume;
-        m_volume->attach_gl();
+        m_volume->attach_gl(*this);
 }
 
 void RenderingThread::paint()
 {
-        glClearColor(1,1,1,1);
+        glClearColor(0,0,0,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (m_volume)
