@@ -28,7 +28,7 @@ Octaeder::Octaeder():
 {
 }
 
-void Octaeder::do_attach_gl(QOpenGLFunctions& ogl)
+void Octaeder::do_attach_gl(QOpenGLContext& context)
 {
         // Generate 2 VBOs
         assert(m_arrayBuf.create());
@@ -88,14 +88,14 @@ void Octaeder::do_attach_gl(QOpenGLFunctions& ogl)
         m_vao.release();
 }
 
-void Octaeder::detach_gl(QOpenGLFunctions& ogl)
+void Octaeder::detach_gl(QOpenGLContext& context)
 {
         m_arrayBuf.destroy();
         m_indexBuf.destroy();
         m_program.release();
 }
 
-void Octaeder::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const
+void Octaeder::do_draw(const GlobalSceneState& state, QOpenGLContext& context) const
 {
         m_vao.bind();
         auto modelview = state.get_modelview_matrix();
@@ -109,7 +109,7 @@ void Octaeder::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) con
 
 
         // Draw cube geometry using indices from VBO 1
-        ogl.glDrawElements(GL_TRIANGLE_STRIP, 14, GL_UNSIGNED_SHORT, 0);
+        context.functions()->glDrawElements(GL_TRIANGLE_STRIP, 14, GL_UNSIGNED_SHORT, 0);
 
         m_arrayBuf.release();
         m_indexBuf.release();

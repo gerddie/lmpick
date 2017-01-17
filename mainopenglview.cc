@@ -171,7 +171,7 @@ RenderingThread::RenderingThread(QWidget *parent):
 RenderingThread::~RenderingThread()
 {
         for (auto d: m_objects)
-                d->detach_gl(*this);
+                d->detach_gl(*m_context);
 }
 
 void RenderingThread::initialize()
@@ -187,13 +187,15 @@ void RenderingThread::initialize()
 
 
         for (auto d: m_objects)
-                d->attach_gl(*this);
+                d->attach_gl(*m_context);
 }
 
 void RenderingThread::setVolume(VolumeData::Pointer volume)
 {
+        if (m_volume)
+                m_volume->detach_gl(*m_context);
         m_volume = volume;
-        m_volume->attach_gl(*this);
+        m_volume->attach_gl(*m_context);
 }
 
 void RenderingThread::paint()
@@ -202,10 +204,10 @@ void RenderingThread::paint()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (m_volume)
-                m_volume->draw(m_state, *this);
+                m_volume->draw(m_state, *m_context);
         else
                 for (auto d: m_objects)
-                        d->draw(m_state, *this);
+                        d->draw(m_state, *m_context);
 
 
 }

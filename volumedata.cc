@@ -2,9 +2,12 @@
 #include <mia/3d/filter.hh>
 #include <mia/3d/imageio.hh>
 #include <QOpenGLFramebufferObject>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObjectFormat>
 #include <QPainter>
 #include <cassert>
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
 
 VolumeData::VolumeData(mia::P3DImage data):
         m_arrayBuf(QOpenGLBuffer::VertexBuffer),
@@ -28,6 +31,9 @@ VolumeData::VolumeData(mia::P3DImage data):
                 m_max_coord = size.y();
         if (m_max_coord < size.z())
                 m_max_coord = size.z();
+
+        m_gradient_delta = QVector3D(1,1,1)/size;
+
 
         m_scale = size / m_max_coord;
         m_end = 0.5 * m_scale;
@@ -74,6 +80,7 @@ static const unsigned short plain_cube_indices[] = {
         5, 2, 6,
 
         0, 5, 4,
+
         5, 0, 1,
 
         3, 0, 4,
@@ -88,7 +95,9 @@ static const unsigned short plain_cube_indices[] = {
 };
 
 
+
 static const VertexData cube_vertices[] = {
+
         // down
         {-1, -1, -1, 0, 0, -1, 1, 0, 0},
         { 1, -1, -1, 0, 0, -1, 1, 0, 0},
@@ -147,8 +156,26 @@ static const unsigned short cube_indices[] = {
 
 };
 
+struct GetFloat01Picture: public mia::TFilter<mia::C3DFImage> {
 
-void VolumeData::do_attach_gl(QOpenGLFunctions& ogl)
+        template <typename T>
+        mia::C3DFImage operator() (const mia::T3DImage<T>& input)  const {
+                //should test that there are more than one
+                auto mm = std::minmax_element(input.begin(), input.end());
+                float scale = 1.0f /(*mm.second - *mm.first);
+                float shift = *mm.first;
+                std::cerr << "apply: " << scale << " * (x - " << shift << ")";
+
+                mia::C3DFImage result(input.get_size(), input);
+                std::transform(input.begin(), input.end(), result.begin(),
+                               [scale, shift](T x){return (x - shift) * scale;});
+                return result;
+        }
+};
+
+
+
+void VolumeData::do_attach_gl(QOpenGLContext& context)
 {
 
         int error_nr;
@@ -157,24 +184,25 @@ void VolumeData::do_attach_gl(QOpenGLFunctions& ogl)
 
         m_vao.create();
 
-        ogl.glActiveTexture(GL_TEXTURE0);
-        ogl.glGenTextures(1, &m_volume_tex);
+        auto ogl = context.functions();
+
+        ogl->glActiveTexture(GL_TEXTURE0);
+        ogl->glGenTextures(1, &m_volume_tex);
 
 
-        auto converter = mia::produce_3dimage_filter("convert:repn=ushort");
-        auto pimage = converter->filter(m_image);
-        const mia::C3DUSImage& img = dynamic_cast<const mia::C3DUSImage&>(*pimage);
-        mia::save_image("test_volume.v",pimage);
+
+        GetFloat01Picture converter;
+        auto img = mia::filter(converter, *m_image);
+        mia::save_image("test_volume.v", img);
+        ogl->glBindTexture(GL_TEXTURE_3D, m_volume_tex);
+
+        context.extraFunctions()->glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F,
+                                               m_image->get_size().x, m_image->get_size().y, m_image->get_size().z,
+                                               0, GL_RED,
+                                               GL_FLOAT, &img[0]);
 
 
-        ogl.glBindTexture(GL_TEXTURE_3D, m_volume_tex);
-        glTexImage3D(GL_TEXTURE_3D, 0, GL_R16UI,
-                      m_image->get_size().x, m_image->get_size().y, m_image->get_size().z,
-                      0, GL_RED_INTEGER,
-                       GL_UNSIGNED_SHORT, &img[0]);
-
-
-        error_nr = glGetError(); if (error_nr)  qWarning() << "glTexImage3D " << error_nr;
+        error_nr = ogl->glGetError(); if (error_nr)  qWarning() << "glTexImage3D " << error_nr;
 
         assert(m_arrayBuf.create());
         assert(m_indexBuf.create());
@@ -194,7 +222,7 @@ void VolumeData::do_attach_gl(QOpenGLFunctions& ogl)
         );
 
         m_arrayBuf.allocate(&vertices[0], 8 * sizeof(PrepVertexData));
-        error_nr = ogl.glGetError(); if (error_nr)  qWarning() << "m_arrayBuf.allocate " << error_nr;
+        error_nr = ogl->glGetError(); if (error_nr)  qWarning() << "m_arrayBuf.allocate " << error_nr;
 
         // Transfer index data to VBO 1
         m_indexBuf.bind();
@@ -216,7 +244,7 @@ void VolumeData::do_attach_gl(QOpenGLFunctions& ogl)
                 qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
 
         if (!m_volume_program.link())
-                qWarning() << "Error linking m_view_program', view will be clobbered\n";;
+                qWarning() << "Error linking m_view_program', view will be clobbered\n";
 
 
         m_voltex_param = m_volume_program.uniformLocation("volume");
@@ -277,8 +305,7 @@ void VolumeData::do_attach_gl(QOpenGLFunctions& ogl)
         float step_length = 1.0f / m_max_coord;
         qDebug() << "step_length= " << step_length;
 
-        m_volume_program.setUniformValue(spacing_param, step_length);
-
+        m_volume_program.setUniformValue(spacing_param, m_gradient_delta);
         auto iso_value_param = m_volume_program.uniformLocation("iso_value");
         assert(iso_value_param != -1);
         m_volume_program.setUniformValue(iso_value_param, 0.5f);
@@ -300,22 +327,24 @@ void VolumeData::do_attach_gl(QOpenGLFunctions& ogl)
         m_vao_2nd_pass.release();
 }
 
-void VolumeData::detach_gl(QOpenGLFunctions& ogl)
+void VolumeData::detach_gl(QOpenGLContext& context)
 {
-        ogl.glDeleteTextures(1, &m_volume_tex);
+        context.functions()->glDeleteTextures(1, &m_volume_tex);
         m_arrayBuf.destroy();
         m_indexBuf.destroy();
         m_prep_program.release();
 }
 
 
-void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const
+void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLContext& context) const
 {
         int  error_nr;
 
         auto modelview = state.get_modelview_matrix();
 
         static int index= 0;
+
+        auto& ogl = *context.functions();
 
         ogl.glClearColor(0,0,0,1);
         ogl.glEnable(GL_DEPTH);
@@ -376,7 +405,7 @@ void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) c
 
         // using an integer valued texture requires this
         ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glTexParameterf: GL_TEXTURE_*_FILTER: " << error_nr;
 
@@ -403,7 +432,6 @@ void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) c
         ogl.glDisable(GL_DEPTH_TEST);
         ogl.glDisable(GL_CULL_FACE);
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glDisable(GL_CULL_FACE);" << error_nr;
-
 
         auto iso_value_param = m_volume_program.uniformLocation("iso_value");
         assert(iso_value_param != -1);

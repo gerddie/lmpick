@@ -15,10 +15,10 @@ public:
 
         VolumeData(mia::P3DImage data);
 
-        virtual void detach_gl(QOpenGLFunctions& ogl) override;
+        virtual void detach_gl(QOpenGLContext& context) override;
 private:
-        virtual void do_draw(const GlobalSceneState& state, QOpenGLFunctions& ogl) const override;
-        virtual void do_attach_gl(QOpenGLFunctions& ogl) override;
+        virtual void do_draw(const GlobalSceneState& state, QOpenGLContext& context) const override;
+        virtual void do_attach_gl(QOpenGLContext& context) override;
 
         mutable QOpenGLBuffer m_arrayBuf;
         mutable QOpenGLBuffer m_indexBuf;
@@ -41,7 +41,7 @@ private:
         GLint m_voltex_param;
         GLint m_ray_start_param;
         GLint m_ray_end_param;
-
+        QVector3D m_gradient_delta;
 };
 
 #endif // VOLUMEDATA_HH
