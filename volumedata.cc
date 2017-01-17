@@ -308,7 +308,8 @@ void VolumeData::do_attach_gl(QOpenGLContext& context)
         m_volume_program.setUniformValue(spacing_param, m_gradient_delta);
         auto iso_value_param = m_volume_program.uniformLocation("iso_value");
         assert(iso_value_param != -1);
-        m_volume_program.setUniformValue(iso_value_param, 0.5f);
+        m_volume_program.setUniformValue(iso_value_param, 0.3f);
+
 
         auto vertex_location = m_volume_program.attributeLocation("qt_Vertex");
         if (vertex_location >= 0) {
@@ -441,6 +442,11 @@ void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLContext& context)
         ogl.glDisable(GL_DEPTH_TEST);
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glDisable(GL_DEPTH_TEST);" << error_nr;
 
+        auto light_source_param = m_volume_program.uniformLocation("light_source");
+        m_volume_program.setUniformValue(light_source_param, state.light_source.normalized());
+
+        auto mv_param = m_volume_program.uniformLocation("qt_mv");
+        m_volume_program.setUniformValue(mv_param, modelview);
 
         m_vao_2nd_pass.bind();
         m_arrayBuf_2nd_pass.bind();
