@@ -9,7 +9,40 @@
 #define GL_GLEXT_PROTOTYPES 1
 #include <GL/gl.h>
 
-VolumeData::VolumeData(mia::P3DImage data):
+struct VolumeDataImpl {
+
+        VolumeDataImpl(mia::P3DImage data);
+        ~VolumeDataImpl();
+
+        void detach_gl(QOpenGLContext& context);
+        void do_draw(const GlobalSceneState& state, QOpenGLContext& context);
+        void do_attach_gl(QOpenGLContext& context);
+
+        QOpenGLBuffer m_arrayBuf;
+        QOpenGLBuffer m_indexBuf;
+
+        QOpenGLShaderProgram m_prep_program;
+        QOpenGLShaderProgram m_volume_program;
+        GLuint m_volume_tex;
+
+        mia::P3DImage m_image;
+        QVector3D m_start;
+        QVector3D m_end;
+        QVector3D m_scale;
+        float m_max_coord;
+        QOpenGLVertexArrayObject m_vao;
+
+        QOpenGLBuffer m_arrayBuf_2nd_pass;
+        QOpenGLBuffer m_indexBuf_2nd_pass;
+        QOpenGLVertexArrayObject m_vao_2nd_pass;
+
+        GLint m_voltex_param;
+        GLint m_ray_start_param;
+        GLint m_ray_end_param;
+        QVector3D m_gradient_delta;
+};
+
+VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
         m_arrayBuf(QOpenGLBuffer::VertexBuffer),
         m_indexBuf(QOpenGLBuffer::IndexBuffer),
         m_volume_tex(0),
@@ -20,8 +53,6 @@ VolumeData::VolumeData(mia::P3DImage data):
         m_ray_start_param(-1),
         m_ray_end_param(-1)
 {
-        assert(m_image);
-
         auto s = m_image->get_size();
         auto v = m_image->get_voxel_size();
 
@@ -38,8 +69,39 @@ VolumeData::VolumeData(mia::P3DImage data):
         m_scale = size / m_max_coord;
         m_end = 0.5 * m_scale;
         m_start = -m_end;
+}
+
+VolumeDataImpl::~VolumeDataImpl()
+{
 
 }
+
+VolumeData::VolumeData(mia::P3DImage data)
+{
+        assert(data);
+        impl = new VolumeDataImpl(data);
+}
+
+VolumeData::~VolumeData()
+{
+        delete impl;
+}
+
+void VolumeData::detach_gl(QOpenGLContext& context)
+{
+        impl->detach_gl(context);
+}
+
+void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLContext& context) const
+{
+        impl->do_draw(state, context);
+}
+void VolumeData::do_attach_gl(QOpenGLContext& context)
+{
+        impl->do_attach_gl(context);
+}
+
+
 
 struct VertexData
 {
@@ -175,7 +237,7 @@ struct GetFloat01Picture: public mia::TFilter<mia::C3DFImage> {
 
 
 
-void VolumeData::do_attach_gl(QOpenGLContext& context)
+void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
 {
 
         int error_nr;
@@ -328,7 +390,7 @@ void VolumeData::do_attach_gl(QOpenGLContext& context)
         m_vao_2nd_pass.release();
 }
 
-void VolumeData::detach_gl(QOpenGLContext& context)
+void VolumeDataImpl::detach_gl(QOpenGLContext& context)
 {
         context.functions()->glDeleteTextures(1, &m_volume_tex);
         m_arrayBuf.destroy();
@@ -337,7 +399,7 @@ void VolumeData::detach_gl(QOpenGLContext& context)
 }
 
 
-void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLContext& context) const
+void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& context)
 {
         int  error_nr;
 
