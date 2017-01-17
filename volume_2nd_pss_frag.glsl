@@ -1,4 +1,4 @@
-#version 330
+#version 120
 uniform sampler3D volume;
 uniform sampler2D ray_start;
 uniform sampler2D ray_end;
@@ -18,16 +18,18 @@ void main(void)
 
         vec3 step = vec3(step_length, step_length, step_length);
 
-        if (dir.z <= step_length)
+        if (abs(dir.z) < step_length) {
                 gl_FragColor = vec4(0,0,1,1);
+		return; 
+	}
 
         vec3 x = start.xyz;
 
         for (int a = 0; a < 1024; ++a, x += step) {
                 vec4 color = texture3D(volume, x);
-                if (color.a > iso_value) {
+                if (color.a >= iso_value) {
                         // evaluate gradient and draw
-                        gl_FragColor = start;
+                        gl_FragColor = vec4(1,1,0,1);
                         return;
                 }
         }

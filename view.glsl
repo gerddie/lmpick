@@ -1,4 +1,4 @@
-#version 330
+#version 120
 attribute highp vec3 qt_Vertex;
 attribute highp vec3 qt_Color;
 attribute highp vec3 qt_Normal;

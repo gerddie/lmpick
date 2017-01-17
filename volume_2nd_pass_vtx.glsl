@@ -1,4 +1,4 @@
-#version 330
+#version 120
 attribute vec2 qt_Vertex;
 varying vec2 tex2dcoord;
 

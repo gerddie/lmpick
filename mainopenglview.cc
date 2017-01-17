@@ -100,11 +100,11 @@ void MainopenGLView::initializeGL()
 
         auto i = img->begin();
         for (unsigned int z = 0; z < 32; ++z) {
-                float fz = sin (z * M_PI / 32);
+                float fz = sin (z * M_PI / 32) + 1;
                 for (unsigned int y = 0; y < 64; ++y) {
-                        float fy = sin (2 * y * M_PI / 64) * fz;
+                        float fy = (sin (2 * y * M_PI / 64) +1) * fz;
                         for (unsigned int x = 0; x < 32; ++x, ++i)  {
-                                *i = fy * sin (4 * x * M_PI / 32) * fz;
+                                *i = fy * (sin (4 * x * M_PI / 32) +1);
                         }
                 }
         }

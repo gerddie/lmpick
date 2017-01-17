@@ -1,4 +1,4 @@
-#version 330
+#version 120
 attribute highp vec4 qt_Vertex;
 attribute highp vec4 qt_Texture;
 uniform highp mat4 qt_mvp;
