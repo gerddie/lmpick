@@ -1,4 +1,4 @@
-#version 130
+#version 120
 uniform sampler3D volume;
 uniform sampler2D ray_start;
 uniform sampler2D ray_end;

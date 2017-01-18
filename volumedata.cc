@@ -4,10 +4,10 @@
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObjectFormat>
+#include <QOpenGLTexture>
+#include <QOpenGLShaderProgram>
 #include <QPainter>
 #include <cassert>
-#define GL_GLEXT_PROTOTYPES 1
-#include <GL/gl.h>
 
 struct VolumeDataImpl {
 
@@ -23,7 +23,8 @@ struct VolumeDataImpl {
 
         QOpenGLShaderProgram m_prep_program;
         QOpenGLShaderProgram m_volume_program;
-        GLuint m_volume_tex;
+
+        QOpenGLTexture m_volume_tex;
 
         mia::P3DImage m_image;
         QVector3D m_start;
@@ -45,7 +46,7 @@ struct VolumeDataImpl {
 VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
         m_arrayBuf(QOpenGLBuffer::VertexBuffer),
         m_indexBuf(QOpenGLBuffer::IndexBuffer),
-        m_volume_tex(0),
+        m_volume_tex(QOpenGLTexture::Target3D),
         m_image(data),
         m_arrayBuf_2nd_pass(QOpenGLBuffer::VertexBuffer),
         m_indexBuf_2nd_pass(QOpenGLBuffer::IndexBuffer),
@@ -248,21 +249,21 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
 
         auto ogl = context.functions();
 
-        ogl->glActiveTexture(GL_TEXTURE0);
-        ogl->glGenTextures(1, &m_volume_tex);
-
-
 
         GetFloat01Picture converter;
         auto img = mia::filter(converter, *m_image);
         mia::save_image("test_volume.v", img);
-        ogl->glBindTexture(GL_TEXTURE_3D, m_volume_tex);
 
-        context.extraFunctions()->glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F,
-                                               m_image->get_size().x, m_image->get_size().y, m_image->get_size().z,
-                                               0, GL_RED,
-                                               GL_FLOAT, &img[0]);
+        ogl->glActiveTexture(GL_TEXTURE0);
+        m_volume_tex.setFormat(QOpenGLTexture::R32F);
+        m_volume_tex.setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Linear);
+        m_volume_tex.setSize(m_image->get_size().x, m_image->get_size().y, m_image->get_size().z);
 
+        m_volume_tex.allocateStorage();
+        error_nr = glGetError(); if (error_nr)  qWarning() << "allocateStorage" << error_nr;
+
+        m_volume_tex.setData(0, 0, QOpenGLTexture::Red, QOpenGLTexture::Float32, &img[0]);
+        error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_tex.setData" << error_nr;
 
         error_nr = ogl->glGetError(); if (error_nr)  qWarning() << "glTexImage3D " << error_nr;
 
@@ -392,7 +393,7 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
 
 void VolumeDataImpl::detach_gl(QOpenGLContext& context)
 {
-        context.functions()->glDeleteTextures(1, &m_volume_tex);
+        m_volume_tex.destroy();
         m_arrayBuf.destroy();
         m_indexBuf.destroy();
         m_prep_program.release();
@@ -472,7 +473,7 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
 
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glTexParameterf: GL_TEXTURE_*_FILTER: " << error_nr;
 
-        ogl.glBindTexture(GL_TEXTURE_3D, m_volume_tex);
+        m_volume_tex.bind();
         error_nr = glGetError(); if (error_nr)  qWarning() << "glBindTexture" << error_nr;
 
         m_volume_program.setUniformValue(m_voltex_param, 0);

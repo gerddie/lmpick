@@ -3,10 +3,8 @@
 
 #include "drawable.hh"
 #include <mia/3d/image.hh>
-#include <QOpenGLTexture>
 #include <QOpenGLBuffer>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLTexture>
+
 
 class VolumeData : public Drawable
 {
