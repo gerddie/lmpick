@@ -31,10 +31,14 @@ void main(void)
         vec3 step = dir / n;
 
         bool hit = false;
+        float old_iso = -1;
         for (int a = 0; a < n ; ++a)  {
                 vec3 x = start.xyz + a * step;
                 vec4 color = texture3D(volume, x);
                 if (color.r > iso_value) {
+                        float rel = (iso_value - old_iso) / (color.r - old_iso);
+                        float f = a - 1 + rel;
+                        x = start.xyz +  f * step;
                         float cx = (texture3D(volume, vec3(x.x - step_length.x, x.y, x.z)).r -
                                     texture3D(volume, vec3(x.x + step_length.x, x.y, x.z)).r)/ step_length.x;
                         float cy = (texture3D(volume, vec3(x.x, x.y - step_length.y, x.z)).r -
@@ -45,11 +49,13 @@ void main(void)
 
                         vec4 no = qt_mv * vec4(normal.x, normal.y, normal.z, 0);
                         float li = -dot(no.xyz, light_source);
+                        float d = 1.0 / (1.0/start.w + f * (1.0/end.w - 1.0/start.w)  / n);
                         gl_FragColor = vec4(li, li, li, 1);
-                        //gl_FragDepth = 1.0/start.w + a * (1.0/end.w - 1.0/start.w)  / n;
+                        gl_FragDepth = d;
                         hit = true;
                         break;
-                }
+                }else
+                        old_iso = color.r;
         }
         if (!hit)
                 discard;

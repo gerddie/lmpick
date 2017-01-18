@@ -292,7 +292,7 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         if (!m_prep_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/view_cube.glsl"))
                 qWarning() << "Error compiling ':/shaders/view_cube.glsl', view will be clobbered\n";
 
-        if (!m_prep_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/basic_frag.glsl"))
+        if (!m_prep_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_1st_pass_frag.glsl"))
                 qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
 
         if (!m_prep_program.link())
@@ -420,21 +420,22 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_prep_program.setUniformValue("qt_mvp", state.projection * modelview);
         m_prep_program.setUniformValue("qt_mv", modelview);
 
-      //  ogl.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
-
-        QOpenGLFramebufferObject fbo_ray_start(state.viewport, GL_TEXTURE_2D);
-        QOpenGLFramebufferObject fbo_ray_end(state.viewport, GL_TEXTURE_2D);
+        QOpenGLFramebufferObjectFormat fbformat;
+        fbformat.setTextureTarget(GL_TEXTURE_2D);
+        fbformat.setInternalTextureFormat(GL_RGBA32F);
+        QOpenGLFramebufferObject fbo_ray_start(state.viewport, fbformat);
+        QOpenGLFramebufferObject fbo_ray_end(state.viewport, fbformat);
 
 
         fbo_ray_start.bind();
-        ogl.glClearColor(0,0,0,1);
+        ogl.glClearColor(0,0,0,0);
         ogl.glClear(GL_COLOR_BUFFER_BIT);
         ogl.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
         fbo_ray_start.release();
 
         glCullFace(GL_FRONT);
         fbo_ray_end.bind();
-        ogl.glClearColor(0,0,0,1);
+        ogl.glClearColor(0,0,0,0);
         ogl.glClear(GL_COLOR_BUFFER_BIT);
         ogl.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
         fbo_ray_end.release();
@@ -494,7 +495,7 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         auto iso_value_param = m_volume_program.uniformLocation("iso_value");
         assert(iso_value_param != -1);
         m_volume_program.setUniformValue(iso_value_param, 0.3f);
-        error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glDisable(GL_DEPTH_TEST);" << error_nr;
+
 
         auto light_source_param = m_volume_program.uniformLocation("light_source");
         m_volume_program.setUniformValue(light_source_param, state.light_source);
@@ -513,7 +514,7 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_arrayBuf_2nd_pass.release();
         m_vao_2nd_pass.release();
         m_volume_program.release();
-        ogl.glDisable(GL_TEXTURE_3D);
+
 
 }
 
