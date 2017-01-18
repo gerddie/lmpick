@@ -251,9 +251,7 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
 
 
         GetFloat01Picture converter;
-        auto img = mia::filter(converter, *m_image);
-        mia::save_image("test_volume.v", img);
-
+        const auto img = mia::filter(converter, *m_image);
         ogl->glActiveTexture(GL_TEXTURE0);
         m_volume_tex.setFormat(QOpenGLTexture::R32F);
         m_volume_tex.setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Linear);
