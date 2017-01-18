@@ -343,8 +343,7 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
 
         error_nr = glGetError();
         if (error_nr)
-                qWarning() << "Some error Error " << error_nr; // gl_FragColor = vec4(1,1,0,1);
-
+                qWarning() << "Some error Error " << error_nr;
         m_vao_2nd_pass.create();
         m_vao_2nd_pass.bind();
 
@@ -409,7 +408,7 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         auto& ogl = *context.functions();
 
         ogl.glClearColor(0,0,0,1);
-        ogl.glEnable(GL_DEPTH);
+        ogl.glEnable(GL_DEPTH_TEST);
         ogl.glEnable(GL_CULL_FACE);
         ogl.glCullFace(GL_BACK);
 
@@ -423,13 +422,8 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
 
       //  ogl.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
 
-        QOpenGLFramebufferObjectFormat fboformat;
-        fboformat.setTextureTarget(GL_TEXTURE_2D);
-        fboformat.setInternalTextureFormat(GL_FLOAT);
         QOpenGLFramebufferObject fbo_ray_start(state.viewport, GL_TEXTURE_2D);
         QOpenGLFramebufferObject fbo_ray_end(state.viewport, GL_TEXTURE_2D);
-
-        ogl.glDisable(GL_DEPTH);
 
 
         fbo_ray_start.bind();
@@ -455,6 +449,9 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_vao.release();
         m_prep_program.release();
 
+// Second pass
+        glDepthFunc(GL_ALWAYS);
+
         if (!m_volume_program.bind())
             qWarning() << "Unable to bind m_volume_program\n";
 
@@ -477,11 +474,13 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_volume_program.setUniformValue(m_voltex_param, 0);
         error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(volume)" << error_nr;
 
+
         ogl.glActiveTexture(GL_TEXTURE0 + 1);
         ogl.glBindTexture(GL_TEXTURE_2D, fbo_ray_start.texture());
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glBindTexture (start)" << error_nr;
         m_volume_program.setUniformValue(m_ray_start_param, 1);
         error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(ray_start)" << error_nr;
+
 
         ogl.glActiveTexture(GL_TEXTURE0 + 2);
         ogl.glBindTexture(GL_TEXTURE_2D, fbo_ray_end.texture());
@@ -489,18 +488,12 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_volume_program.setUniformValue(m_ray_end_param, 2);
         error_nr = glGetError(); if (error_nr)  qWarning() << "m_volume_program.setUniformValue(ray_end)" << error_nr;
 
-
-        //ogl.glEnable(GL_TEXTURE_2D);
-        ogl.glDisable(GL_DEPTH_TEST);
         ogl.glDisable(GL_CULL_FACE);
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glDisable(GL_CULL_FACE);" << error_nr;
 
         auto iso_value_param = m_volume_program.uniformLocation("iso_value");
         assert(iso_value_param != -1);
         m_volume_program.setUniformValue(iso_value_param, 0.3f);
-
-        ogl.glDisable(GL_CULL_FACE);
-        ogl.glDisable(GL_DEPTH_TEST);
         error_nr = glGetError(); if (error_nr)  qWarning() << "ogl.glDisable(GL_DEPTH_TEST);" << error_nr;
 
         auto light_source_param = m_volume_program.uniformLocation("light_source");

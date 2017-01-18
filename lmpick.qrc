@@ -15,5 +15,6 @@
         <file>volume_frament.glsl</file>
         <file>volume_2nd_pass_vtx.glsl</file>
         <file>volume_2nd_pss_frag.glsl</file>
+        <file>volume_1st_pass_frag.glsl</file>
     </qresource>
 </RCC>

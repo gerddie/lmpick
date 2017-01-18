@@ -3,7 +3,7 @@
 GlobalSceneState::GlobalSceneState():
         camera_location(0,0,-550),
         rotation_center(0, 0, 0),
-        light_source(1,1,1),
+        light_source(-1,-1,-20),
         rotation(1,0,0,0),
         zoom(1.0),
         viewport(0,0)

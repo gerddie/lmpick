@@ -48,7 +48,8 @@ DISTFILES += \
     volume_frament.glsl \
     view_cube.glsl \
     volume_2nd_pass_vtx.glsl \
-    volume_2nd_pss_frag.glsl
+    volume_2nd_pss_frag.glsl \
+    volume_1st_pass_frag.glsl
 
 RESOURCES += \
     lmpick.qrc

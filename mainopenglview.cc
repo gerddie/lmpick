@@ -95,7 +95,7 @@ MainopenGLView::~MainopenGLView()
 void MainopenGLView::initializeGL()
 {
         m_rendering->initialize();
-#ifndef NDEBUG
+#if 1
         auto img = new mia::C3DFImage(mia::C3DBounds(128,256,128));
 
         auto i = img->begin();
@@ -182,11 +182,7 @@ void RenderingThread::initialize()
         qDebug() << "OpenGL: " << (char*)glGetString(GL_VERSION);
 
 
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-
-
-        for (auto d: m_objects)
+                for (auto d: m_objects)
                 d->attach_gl(*m_context);
 }
 
@@ -200,14 +196,18 @@ void RenderingThread::setVolume(VolumeData::Pointer volume)
 
 void RenderingThread::paint()
 {
-        glClearColor(0,0,0,1);
+        glClearColor(0.1,0.1,0.1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
 
         if (m_volume)
                 m_volume->draw(m_state, *m_context);
-        else
-                for (auto d: m_objects)
-                        d->draw(m_state, *m_context);
+
+        for (auto d: m_objects)
+                d->draw(m_state, *m_context);
 
 
 }
@@ -278,12 +278,14 @@ bool RenderingThread::mouse_wheel(QWheelEvent *ev)
 {
         auto delta = ev->angleDelta();
 
+        // Todo: make the boundaries and the change factor
+        // a configurable option
         if (delta.y() < 0) {
                 if (m_state.zoom < 10)
-                        m_state.zoom *= (-1.05 * delta.y()) / 120.0;
+                        m_state.zoom *= 1.05;
         }else if (delta.y() > 0) {
-                if (m_state.zoom > 0.1)
-                        m_state.zoom *= (0.9 * delta.y()) / 120.0;
+                if (m_state.zoom > 0.2)
+                        m_state.zoom *= 0.95;
         }else
                 return false;
 

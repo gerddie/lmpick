@@ -9,12 +9,12 @@ struct VertexData
 
 
 static const VertexData vertices[] = {
-        { 1, 0, 0, /**/ 1, 0, 0, /**/1, 0, 0},
-        { 0, 1, 0, /**/ 0, 1, 0, /**/1, 0.5, 0},
-        { 0, 0, 1, /**/ 0, 0, 1, /**/1, 0, 0.5},
-        {-1, 0, 0, /**/-1, 0, 0, /**/0, 0, 1},
-        { 0,-1, 0, /**/ 0,-1, 0, /**/0, 0.5, 1},
-        { 0, 0,-1, /**/ 0, 0,-1, /**/0.5, 0, 1}
+        { .8, 0, 0, /**/ 1, 0, 0, /**/1, 0, 0},
+        { 0, .8, 0, /**/ 0, 1, 0, /**/1, 0.5, 0},
+        { 0, 0, .8, /**/ 0, 0, 1, /**/1, 0, 0.5},
+        {-.8, 0, 0, /**/-1, 0, 0, /**/0, 0, 1},
+        { 0,-.8, 0, /**/ 0,-1, 0, /**/0, 0.5, 1},
+        { 0, 0,-.8, /**/ 0, 0,-1, /**/0.5, 0, 1}
 };
 
 static const unsigned short indices[] = {
@@ -97,15 +97,25 @@ void Octaeder::detach_gl(QOpenGLContext& context)
 
 void Octaeder::do_draw(const GlobalSceneState& state, QOpenGLContext& context) const
 {
+        auto& ogl = *context.functions();
         m_vao.bind();
         auto modelview = state.get_modelview_matrix();
-        m_program.setUniformValue("qt_mvp", state.projection * modelview);
-        m_program.setUniformValue("qt_mv", modelview);
-        m_program.setUniformValue("qt_LightDirection", state.light_source);
 
         m_program.bind();
         m_arrayBuf.bind();
         m_indexBuf.bind();
+
+        m_program.setUniformValue("qt_mvp", state.projection * modelview);
+        m_program.setUniformValue("qt_mv", modelview);
+        m_program.setUniformValue("qt_LightDirection", state.light_source);
+
+        ogl.glEnable(GL_DEPTH_TEST);
+        ogl.glDepthFunc(GL_LESS);
+
+        ogl.glEnable(GL_CULL_FACE);
+        ogl.glCullFace(GL_BACK);
+
+
 
 
         // Draw cube geometry using indices from VBO 1
