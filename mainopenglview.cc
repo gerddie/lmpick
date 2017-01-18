@@ -236,19 +236,15 @@ void RenderingThread::update_rotation(QMouseEvent *ev)
 
 bool RenderingThread::mouse_press(QMouseEvent *ev)
 {
-        qDebug() << "Mouse press " << ev->button();
         switch (ev->button()) {
         case Qt::LeftButton:{
 
-                qDebug() << "LeftButton";
                 switch (ev->type()) {
                 case QEvent::MouseButtonPress:
-                        qDebug() << "  down";
                         m_mouse1_is_down = true;
                         m_mouse_old_position = ev->localPos();
                         break;
                 case QEvent::MouseButtonRelease:
-                        qDebug() << "   up";
                         if (!m_mouse1_is_down)
                                 return false;
                         m_mouse1_is_down = false;
