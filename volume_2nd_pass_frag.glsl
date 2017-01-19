@@ -61,6 +61,7 @@ uniform mat4 qt_mv;
 
 varying vec2 tex2dcoord;
 
+
 void main(void)
 {
         // obtain start and end position of the ray
@@ -112,7 +113,11 @@ void main(void)
                         float li = -dot(normal, light_source.xyz);
 
                         // todo: add a base color here
-                        gl_FragColor = vec4(li,li,li, 1);
+                        gl_FragData[0] = vec4(li,li,li, 1);
+
+                        // output texture coordinate to second render target
+                        // if attached
+                        gl_FragData[1] = vec4(x.xyz, 1);
 
                         // evaluate the output z position (note that these are stored as
                         // inverses of the actual values)

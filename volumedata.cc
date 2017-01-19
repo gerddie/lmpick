@@ -20,8 +20,9 @@
  */
 
 #include "volumedata.hh"
-#include <mia/3d/filter.hh>
+#include <mia/core/filter.hh>
 #include <mia/3d/imageio.hh>
+#include <mia/2d/rgbimageio.hh>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObjectFormat>
@@ -225,6 +226,7 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
                              return r;}
         );
 
+
         m_arrayBuf.allocate(&vertices[0], 8 * sizeof(PrepVertexData));
         OGL_ERRORTEST("m_arrayBuf.allocate ");
 
@@ -396,7 +398,46 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_arrayBuf_2nd_pass.bind();
         m_indexBuf_2nd_pass.bind();
 
+        auto glex = context.extraFunctions();
+        // get number of attached FFBOs of current output
+        int current_fbo = context.defaultFramebufferObject();
+        GLuint space_coord_rb;
+        if (current_fbo) {
+
+                // todo: attach second color buffer to target FBO
+
+
+
+
+                glex->glGenRenderbuffers(1, &space_coord_rb);
+                glex->glBindRenderbuffer(GL_RENDERBUFFER, space_coord_rb);
+
+                glex->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, state.viewport.width(), state.viewport.height());
+
+                glex->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
+                                                GL_RENDERBUFFER, space_coord_rb);
+
+        }
+
         ogl.glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, 0);
+
+        if (current_fbo) {
+                // select the current
+                mia::CRGB2DImage coord(mia::C2DBounds(state.viewport.width(), state.viewport.height()));
+                glex->glReadBuffer(GL_COLOR_ATTACHMENT1);
+
+
+                ogl.glFinish();
+                ogl.glReadPixels(0,0,state.viewport.width(), state.viewport.height(), GL_RGB, GL_UNSIGNED_BYTE, coord.pixel());
+                qDebug() << "glReadPixels(GL_COLOR_ATTACHMENT1):" << glGetError();
+                mia::save_image("text.png", coord);
+
+                // detach the render buffer
+                glex->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
+                                                GL_RENDERBUFFER, 0);
+                // get the values back and
+                glex->glDeleteRenderbuffers(1, &space_coord_rb);
+        }
 
         m_indexBuf_2nd_pass.release();
         m_arrayBuf_2nd_pass.release();
