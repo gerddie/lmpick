@@ -398,6 +398,8 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_arrayBuf_2nd_pass.bind();
         m_indexBuf_2nd_pass.bind();
 
+
+        // consider putting this all into its own FBO
         auto glex = context.extraFunctions();
 
         // get FBO of current output
