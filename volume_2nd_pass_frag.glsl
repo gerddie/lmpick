@@ -108,13 +108,15 @@ void main(void)
                                     texture3D(volume, vec3(x.x, x.y, x.z + step_length.z)).r)/ step_length.z;
                         vec3 normal = normalize(vec3(cx, cy, cz));
 
+                        // evaaluate the light inetensity
                         float li = -dot(normal, light_source.xyz);
+
+                        // todo: add a base color here
                         gl_FragColor = vec4(li,li,li, 1);
 
                         // evaluate the output z position (note that these are stored as
-                        // inverses of the actual values
+                        // inverses of the actual values)
                         gl_FragDepth = 1.0 / (1.0/start.w + f * (1.0/end.w - 1.0/start.w)  / n);
-
 
                         // exit the loop and indicate that a pixel was drawn
                         hit = true;
