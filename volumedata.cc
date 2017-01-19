@@ -399,43 +399,55 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_indexBuf_2nd_pass.bind();
 
         auto glex = context.extraFunctions();
-        // get number of attached FFBOs of current output
+
+        // get FBO of current output
         int current_fbo = context.defaultFramebufferObject();
         GLuint space_coord_rb;
+
+        // if this is really an FBO (in QT it should be) then do the thing
         if (current_fbo) {
 
-                // todo: attach second color buffer to target FBO
-
-
-
-
+                // attach a new renderbuffer for writing the texture coordinates
                 glex->glGenRenderbuffers(1, &space_coord_rb);
                 glex->glBindRenderbuffer(GL_RENDERBUFFER, space_coord_rb);
-
                 glex->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, state.viewport.width(), state.viewport.height());
-
                 glex->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
                                                 GL_RENDERBUFFER, space_coord_rb);
 
+
+                // first set the second buffer to write to and clear it
+                GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+                glex->glDrawBuffers(1, &buffers[1]);
+
+                // then enable both buffers to write to
+                glClear(GL_COLOR_BUFFER_BIT);
+                glex->glDrawBuffers(2, buffers);
+        }else{
+                qWarning() << "Not rendering to FBO";
         }
 
+        // render the volume data
         ogl.glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, 0);
 
+        // if we were drwaing to a FBO, we have the render buffer with the
+        // texture coordinates
         if (current_fbo) {
-                // select the current
-                mia::CRGB2DImage coord(mia::C2DBounds(state.viewport.width(), state.viewport.height()));
+
+                // grap the texture coordinates and write them out for debuggung
                 glex->glReadBuffer(GL_COLOR_ATTACHMENT1);
+                mia::CRGB2DImage coord(mia::C2DBounds(state.viewport.width(), state.viewport.height()));
 
-
+                // finish rendering before reading back
+                // this is no high-speed game, we can wait for glReadPixles
                 ogl.glFinish();
                 ogl.glReadPixels(0,0,state.viewport.width(), state.viewport.height(), GL_RGB, GL_UNSIGNED_BYTE, coord.pixel());
-                qDebug() << "glReadPixels(GL_COLOR_ATTACHMENT1):" << glGetError();
+
+                // save the texture coordinate image for debugging
                 mia::save_image("text.png", coord);
 
-                // detach the render buffer
+                // detach and release the render buffer
                 glex->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
                                                 GL_RENDERBUFFER, 0);
-                // get the values back and
                 glex->glDeleteRenderbuffers(1, &space_coord_rb);
         }
 
