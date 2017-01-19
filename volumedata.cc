@@ -206,8 +206,8 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         OGL_ERRORTEST("m_volume_tex.setData");
 
         // set the interpolation mode
-        ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        ogl->glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        ogl->glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         m_arrayBuf.create();
         m_indexBuf.create();
@@ -384,17 +384,12 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         ogl.glBindTexture(GL_TEXTURE_2D, fbo_ray_end.texture());
         m_volume_program.setUniformValue(m_ray_end_param, 2);
 
-
         // set iso-value; todo: use changable param
         m_volume_program.setUniformValue(m_iso_value_param, 0.3f);
 
-        // set light source; todo: correct for current view matrix
+        // set corrected light source
         auto light_source_param = m_volume_program.uniformLocation("light_source");
-        m_volume_program.setUniformValue(light_source_param, state.light_source);
-
-        // send in model-view matrix (can be removed, once light directio is corrected)
-        auto mv_param = m_volume_program.uniformLocation("qt_mv");
-        m_volume_program.setUniformValue(mv_param, modelview);
+        m_volume_program.setUniformValue(light_source_param,  modelview.transposed() * state.light_source);
 
         // bind buffers and draw
         m_vao_2nd_pass.bind();

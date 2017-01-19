@@ -45,8 +45,6 @@
 */
 
 /** \todo:
-     * use the corrected light direction vector instead of correcting the normal
-       direction.
      * pass in the current z-buffer information to discard pixels that would overdraw
      * add a base color as uniform value to color the output
 */
@@ -58,7 +56,7 @@ uniform sampler2D ray_end;
 
 uniform vec3 step_length;
 uniform float iso_value;
-uniform highp vec3 light_source;
+uniform highp vec4 light_source;
 uniform mat4 qt_mv;
 
 varying vec2 tex2dcoord;
@@ -110,14 +108,13 @@ void main(void)
                                     texture3D(volume, vec3(x.x, x.y, x.z + step_length.z)).r)/ step_length.z;
                         vec3 normal = normalize(vec3(cx, cy, cz));
 
-                        // correct the normal with the model-view matrix
-                        vec4 no = qt_mv * vec4(normal.x, normal.y, normal.z, 0);
-                        float li = -dot(no.xyz, light_source);
+                        float li = -dot(normal, light_source.xyz);
+                        gl_FragColor = vec4(li,li,li, 1);
 
                         // evaluate the output z position (note that these are stored as
                         // inverses of the actual values
                         gl_FragDepth = 1.0 / (1.0/start.w + f * (1.0/end.w - 1.0/start.w)  / n);
-                        gl_FragColor = vec4(li, li, li, 1);
+
 
                         // exit the loop and indicate that a pixel was drawn
                         hit = true;

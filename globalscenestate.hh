@@ -36,7 +36,7 @@ public:
 
         QVector3D camera_location;
         QVector3D rotation_center;
-        QVector3D light_source;
+        QVector4D light_source;
         QQuaternion rotation;
         QMatrix4x4 projection;
         float zoom;
