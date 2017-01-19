@@ -33,7 +33,6 @@
    ray_end:    the 2D texture that contains the ray end texture coordinates
                and the ray end depth information.
 
-
    step_length: a 3D vector contaning the step length in 3D that makes sure that
                 each step passes over at most one pixel
 

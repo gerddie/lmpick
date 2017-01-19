@@ -1,7 +1,4 @@
-#version 120
-
-/* -*- mia-c++  -*-
- *
+/*
  * This file is part of qtlmpick- a tool for landmark picking and
  * visualization in volume data
  * Copyright (c) Genoa 2017,  Gert Wollny
@@ -30,7 +27,7 @@
 
 */
 
-
+#version 120
 varying highp vec3 texcoord;
 
 void main(void)

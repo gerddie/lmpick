@@ -1,7 +1,4 @@
-#version 120
-
-/* -*- mia-c++  -*-
- *
+/*
  * This file is part of qtlmpick- a tool for landmark picking and
  * visualization in volume data
  * Copyright (c) Genoa 2017,  Gert Wollny
@@ -20,6 +17,8 @@
  * along with MIA; if not, see <http://www.gnu.org/licenses/>.
  *
  */
+
+#version 120
 
 attribute highp vec3 qt_Vertex;
 attribute highp vec3 qt_Color;
