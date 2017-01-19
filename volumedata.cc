@@ -205,6 +205,10 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         m_volume_tex.setData(0, 0, QOpenGLTexture::Red, QOpenGLTexture::Float32, &img[0]);
         OGL_ERRORTEST("m_volume_tex.setData");
 
+        // set the interpolation mode
+        ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
         m_arrayBuf.create();
         m_indexBuf.create();
         m_vao.bind();
@@ -357,40 +361,42 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_vao.release();
         m_prep_program.release();
 
-// Second pass
+        // Second pass
         glDepthFunc(GL_ALWAYS);
+        ogl.glDisable(GL_CULL_FACE);
 
         if (!m_volume_program.bind())
             qWarning() << "Unable to bind m_volume_program\n";
 
 
-        // now draw the volume
+        // enable the volume texture
         ogl.glActiveTexture(GL_TEXTURE0);
-
-        // using an integer valued texture requires this
-        ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        ogl.glTexParameterf (GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
         m_volume_tex.bind();
-
         m_volume_program.setUniformValue(m_voltex_param, 0);
+
+        // enable the ray endpoint textures
         ogl.glActiveTexture(GL_TEXTURE0 + 1);
         ogl.glBindTexture(GL_TEXTURE_2D, fbo_ray_start.texture());
         m_volume_program.setUniformValue(m_ray_start_param, 1);
+
 
         ogl.glActiveTexture(GL_TEXTURE0 + 2);
         ogl.glBindTexture(GL_TEXTURE_2D, fbo_ray_end.texture());
         m_volume_program.setUniformValue(m_ray_end_param, 2);
 
-        ogl.glDisable(GL_CULL_FACE);
+
+        // set iso-value; todo: use changable param
         m_volume_program.setUniformValue(m_iso_value_param, 0.3f);
 
+        // set light source; todo: correct for current view matrix
         auto light_source_param = m_volume_program.uniformLocation("light_source");
         m_volume_program.setUniformValue(light_source_param, state.light_source);
 
+        // send in model-view matrix (can be removed, once light directio is corrected)
         auto mv_param = m_volume_program.uniformLocation("qt_mv");
         m_volume_program.setUniformValue(mv_param, modelview);
 
+        // bind buffers and draw
         m_vao_2nd_pass.bind();
         m_arrayBuf_2nd_pass.bind();
         m_indexBuf_2nd_pass.bind();
