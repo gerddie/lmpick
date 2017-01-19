@@ -1,3 +1,24 @@
+/* -*- mia-c++  -*-
+ *
+ * This file is part of qtlmpick- a tool for landmark picking and
+ * visualization in volume data
+ * Copyright (c) Genoa 2017,  Gert Wollny
+ *
+ * qtlmpick is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MIA; if not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 #include "mainopenglview.hh"
 #include "globalscenestate.hh"
 #include "octaeder.hh"
@@ -19,7 +40,7 @@
   encaapuslated by this here.
 */
 
-class RenderingThread : private QOpenGLFunctions {
+class RenderingThread : public QObject, private QOpenGLFunctions {
 public:
         RenderingThread(QWidget *widget);
         ~RenderingThread();
@@ -39,6 +60,8 @@ public:
         bool mouse_wheel(QWheelEvent *ev);
 
         void setVolume(VolumeData::Pointer volume);
+
+        void detach_gl();
 private:
         void update_rotation(QMouseEvent *ev);
         QVector3D get_mapped_point(const QPointF& localPos) const;
@@ -92,9 +115,17 @@ MainopenGLView::~MainopenGLView()
         delete m_rendering;
 }
 
+void MainopenGLView::detachGL()
+{
+        m_rendering->detach_gl();
+}
+
 void MainopenGLView::initializeGL()
 {
         m_rendering->initialize();
+        connect(QOpenGLContext::currentContext(), SIGNAL(aboutToBeDestroyed()),
+                this, SLOT(detachGL()));
+
 #if 1
         auto img = new mia::C3DFImage(mia::C3DBounds(128,256,128));
 
@@ -182,7 +213,7 @@ void RenderingThread::initialize()
         qDebug() << "OpenGL: " << (char*)glGetString(GL_VERSION);
 
 
-                for (auto d: m_objects)
+        for (auto d: m_objects)
                 d->attach_gl(*m_context);
 }
 
@@ -309,6 +340,17 @@ void RenderingThread::update_projection()
                 zw = m_state.zoom;
         }
         m_state.projection.frustum(-zw, zw, -zh, zh, 500, 600);
+}
+
+void RenderingThread::detach_gl()
+{
+        qDebug() << "Detach";
+        if (m_volume)
+                m_volume->detach_gl(*m_context);
+
+        for (auto d: m_objects)
+                d->detach_gl(*m_context);
+
 }
 
 void RenderingThread::run()

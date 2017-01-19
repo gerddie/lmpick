@@ -1,3 +1,24 @@
+/* -*- mia-c++  -*-
+ *
+ * This file is part of qtlmpick- a tool for landmark picking and
+ * visualization in volume data
+ * Copyright (c) Genoa 2017,  Gert Wollny
+ *
+ * qtlmpick is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MIA; if not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 #include "volumedata.hh"
 #include <mia/3d/filter.hh>
 #include <mia/3d/imageio.hh>
@@ -289,7 +310,7 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         m_indexBuf.bind();
         m_indexBuf.allocate(plain_cube_indices, sizeof(plain_cube_indices));
 
-        if (!m_prep_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/view_cube.glsl"))
+        if (!m_prep_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/volume_1st_pass_vtx.glsl"))
                 qWarning() << "Error compiling ':/shaders/view_cube.glsl', view will be clobbered\n";
 
         if (!m_prep_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_1st_pass_frag.glsl"))
@@ -301,7 +322,7 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         if (!m_volume_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/volume_2nd_pass_vtx.glsl"))
                 qWarning() << "Error compiling ':/shaders/view_cube.glsl', view will be clobbered\n";
 
-        if (!m_volume_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_2nd_pss_frag.glsl"))
+        if (!m_volume_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_2nd_pass_frag.glsl"))
                 qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
 
         if (!m_volume_program.link())
