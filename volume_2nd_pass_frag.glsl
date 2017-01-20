@@ -130,9 +130,6 @@ void main(void)
                         // whether we have a valid value stored here.
                         gl_FragData[1] = vec4(x.xyz, 1);
 
-                        //
-                        //gl_FragDepth =
-
                         // exit the loop and indicate that a pixel was drawn
                         hit = true;
                         break;
