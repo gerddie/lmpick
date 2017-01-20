@@ -45,6 +45,7 @@ struct VolumeDataImpl {
 
         QOpenGLShaderProgram m_prep_program;
         QOpenGLShaderProgram m_volume_program;
+        QOpenGLShaderProgram m_blit_program;
 
         QOpenGLTexture m_volume_tex;
 
@@ -64,6 +65,7 @@ struct VolumeDataImpl {
         GLint m_ray_end_param;
         QVector3D m_gradient_delta;
         GLint m_iso_value_param;
+        GLint m_volume_blit_texture_param;
 };
 
 VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
@@ -75,7 +77,8 @@ VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
         m_indexBuf_2nd_pass(QOpenGLBuffer::IndexBuffer),
         m_voltex_param(-1),
         m_ray_start_param(-1),
-        m_ray_end_param(-1)
+        m_ray_end_param(-1),
+        m_volume_blit_texture_param(-1)
 {
         auto s = m_image->get_size();
         auto v = m_image->get_voxel_size();
@@ -93,6 +96,18 @@ VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
         m_scale = size / m_max_coord;
         m_end = 0.5 * m_scale;
         m_start = -m_end;
+}
+
+void compile_and_link(QOpenGLShaderProgram& program, const QString& vtx_prog, const QString& frag_pgrm)
+{
+        if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, vtx_prog))
+                qWarning() << "Error compiling '" << vtx_prog << "' view will be clobbered\n";
+
+        if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, frag_pgrm))
+                qWarning() << "Error compiling '" << frag_pgrm <<  "', view will be clobbered\n";
+
+        if (!program.link())
+                qWarning() << "Error linking (" <<vtx_prog << "," << frag_pgrm << ")', view will be clobbered\n";;
 }
 
 VolumeDataImpl::~VolumeDataImpl()
@@ -234,23 +249,9 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         m_indexBuf.bind();
         m_indexBuf.allocate(plain_cube_indices, sizeof(plain_cube_indices));
 
-        if (!m_prep_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/volume_1st_pass_vtx.glsl"))
-                qWarning() << "Error compiling ':/shaders/view_cube.glsl', view will be clobbered\n";
-
-        if (!m_prep_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_1st_pass_frag.glsl"))
-                qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
-
-        if (!m_prep_program.link())
-                qWarning() << "Error linking m_prep_program', view will be clobbered\n";;
-
-        if (!m_volume_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/volume_2nd_pass_vtx.glsl"))
-                qWarning() << "Error compiling ':/shaders/view_cube.glsl', view will be clobbered\n";
-
-        if (!m_volume_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_2nd_pass_frag.glsl"))
-                qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
-
-        if (!m_volume_program.link())
-                qWarning() << "Error linking m_view_program', view will be clobbered\n";
+        compile_and_link(m_prep_program, ":/shaders/volume_1st_pass_vtx.glsl", ":/shaders/volume_1st_pass_frag.glsl");
+        compile_and_link(m_volume_program, ":/shaders/volume_2nd_pass_vtx.glsl", ":/shaders/volume_2nd_pass_frag.glsl");
+        compile_and_link(m_blit_program, ":/shaders/volume_2nd_pass_vtx.glsl", ":/shaders/volume_blit_frag.glsl");
 
         m_voltex_param = m_volume_program.uniformLocation("volume");
         if (m_voltex_param == -1)
@@ -264,7 +265,6 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         if (m_ray_end_param == -1)
                 qWarning() << "Can't find ray_end parameter";
 
-        // Tell OpenGL programmable pipeline how to locate vertex position data
         int vertexLocation = m_prep_program.attributeLocation("qt_Vertex");
         if (vertexLocation == -1)
                 qWarning() << "vertex loction attribute not found";
@@ -276,6 +276,8 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
                 qWarning() << "tex loction attribute not found";
         m_prep_program.enableAttributeArray(texLocation);
         m_prep_program.setAttributeBuffer(texLocation, GL_FLOAT, sizeof(QVector3D), 3, sizeof(PrepVertexData));
+
+
 
         m_arrayBuf.release();
         m_indexBuf.release();
@@ -296,6 +298,8 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         m_volume_program.bind();
         auto spacing_param = m_volume_program.uniformLocation("step_length");
         m_volume_program.setUniformValue(spacing_param, m_gradient_delta);
+
+        m_volume_blit_texture_param = m_blit_program.uniformLocation("image");
 
         m_iso_value_param = m_volume_program.uniformLocation("iso_value");
 
@@ -363,13 +367,16 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_vao.release();
         m_prep_program.release();
 
-        // Second pass
+        // Second pass, render to another separate surface
+        //
+        QOpenGLFramebufferObject fbo_volume(state.viewport, fbformat);
+        fbo_volume.bind();
+
         glDepthFunc(GL_ALWAYS);
         ogl.glDisable(GL_CULL_FACE);
 
         if (!m_volume_program.bind())
             qWarning() << "Unable to bind m_volume_program\n";
-
 
         // enable the volume texture
         ogl.glActiveTexture(GL_TEXTURE0);
@@ -417,13 +424,13 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
                                                 GL_RENDERBUFFER, space_coord_rb);
 
 
-                // first set the second buffer to write to and clear it
+                // Set both buffers to write and clear
                 GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-                glex->glDrawBuffers(1, &buffers[1]);
-
-                // then enable both buffers to write to
-                glClear(GL_COLOR_BUFFER_BIT);
                 glex->glDrawBuffers(2, buffers);
+
+
+                glClear(GL_COLOR_BUFFER_BIT);
+
         }else{
                 qWarning() << "Not rendering to FBO";
         }
@@ -431,6 +438,14 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         // render the volume data
         ogl.glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, 0);
 
+        m_volume_program.release();
+
+        ogl.glActiveTexture(GL_TEXTURE1);
+        ogl.glBindTexture(GL_TEXTURE_2D, 0);
+        ogl.glActiveTexture(GL_TEXTURE2);
+        ogl.glBindTexture(GL_TEXTURE_2D, 0);
+
+        fbo_volume.release();
         // if we were drwaing to a FBO, we have the render buffer with the
         // texture coordinates
         if (current_fbo) {
@@ -444,8 +459,6 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
                 ogl.glFinish();
                 ogl.glReadPixels(0,0,state.viewport.width(), state.viewport.height(), GL_RGB, GL_UNSIGNED_BYTE, coord.pixel());
 
-                // save the texture coordinate image for debugging
-                mia::save_image("text.png", coord);
 
                 // detach and release the render buffer
                 glex->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
@@ -453,8 +466,16 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
                 glex->glDeleteRenderbuffers(1, &space_coord_rb);
         }
 
+        // now blit it to the output surface
+        ogl.glActiveTexture(GL_TEXTURE0);
+        ogl.glBindTexture(GL_TEXTURE_2D, fbo_volume.texture());
+
+        m_blit_program.bind();
+        m_blit_program.setUniformValue(m_volume_blit_texture_param, 0);
+
+        ogl.glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, 0);
+
+        m_vao_2nd_pass.release();
         m_indexBuf_2nd_pass.release();
         m_arrayBuf_2nd_pass.release();
-        m_vao_2nd_pass.release();
-        m_volume_program.release();
 }

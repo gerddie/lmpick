@@ -47,7 +47,8 @@ DISTFILES += \
     volume_2nd_pass_vtx.glsl \
     volume_1st_pass_frag.glsl \
     volume_1st_pass_vtx.glsl \
-    volume_2nd_pass_frag.glsl
+    volume_2nd_pass_frag.glsl \
+    volume_blit_frag.glsl
 
 RESOURCES += \
     lmpick.qrc

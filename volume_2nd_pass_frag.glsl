@@ -112,8 +112,9 @@ void main(void)
                         // evaaluate the light inetensity
                         float li = -dot(normal, light_source.xyz);
 
+                        float depth =  1.0 / (1.0/start.w + f * (1.0/end.w - 1.0/start.w)  / n);
                         // todo: add a base color here
-                        gl_FragData[0] = vec4(li,li,li, 1);
+                        gl_FragData[0] = vec4(li,li,li, depth);
 
                         // output texture coordinate to second render target
                         // if attached
@@ -121,7 +122,7 @@ void main(void)
 
                         // evaluate the output z position (note that these are stored as
                         // inverses of the actual values)
-                        gl_FragDepth = 1.0 / (1.0/start.w + f * (1.0/end.w - 1.0/start.w)  / n);
+                        //gl_FragDepth =
 
                         // exit the loop and indicate that a pixel was drawn
                         hit = true;
