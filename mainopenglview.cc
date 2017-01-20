@@ -316,6 +316,7 @@ bool RenderingThread::mouse_press(QMouseEvent *ev)
                 default:
                         return false;
                 }
+                break;
         }
         case Qt::RightButton:{
                 switch (ev->type()) {
@@ -326,7 +327,10 @@ bool RenderingThread::mouse_press(QMouseEvent *ev)
                                             m_volume->get_surface_coordinate(ev->pos());
                         }
                         break;
+                default:
+                                return false;
                 }
+                break;
         }
         default:
                 return false;
