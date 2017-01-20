@@ -26,20 +26,35 @@
 #include <mia/3d/image.hh>
 #include <QOpenGLBuffer>
 
+/**
+  \brief Class for rendering an iso-surface from a volume data set
 
+  This class implements the rendering of an iso-surface of a 3D voxel
+  data set of intensity values.
+
+  \todo: The Rendering writes depth values, but doesn't handle depth
+   already written to the depth buffer. Hence this object should be drawn
+   first, and only one can be drawn.
+
+
+*/
 class VolumeData : public Drawable
 {
 public:
         typedef std::shared_ptr<VolumeData> Pointer;
 
         VolumeData(mia::P3DImage data);
+
         ~VolumeData();
 
         void set_iso_value(float iso);
 
         std::pair<int, int> get_intensity_range() const;
 
+        QVector3D get_surface_coordinate(const QPoint& location) const;
+
         virtual void detach_gl(QOpenGLContext& context) override;
+
 private:
         virtual void do_draw(const GlobalSceneState& state, QOpenGLContext& context) const override;
         virtual void do_attach_gl(QOpenGLContext& context) override;

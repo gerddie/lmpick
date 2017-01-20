@@ -40,6 +40,7 @@
   encaapuslated by this here.
 */
 
+using mia::C3DFVector;
 class RenderingThread : public QObject, private QOpenGLFunctions {
 public:
         RenderingThread(QWidget *widget);
@@ -201,6 +202,7 @@ RenderingThread::RenderingThread(QWidget *parent):
                         }
                 }
         }
+        img->set_voxel_size(C3DFVector(2.2, 1.1, 2.0));
         VolumeData::Pointer v(new VolumeData(mia::P3DImage(img)));
         setVolume(v);
         m_octaeder.reset(new Octaeder);
@@ -313,6 +315,17 @@ bool RenderingThread::mouse_press(QMouseEvent *ev)
                         break;
                 default:
                         return false;
+                }
+        }
+        case Qt::RightButton:{
+                switch (ev->type()) {
+                case QEvent::MouseButtonPress:
+                        if (m_volume) {
+                                qDebug() << "Left mouse at:" << ev->pos();
+                                qDebug() << "  translates to: "<<
+                                            m_volume->get_surface_coordinate(ev->pos());
+                        }
+                        break;
                 }
         }
         default:

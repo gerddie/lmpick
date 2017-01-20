@@ -36,6 +36,7 @@ using mia::accumulate;
 
 using std::unique_ptr;
 using std::transform;
+using std::vector;
 using std::make_pair;
 
 struct VolumeDataImpl {
@@ -64,10 +65,6 @@ struct VolumeDataImpl {
 
         QOpenGLTexture m_volume_tex;
 
-
-
-        QVector3D m_start;
-        QVector3D m_end;
         QVector3D m_scale;
         float m_max_coord;
         QOpenGLVertexArrayObject m_vao;
@@ -82,6 +79,11 @@ struct VolumeDataImpl {
         QVector3D m_gradient_delta;
         GLint m_iso_value_param;
         GLint m_volume_blit_texture_param;
+
+        int m_width;
+        int m_height;
+        vector<QVector4D> m_tex_coordinates;
+        QVector3D m_physical_size;
 };
 
 /* convert the input image to a float valued picture that
@@ -146,18 +148,16 @@ VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
         auto s = m_image->get_size();
         auto v = m_image->get_voxel_size();
 
-        QVector3D size(s.x * v.x, s.y * v.y, s.z * v.z);
-        m_max_coord = size.x();
-        if (m_max_coord < size.y())
-                m_max_coord = size.y();
-        if (m_max_coord < size.z())
-                m_max_coord = size.z();
+        m_physical_size = QVector3D(s.x * v.x, s.y * v.y, s.z * v.z);
+        m_max_coord = m_physical_size.x();
+        if (m_max_coord < m_physical_size.y())
+                m_max_coord = m_physical_size.y();
+        if (m_max_coord < m_physical_size.z())
+                m_max_coord = m_physical_size.z();
 
-        m_gradient_delta = QVector3D(1,1,1)/size;
 
-        m_scale = size / m_max_coord;
-        m_end = 0.5 * m_scale;
-        m_start = -m_end;
+        m_gradient_delta = QVector3D(1,1,1)/m_physical_size;
+        m_scale = m_physical_size / m_max_coord;
 }
 
 
@@ -193,6 +193,20 @@ VolumeData::~VolumeData()
 void VolumeData::set_iso_value(float iso)
 {
         impl->m_iso_value = impl->m_intenisity_scale * (iso - impl->m_intenisity_shift);
+}
+
+QVector3D VolumeData::get_surface_coordinate(const QPoint& location) const
+{
+        qDebug() << "location:" << location << " in(" << impl->m_width << ":" << impl->m_height <<")";
+        QVector3D result(-1, -1, -1);
+        if (location.x() < impl->m_width && location.y() < impl->m_height) {
+                QVector4D t = impl->m_tex_coordinates[impl->m_width * (impl->m_height - location.y() - 1) + location.x()];
+                qDebug() << "Tex=" << t;
+                if (t.w() > 0) {
+                        result =  QVector3D(t.x(), t.y(), t.z()) * impl->m_physical_size;
+                }
+        }
+        return result;
 }
 
 std::pair<int, int> VolumeData::get_intensity_range() const
@@ -386,6 +400,11 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         auto modelview = state.get_modelview_matrix();
         auto& ogl = *context.functions();
 
+        m_width = state.viewport.width();
+        m_height = state.viewport.height();
+
+        m_tex_coordinates.resize(m_width * m_height);
+
         // first pass: draw cube to fbo's to obtain ray texture start and end
 
         ogl.glClearColor(0,0,0,1);
@@ -497,33 +516,32 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         // render the volume data
         ogl.glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, 0);
 
-        m_volume_program.release();
-
-        ogl.glActiveTexture(GL_TEXTURE1);
-        ogl.glBindTexture(GL_TEXTURE_2D, 0);
-        ogl.glActiveTexture(GL_TEXTURE2);
-        ogl.glBindTexture(GL_TEXTURE_2D, 0);
-
-        fbo_volume.release();
         // if we were drwaing to a FBO, we have the render buffer with the
         // texture coordinates
         if (current_fbo) {
 
                 // grap the texture coordinates and write them out for debuggung
                 glex->glReadBuffer(GL_COLOR_ATTACHMENT1);
-                mia::CRGB2DImage coord(mia::C2DBounds(state.viewport.width(), state.viewport.height()));
-
                 // finish rendering before reading back
                 // this is no high-speed game, we can wait for glReadPixles
                 ogl.glFinish();
-                ogl.glReadPixels(0,0,state.viewport.width(), state.viewport.height(), GL_RGB, GL_UNSIGNED_BYTE, coord.pixel());
-
+                ogl.glReadPixels(0,0,state.viewport.width(), state.viewport.height(), GL_RGBA, GL_FLOAT, &m_tex_coordinates[0]);
 
                 // detach and release the render buffer
                 glex->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
                                                 GL_RENDERBUFFER, 0);
                 glex->glDeleteRenderbuffers(1, &space_coord_rb);
         }
+
+        m_volume_program.release();
+        fbo_volume.release();
+
+        ogl.glActiveTexture(GL_TEXTURE1);
+        ogl.glBindTexture(GL_TEXTURE_2D, 0);
+        ogl.glActiveTexture(GL_TEXTURE2);
+        ogl.glBindTexture(GL_TEXTURE_2D, 0);
+
+
 
         // now blit it to the output surface
         ogl.glActiveTexture(GL_TEXTURE0);
