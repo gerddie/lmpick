@@ -33,6 +33,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
         ui->setupUi(this);
         m_glview = findChild<MainopenGLView*>();
+        m_iso_slider = findChild<QSlider*>("isoValueSlider");
+        assert(m_iso_slider);
+        connect(m_iso_slider, SIGNAL(valueChanged(int)), m_glview, SLOT(set_volume_isovalue(int)));
 }
 
 MainWindow::~MainWindow()
@@ -69,7 +72,10 @@ void MainWindow::on_actionOpen_Volume_triggered()
             }
             auto volume = mia::load_image3d(fileNames.first().toStdString());
             VolumeData::Pointer obj = std::make_shared<VolumeData>(volume);
+            auto intensity_range = obj->get_intensity_range();
             m_glview->setVolume(obj);
+            m_iso_slider->setRange(intensity_range.first, intensity_range.second);
+            m_iso_slider->setValue((intensity_range.second - intensity_range.first) / 2);
         }
 
 

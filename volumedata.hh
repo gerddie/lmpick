@@ -35,6 +35,10 @@ public:
         VolumeData(mia::P3DImage data);
         ~VolumeData();
 
+        void set_iso_value(float iso);
+
+        std::pair<int, int> get_intensity_range() const;
+
         virtual void detach_gl(QOpenGLContext& context) override;
 private:
         virtual void do_draw(const GlobalSceneState& state, QOpenGLContext& context) const override;

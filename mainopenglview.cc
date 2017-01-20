@@ -61,6 +61,8 @@ public:
 
         void setVolume(VolumeData::Pointer volume);
 
+        void set_volume_iso_value(int value);
+
         void detach_gl();
 private:
         void update_rotation(QMouseEvent *ev);
@@ -108,6 +110,12 @@ void MainopenGLView::setVolume(VolumeData::Pointer volume)
         makeCurrent();
         m_rendering->setVolume(volume);
         doneCurrent();
+}
+
+void MainopenGLView::set_volume_isovalue(int value)
+{
+        m_rendering->set_volume_iso_value(value);
+        update();
 }
 
 MainopenGLView::~MainopenGLView()
@@ -223,6 +231,12 @@ void RenderingThread::setVolume(VolumeData::Pointer volume)
                 m_volume->detach_gl(*m_context);
         m_volume = volume;
         m_volume->attach_gl(*m_context);
+}
+
+void RenderingThread::set_volume_iso_value(int value)
+{
+        if (m_volume)
+                m_volume->set_iso_value(value);
 }
 
 void RenderingThread::paint()

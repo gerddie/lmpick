@@ -24,7 +24,7 @@
 
 #include <mainopenglview.hh>
 #include <QMainWindow>
-
+#include <QSlider>
 
 namespace Ui {
 class MainWindow;
@@ -46,6 +46,7 @@ private slots:
 private:
         Ui::MainWindow *ui;
         MainopenGLView *m_glview;
+        QSlider *m_iso_slider;
 };
 
 #endif // MAINWINDOW_HH

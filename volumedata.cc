@@ -31,6 +31,13 @@
 #include <QPainter>
 #include <cassert>
 
+using mia::C3DFImage;
+using mia::accumulate;
+
+using std::unique_ptr;
+using std::transform;
+using std::make_pair;
+
 struct VolumeDataImpl {
 
         VolumeDataImpl(mia::P3DImage data);
@@ -39,6 +46,14 @@ struct VolumeDataImpl {
         void detach_gl(QOpenGLContext& context);
         void do_draw(const GlobalSceneState& state, QOpenGLContext& context);
         void do_attach_gl(QOpenGLContext& context);
+
+        unique_ptr<C3DFImage> m_image;
+
+        float m_iso_value;
+        float m_min;
+        float m_max;
+        float m_intenisity_scale;
+        float m_intenisity_shift;
 
         QOpenGLBuffer m_arrayBuf;
         QOpenGLBuffer m_indexBuf;
@@ -49,7 +64,8 @@ struct VolumeDataImpl {
 
         QOpenGLTexture m_volume_tex;
 
-        mia::P3DImage m_image;
+
+
         QVector3D m_start;
         QVector3D m_end;
         QVector3D m_scale;
@@ -68,11 +84,48 @@ struct VolumeDataImpl {
         GLint m_volume_blit_texture_param;
 };
 
+/* convert the input image to a float valued picture that
+ * optimally uses the intensity range [0,1]; */
+struct GetFloat01Picture: public mia::TFilter<mia::C3DFImage *> {
+
+        GetFloat01Picture(float& minv, float& maxv, float& scale, float& shift):
+                m_min_val(minv),
+                m_max_val(maxv),
+                m_scale(scale),
+                m_shift(shift)
+        {
+        }
+
+        template <typename T>
+        mia::C3DFImage *operator() (const mia::T3DImage<T>& input) {
+                //should test that there are more than one
+                auto mm = std::minmax_element(input.begin(), input.end());
+                m_min_val =  *mm.first;
+                m_max_val =  *mm.second;
+                if (*mm.second != *mm.first) {
+                        m_scale = 1.0f /(*mm.second - *mm.first);
+                }else{
+                        m_scale = 1.0f;
+                }
+                m_shift = *mm.first;
+
+                C3DFImage *result = new C3DFImage(input.get_size(), input);
+                std::transform(input.begin(), input.end(), result->begin(),
+                               [this](T x){return (x - m_shift) * m_scale;});
+                return result;
+        }
+private:
+        float& m_min_val;
+        float& m_max_val;
+        float& m_scale;
+        float& m_shift;
+};
+
 VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
+        m_iso_value(0.3),
         m_arrayBuf(QOpenGLBuffer::VertexBuffer),
         m_indexBuf(QOpenGLBuffer::IndexBuffer),
         m_volume_tex(QOpenGLTexture::Target3D),
-        m_image(data),
         m_arrayBuf_2nd_pass(QOpenGLBuffer::VertexBuffer),
         m_indexBuf_2nd_pass(QOpenGLBuffer::IndexBuffer),
         m_voltex_param(-1),
@@ -80,6 +133,16 @@ VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
         m_ray_end_param(-1),
         m_volume_blit_texture_param(-1)
 {
+
+        GetFloat01Picture scaler(m_min, m_max, m_intenisity_scale, m_intenisity_shift);
+        m_image.reset(accumulate(scaler,*data));
+
+        // we want at least 255 steps
+        if (m_max - m_min < 255){
+                m_max = 255 + m_min;
+                m_intenisity_scale = 1.0 / 255;
+        }
+
         auto s = m_image->get_size();
         auto v = m_image->get_voxel_size();
 
@@ -92,11 +155,12 @@ VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
 
         m_gradient_delta = QVector3D(1,1,1)/size;
 
-
         m_scale = size / m_max_coord;
         m_end = 0.5 * m_scale;
         m_start = -m_end;
 }
+
+
 
 void compile_and_link(QOpenGLShaderProgram& program, const QString& vtx_prog, const QString& frag_pgrm)
 {
@@ -124,6 +188,18 @@ VolumeData::VolumeData(mia::P3DImage data)
 VolumeData::~VolumeData()
 {
         delete impl;
+}
+
+void VolumeData::set_iso_value(float iso)
+{
+        impl->m_iso_value = impl->m_intenisity_scale * (iso - impl->m_intenisity_shift);
+}
+
+std::pair<int, int> VolumeData::get_intensity_range() const
+{
+        int range_min = static_cast<int>(impl->m_min);
+        int range_max = static_cast<int>(impl->m_max);
+        return make_pair(range_min, range_max);
 }
 
 void VolumeData::detach_gl(QOpenGLContext& context)
@@ -177,22 +253,6 @@ static const unsigned short screenspace_fan_idx[] {
    0, 1, 2, 3
 };
 
-/* convert the input image to a float valued picture that
- * optimally uses the intensity range [0,1]; */
-struct GetFloat01Picture: public mia::TFilter<mia::C3DFImage> {
-        template <typename T>
-        mia::C3DFImage operator() (const mia::T3DImage<T>& input)  const {
-                //should test that there are more than one
-                auto mm = std::minmax_element(input.begin(), input.end());
-                float scale = 1.0f /(*mm.second - *mm.first);
-                float shift = *mm.first;
-                mia::C3DFImage result(input.get_size(), input);
-                std::transform(input.begin(), input.end(), result.begin(),
-                               [scale, shift](T x){return (x - shift) * scale;});
-                return result;
-        }
-};
-
 
 #define OGL_ERRORTEST(text) { \
         int error_nr = glGetError(); \
@@ -207,8 +267,7 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         m_vao.create();
 
         // obtain properly intensity scaled picture
-        GetFloat01Picture converter;
-        const auto img = mia::filter(converter, *m_image);
+        const C3DFImage& img = *m_image;
 
         // create the texture
         ogl->glActiveTexture(GL_TEXTURE0);
@@ -394,7 +453,7 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_volume_program.setUniformValue(m_ray_end_param, 2);
 
         // set iso-value; todo: use changable param
-        m_volume_program.setUniformValue(m_iso_value_param, 0.3f);
+        m_volume_program.setUniformValue(m_iso_value_param, m_iso_value);
 
         // set corrected light source
         auto light_source_param = m_volume_program.uniformLocation("light_source");

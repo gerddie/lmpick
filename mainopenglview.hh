@@ -39,7 +39,7 @@ public:
 private slots:
         void detachGL();
 
-
+        void set_volume_isovalue(int value);
 private:
         void initializeGL()override;
         void paintGL()override;

@@ -55,8 +55,10 @@ Outputs:
 */
 
 /** \todo:
-     * pass in the current z-buffer information to discard pixels that would overdraw
+     * pass in the current z-buffer information to discard pixels that would overdraw?
+       (Since this is an intermediate step, it could also be done in the final blit step)
      * add a base color as uniform value to color the output
+       (This could also be done in the final blit step)
 */
 
 #version 120
