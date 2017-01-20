@@ -38,9 +38,19 @@
 
    iso_value:   the texture intensity value that is used to extract the iso-surface
 
-   light_source: the light direction vector used for shading
+   light_source: the light direction vector used for shading. This direction must be
+                 corrected for the view direction.
 
-   qt_mv:       the model-view matrix to correct the normals
+Outputs:
+    if the cast ray doesn't hit a voxel that has an intensity value larger than the
+    iso value, then the fragment is discarded, otherwise the following values are
+    written:
+
+    gl_FragData[0]: a 4D vector with light intensity in the color componets rgb, and
+                     the z value in the w component.
+
+    gl_FragData[1]: xyz = 3D texture coordinate where the ray stopped, and w=1,
+                    if ray hit something.
 
 */
 
