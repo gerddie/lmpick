@@ -68,6 +68,11 @@ void main(void)
         vec4 start = texture2D(ray_start, tex2dcoord);
         vec4 end = texture2D(ray_end, tex2dcoord);
 
+        // early exit if the z-value is inf
+        if (start.w == 0.0 && end.w == 0.0) {
+                discard;
+        }
+
         // obtain drawing direction
         vec3 dir = (end - start).xyz;
         vec3 adir = abs(dir);
@@ -112,16 +117,20 @@ void main(void)
                         // evaaluate the light inetensity
                         float li = -dot(normal, light_source.xyz);
 
+                        // evaluate the output z position (note that these are stored as
+                        // inverses of the actual values).
                         float depth =  1.0 / (1.0/start.w + f * (1.0/end.w - 1.0/start.w)  / n);
+
                         // todo: add a base color here
+                        // Store depth in the alpha component off the output color.
                         gl_FragData[0] = vec4(li,li,li, depth);
 
                         // output texture coordinate to second render target
-                        // if attached
+                        // if attached, set alpha to one. This can later be use to check
+                        // whether we have a valid value stored here.
                         gl_FragData[1] = vec4(x.xyz, 1);
 
-                        // evaluate the output z position (note that these are stored as
-                        // inverses of the actual values)
+                        //
                         //gl_FragDepth =
 
                         // exit the loop and indicate that a pixel was drawn
