@@ -74,7 +74,7 @@ void MainWindow::on_actionOpen_Volume_triggered()
             VolumeData::Pointer obj = std::make_shared<VolumeData>(volume);
             auto intensity_range = obj->get_intensity_range();
             m_glview->setVolume(obj);
-            m_iso_slider->setRange(intensity_range.first, intensity_range.second);
+            m_iso_slider->setRange(intensity_range.first+1, intensity_range.second);
             m_iso_slider->setValue((intensity_range.second - intensity_range.first) / 2);
         }
 

@@ -70,6 +70,7 @@ private:
         void update_projection();
 
         QWidget *m_parent;
+        bool m_is_gl_attached;
         QOpenGLContext *m_context;
 
         GlobalSceneState m_state;
@@ -86,9 +87,8 @@ private:
 
 	QVector2D m_viewport; 
 
-        std::vector<Drawable::Pointer> m_objects;
         VolumeData::Pointer m_volume;
-
+        Octaeder::Pointer m_octaeder;
 };
 
 MainopenGLView::MainopenGLView(QWidget *parent):
@@ -133,23 +133,6 @@ void MainopenGLView::initializeGL()
         m_rendering->initialize();
         connect(QOpenGLContext::currentContext(), SIGNAL(aboutToBeDestroyed()),
                 this, SLOT(detachGL()));
-
-#if 1
-        auto img = new mia::C3DFImage(mia::C3DBounds(128,256,128));
-
-        auto i = img->begin();
-        for (unsigned int z = 0; z < 128; ++z) {
-                float fz = sin (z * M_PI / 127);
-                for (unsigned int y = 0; y < 256; ++y) {
-                        float fy = sin (y * M_PI / 255) * fz;
-                        for (unsigned int x = 0; x < 128; ++x, ++i)  {
-                                *i = fy * sin (x * M_PI / 127);
-                        }
-                }
-        }
-        VolumeData::Pointer v(new VolumeData(mia::P3DImage(img)));
-        m_rendering->setVolume(v);
-#endif
 }
 
 void MainopenGLView::paintGL()
@@ -199,38 +182,70 @@ void MainopenGLView::wheelEvent(QWheelEvent *ev)
 
 RenderingThread::RenderingThread(QWidget *parent):
         m_parent(parent),
+        m_is_gl_attached(false),
         m_context(nullptr),
 
         m_mouse1_is_down(false)
 	
 {
-        m_objects.push_back(Drawable::Pointer(new Octaeder));
+#if 1
+        auto img = new mia::C3DFImage(mia::C3DBounds(128,256,128));
+
+        auto i = img->begin();
+        for (unsigned int z = 0; z < 128; ++z) {
+                float fz = sin (z * M_PI / 127);
+                for (unsigned int y = 0; y < 256; ++y) {
+                        float fy = sin (y * M_PI / 255) * fz;
+                        for (unsigned int x = 0; x < 128; ++x, ++i)  {
+                                *i = fy * sin (x * M_PI / 127);
+                        }
+                }
+        }
+        VolumeData::Pointer v(new VolumeData(mia::P3DImage(img)));
+        setVolume(v);
+        m_octaeder.reset(new Octaeder);
+#endif
+
 }
 
 RenderingThread::~RenderingThread()
 {
-        for (auto d: m_objects)
-                d->detach_gl(*m_context);
+        if (m_octaeder)
+                m_octaeder->detach_gl(*m_context);
 }
 
 void RenderingThread::initialize()
 {
         initializeOpenGLFunctions();
         m_context =  QOpenGLContext::currentContext();
+        m_is_gl_attached = true;
 
         qDebug() << "OpenGL: " << (char*)glGetString(GL_VERSION);
 
+        if (m_volume)
+                m_volume->attach_gl(*m_context);
 
-        for (auto d: m_objects)
-                d->attach_gl(*m_context);
+        if (m_octaeder)
+                m_octaeder->attach_gl(*m_context);
+
 }
 
 void RenderingThread::setVolume(VolumeData::Pointer volume)
 {
-        if (m_volume)
-                m_volume->detach_gl(*m_context);
-        m_volume = volume;
-        m_volume->attach_gl(*m_context);
+        std::swap(m_volume, volume);
+        if (m_is_gl_attached) {
+                if (volume)
+                        volume->detach_gl(*m_context);
+
+                if (m_volume) {
+                        m_volume->attach_gl(*m_context);
+                        if (m_octaeder) {
+                                m_octaeder->detach_gl(*m_context);
+                        }
+                }
+        }
+        if (m_octaeder)
+                m_octaeder.reset(static_cast<Octaeder*>(nullptr));
 }
 
 void RenderingThread::set_volume_iso_value(int value)
@@ -251,8 +266,8 @@ void RenderingThread::paint()
         if (m_volume)
                 m_volume->draw(m_state, *m_context);
 
-        for (auto d: m_objects)
-                d->draw(m_state, *m_context);
+        if (m_octaeder)
+                m_octaeder->draw(m_state, *m_context);
 
 
 }
@@ -358,12 +373,13 @@ void RenderingThread::update_projection()
 
 void RenderingThread::detach_gl()
 {
+        m_is_gl_attached = false;
         qDebug() << "Detach";
         if (m_volume)
                 m_volume->detach_gl(*m_context);
 
-        for (auto d: m_objects)
-                d->detach_gl(*m_context);
+        if(m_octaeder)
+                m_octaeder->detach_gl(*m_context);
 
 }
 
