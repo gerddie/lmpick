@@ -126,8 +126,10 @@ void Octaeder::do_draw(const GlobalSceneState& state, QOpenGLContext& context) c
         m_arrayBuf.bind();
         m_indexBuf.bind();
 
+        auto normal_matrix = modelview.normalMatrix();
+
         m_program.setUniformValue("qt_mvp", state.projection * modelview);
-        m_program.setUniformValue("qt_mv", modelview);
+        m_program.setUniformValue("qt_mv", normal_matrix);
         m_program.setUniformValue("qt_LightDirection", state.light_source);
 
         ogl.glEnable(GL_DEPTH_TEST);

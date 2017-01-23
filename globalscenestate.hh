@@ -28,6 +28,7 @@
 #include <QQuaternion>
 #include <QSize>
 
+#include <stack>
 
 
 class GlobalSceneState
@@ -39,9 +40,15 @@ public:
 
         Camera camera;
 
-        QVector4D light_source;
+        QVector3D light_source;
         QMatrix4x4 projection;
         QSize viewport;
+
+        void set_offset(const QVector3D& v);
+        void delete_offset();
+private:
+
+        QVector3D m_offset;
 
 };
 

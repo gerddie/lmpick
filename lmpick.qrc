@@ -16,5 +16,6 @@
         <file>volume_1st_pass_vtx.glsl</file>
         <file>volume_2nd_pass_frag.glsl</file>
         <file>volume_blit_frag.glsl</file>
+        <file>shere_vtx.glsl</file>
     </qresource>
 </RCC>

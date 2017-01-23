@@ -28,6 +28,7 @@
 #include <QOpenGLFramebufferObjectFormat>
 #include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
+#include <QMatrix3x3>
 #include <QPainter>
 #include <cassert>
 
@@ -124,7 +125,7 @@ private:
 };
 
 VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
-        m_iso_value(0.3),
+        m_iso_value(0.7),
         m_arrayBuf(QOpenGLBuffer::VertexBuffer),
         m_indexBuf(QOpenGLBuffer::IndexBuffer),
         m_volume_tex(QOpenGLTexture::Target3D),
@@ -476,7 +477,13 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
 
         // set corrected light source
         auto light_source_param = m_volume_program.uniformLocation("light_source");
-        m_volume_program.setUniformValue(light_source_param,  modelview.transposed() * state.light_source);
+        auto inv_normal = modelview.transposed();
+
+        // this is really kind of stupid, but the 3x3 Maatrix doesn't implement multiplication with
+        // a vector
+        QVector4D l(state.light_source.x(), state.light_source.y(), state.light_source.z(), 0.0);
+        QVector4D ls = inv_normal * l;
+        m_volume_program.setUniformValue(light_source_param, ls.toVector3D());
 
         // bind buffers and draw
         m_vao_2nd_pass.bind();

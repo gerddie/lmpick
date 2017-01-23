@@ -22,6 +22,7 @@
 #include "mainopenglview.hh"
 #include "globalscenestate.hh"
 #include "octaeder.hh"
+#include "sphere.hh"
 #include <mia/3d/camera.hh>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
@@ -90,6 +91,7 @@ private:
 
         VolumeData::Pointer m_volume;
         Octaeder::Pointer m_octaeder;
+        Sphere::Pointer m_sphere;
 };
 
 MainopenGLView::MainopenGLView(QWidget *parent):
@@ -205,15 +207,14 @@ RenderingThread::RenderingThread(QWidget *parent):
         img->set_voxel_size(C3DFVector(2.2, 1.1, 2.0));
         VolumeData::Pointer v(new VolumeData(mia::P3DImage(img)));
         setVolume(v);
-        m_octaeder.reset(new Octaeder);
+        m_sphere.reset(new Sphere(QVector4D(0,1,1,0.7)));
+//        m_octaeder.reset(new Octaeder);
 #endif
 
 }
 
 RenderingThread::~RenderingThread()
 {
-        if (m_octaeder)
-                m_octaeder->detach_gl(*m_context);
 }
 
 void RenderingThread::initialize()
@@ -227,8 +228,8 @@ void RenderingThread::initialize()
         if (m_volume)
                 m_volume->attach_gl(*m_context);
 
-        if (m_octaeder)
-                m_octaeder->attach_gl(*m_context);
+        if (m_sphere)
+                m_sphere->attach_gl(*m_context);
 
 }
 
@@ -241,13 +242,13 @@ void RenderingThread::setVolume(VolumeData::Pointer volume)
 
                 if (m_volume) {
                         m_volume->attach_gl(*m_context);
-                        if (m_octaeder) {
-                                m_octaeder->detach_gl(*m_context);
+                        if (m_sphere) {
+                                m_sphere->detach_gl(*m_context);
                         }
                 }
         }
-        if (m_octaeder)
-                m_octaeder.reset(static_cast<Octaeder*>(nullptr));
+        if (m_sphere)
+                m_sphere.reset(static_cast<Sphere*>(nullptr));
 }
 
 void RenderingThread::set_volume_iso_value(int value)
@@ -268,8 +269,11 @@ void RenderingThread::paint()
         if (m_volume)
                 m_volume->draw(m_state, *m_context);
 
-        if (m_octaeder)
-                m_octaeder->draw(m_state, *m_context);
+        if (m_sphere) {
+                m_state.set_offset(QVector3D(1,0,0));
+                m_sphere->draw(m_state, *m_context);
+                m_state.delete_offset();
+        }
 
 
 }

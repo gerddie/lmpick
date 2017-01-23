@@ -1,5 +1,4 @@
-/* -*- mia-c++  -*-
- *
+/*
  * This file is part of qtlmpick- a tool for landmark picking and
  * visualization in volume data
  * Copyright (c) Genoa 2017,  Gert Wollny
@@ -19,35 +18,23 @@
  *
  */
 
-#include "globalscenestate.hh"
-#include <cassert>
+#version 120
 
-GlobalSceneState::GlobalSceneState():
-        camera(QVector3D(0,0,-550), QQuaternion(1,0,0,0), 1.0),
-        light_source(-1,-1,-20),
-        viewport(0,0)
+attribute highp vec3 qt_vertex;
+attribute highp vec3 qt_normal;
+
+
+uniform highp vec3 qt_light_direction;
+uniform highp mat4 qt_view_matrix;
+uniform highp mat3 qt_normal_matrix;
+uniform highp vec4 qt_base_color;
+
+varying highp vec4 color;
+
+void main(void)
 {
-        light_source.normalize();
-}
-
-QMatrix4x4 GlobalSceneState::get_modelview_matrix() const
-{
-        QMatrix4x4 modelview;
-
-        modelview.setToIdentity();
-        modelview.translate(camera.get_position());
-        modelview.rotate(camera.get_rotation());
-        modelview.translate(m_offset);
-
-        return modelview;
-}
-
-void GlobalSceneState::set_offset(const QVector3D& ofs)
-{
-        m_offset = ofs;
-}
-
-void GlobalSceneState::delete_offset()
-{
-        m_offset = QVector3D(0,0,0);
+        vec4 v = vec4(qt_vertex.x, qt_vertex.y, qt_vertex.z, 1);
+        gl_Position = qt_view_matrix * v;
+        float light_intensity = dot(qt_normal_matrix * qt_normal, qt_light_direction);
+        color = qt_base_color *  (0.9 * light_intensity + 0.1);
 }

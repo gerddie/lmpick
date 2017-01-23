@@ -32,7 +32,8 @@ SOURCES += main.cc\
     volumedata.cc \
     landmark.cc \
     camera.cc \
-    landmarklist.cc
+    landmarklist.cc \
+    sphere.cc
 
 HEADERS  += mainwindow.hh \
     mainopenglview.hh \
@@ -42,7 +43,8 @@ HEADERS  += mainwindow.hh \
     volumedata.hh \
     landmark.hh \
     camera.hh \
-    landmarklist.hh
+    landmarklist.hh \
+    sphere.hh
 
 FORMS    += mainwindow.ui
 
@@ -54,7 +56,8 @@ DISTFILES += \
     volume_1st_pass_frag.glsl \
     volume_1st_pass_vtx.glsl \
     volume_2nd_pass_frag.glsl \
-    volume_blit_frag.glsl
+    volume_blit_frag.glsl \
+    shere_vtx.glsl
 
 RESOURCES += \
     lmpick.qrc

@@ -68,7 +68,7 @@ uniform sampler2D ray_end;
 
 uniform vec3 step_length;
 uniform float iso_value;
-uniform highp vec4 light_source;
+uniform highp vec3 light_source;
 uniform mat4 qt_mv;
 
 varying vec2 tex2dcoord;
@@ -127,7 +127,7 @@ void main(void)
                         vec3 normal = normalize(vec3(cx, cy, cz));
 
                         // evaaluate the light inetensity
-                        float li = -dot(normal, light_source.xyz);
+                        float li = -dot(normal, light_source);
 
                         // evaluate the output z position (note that these are stored as
                         // inverses of the actual values).
