@@ -49,9 +49,21 @@ void LandmarkListPainter::do_draw(const GlobalSceneState& state, QOpenGLContext&
 }
 
 LandmarkListPainterImpl::LandmarkListPainterImpl():
+        m_the_list(new LandmarkList),
         m_active_index(-1),
         m_active_sphere(QVector4D(1, 0.5, 0, 0.7)),
         m_normal_sphere(QVector4D(0, 0.5, 1, 0.7)),
         m_viewspace_scale(1,1,1)
 {
+#if 1
+        std::vector<QVector3D> v{{0.8,0,0}, {0,0.8,0}, {0,0,0.8},
+                            {-0.8,0,0}, {0,-0.8,0}, {0,0,-0.8}};
+        Camera c;
+        const char n[][2] = {"a", "b", "c", "d", "e", "f"};
+
+        for(int i = 0; i < 6; ++i) {
+                m_the_list->add(PLandmark(new Landmark(n[i], v[i], c)));
+        }
+        m_active_index = 2;
+#endif
 }

@@ -35,6 +35,6 @@ void main(void)
 {
         vec4 v = vec4(qt_vertex.x, qt_vertex.y, qt_vertex.z, 1);
         gl_Position = qt_view_matrix * v;
-        float light_intensity = dot(qt_normal_matrix * qt_normal, qt_light_direction);
+        float light_intensity = -dot(qt_normal_matrix * qt_normal, qt_light_direction);
         color = qt_base_color *  (0.9 * light_intensity + 0.1);
 }

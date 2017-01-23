@@ -20,6 +20,7 @@
  */
 
 #include "mainopenglview.hh"
+#include "landmarklistpainter.hh"
 #include "globalscenestate.hh"
 #include "octaeder.hh"
 #include "sphere.hh"
@@ -92,6 +93,7 @@ private:
         VolumeData::Pointer m_volume;
         Octaeder::Pointer m_octaeder;
         Sphere::Pointer m_sphere;
+        LandmarkListPainter m_lmp;
 };
 
 MainopenGLView::MainopenGLView(QWidget *parent):
@@ -234,6 +236,8 @@ void RenderingThread::initialize()
         if (m_octaeder)
                 m_octaeder->attach_gl(*m_context);
 
+        m_lmp.attach_gl(*m_context);
+
 }
 
 void RenderingThread::setVolume(VolumeData::Pointer volume)
@@ -272,14 +276,10 @@ void RenderingThread::paint()
         if (m_volume)
                 m_volume->draw(m_state, *m_context);
 
-        if (m_sphere) {
-                m_state.set_offset(QVector3D(1,0,0));
-                m_sphere->draw(m_state, *m_context);
-                m_state.delete_offset();
-        }
-
         if ( m_octaeder )
                 m_octaeder->draw(m_state, *m_context);
+
+        m_lmp.draw(m_state, *m_context);
 }
 
 QVector3D RenderingThread::get_mapped_point(const QPointF& localPos) const
@@ -391,7 +391,7 @@ void RenderingThread::update_projection()
                 zh = m_state.camera.get_zoom()* m_viewport.y() / m_viewport.x();
                 zw = m_state.camera.get_zoom();
         }
-        m_state.projection.frustum(-zw, zw, -zh, zh, 540, 560);
+        m_state.projection.frustum(-zw, zw, -zh, zh, 548, 552);
 }
 
 void RenderingThread::detach_gl()

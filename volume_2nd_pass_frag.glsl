@@ -158,7 +158,7 @@ void main(void)
 
                         // todo: add a base color here
                         // Store depth in the alpha component off the output color.
-                        gl_FragData[0] = vec4(li,li,li, depth);
+                        gl_FragData[0] = vec4(li, li, li, depth);
 
                         // output texture coordinate to second render target
                         // if attached, set alpha to one. This can later be use to check

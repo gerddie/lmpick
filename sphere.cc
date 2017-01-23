@@ -40,7 +40,7 @@ Sphere::Sphere(const QVector4D& color):
         m_base_color(color)
 {
         if (!m_instances) {
-                impl = new SphereImpl(0.01);
+                impl = new SphereImpl(0.1);
         }
         m_instances++;
 }
@@ -162,8 +162,8 @@ void SphereImpl::create_sphere(float r)
         vector<QVector3D> points({{1,0,0}, {0, 1, 0}, {0, 0, 1},
                                   {-1, 0, 0}, {0,-1, 0}, {0, 0,-1}});
 
-        vector<Triangle> triangles({{0,1,2}, {0,2,4}, {0,4,5}, {4,3,5},
-                                    {3,4,2}, {2,1,3}, {3,1,5}, {1,0,5}});
+        vector<Triangle> triangles({{0,2,1}, {0,4,2}, {0,5,4}, {4,5,3},
+                                    {3,2,4}, {2,3,1}, {3,5,1}, {1,5,0}});
 
         // subdivide the triangles
         const int sub_rounds = 3;
@@ -238,9 +238,12 @@ void SphereImpl::draw(const GlobalSceneState& state, QOpenGLContext& context, co
         ogl.glCullFace(GL_BACK);
 
         ogl.glEnable(GL_BLEND);
+        ogl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // Draw cube geometry using indices from VBO 1
         ogl.glDrawElements(GL_TRIANGLES, 3 * m_n_triangles, GL_UNSIGNED_SHORT, 0);
+
+        ogl.glDisable(GL_BLEND);
 
         m_arrayBuf.release();
         m_indexBuf.release();
