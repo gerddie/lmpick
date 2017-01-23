@@ -73,6 +73,25 @@ uniform mat4 qt_mv;
 
 varying vec2 tex2dcoord;
 
+const float zNear = 548.0;
+const float zFar = 552.0;
+
+// from http://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
+
+float linearDepth(float depthSample)
+{
+    depthSample = 2.0 * depthSample - 1.0;
+    float zLinear = 2.0 * zNear * zFar / (zFar + zNear - depthSample * (zFar - zNear));
+    return zLinear;
+}
+
+// result suitable for assigning to gl_FragDepth
+float depthSample(float linearDepth)
+{
+    float nonLinearDepth = (zFar + zNear - 2.0 * zNear * zFar / linearDepth) / (zFar - zNear);
+    nonLinearDepth = (nonLinearDepth + 1.0) / 2.0;
+    return nonLinearDepth;
+}
 
 void main(void)
 {
@@ -131,7 +150,11 @@ void main(void)
 
                         // evaluate the output z position (note that these are stored as
                         // inverses of the actual values).
-                        float depth =  1.0 / (1.0/start.w + f * (1.0/end.w - 1.0/start.w)  / n);
+                        float start_depth = linearDepth(start.w);
+                        float end_depth = linearDepth(end.w);
+                        float fragment_depth = start_depth + f * (end_depth - start_depth) / n;
+
+                        float depth = depthSample(fragment_depth);
 
                         // todo: add a base color here
                         // Store depth in the alpha component off the output color.
