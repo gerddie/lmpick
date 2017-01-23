@@ -208,7 +208,7 @@ RenderingThread::RenderingThread(QWidget *parent):
         VolumeData::Pointer v(new VolumeData(mia::P3DImage(img)));
         setVolume(v);
         m_sphere.reset(new Sphere(QVector4D(0,1,1,0.7)));
-//        m_octaeder.reset(new Octaeder);
+        m_octaeder.reset(new Octaeder);
 #endif
 
 }
@@ -230,6 +230,9 @@ void RenderingThread::initialize()
 
         if (m_sphere)
                 m_sphere->attach_gl(*m_context);
+
+        if (m_octaeder)
+                m_octaeder->attach_gl(*m_context);
 
 }
 
@@ -275,7 +278,8 @@ void RenderingThread::paint()
                 m_state.delete_offset();
         }
 
-
+        if ( m_octaeder )
+                m_octaeder->draw(m_state, *m_context);
 }
 
 QVector3D RenderingThread::get_mapped_point(const QPointF& localPos) const
