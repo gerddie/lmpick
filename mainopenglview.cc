@@ -92,7 +92,6 @@ private:
 
         VolumeData::Pointer m_volume;
         Octaeder::Pointer m_octaeder;
-        Sphere::Pointer m_sphere;
         LandmarkListPainter m_lmp;
 };
 
@@ -209,7 +208,6 @@ RenderingThread::RenderingThread(QWidget *parent):
         img->set_voxel_size(C3DFVector(2.2, 1.1, 2.0));
         VolumeData::Pointer v(new VolumeData(mia::P3DImage(img)));
         setVolume(v);
-        m_sphere.reset(new Sphere(QVector4D(0,1,1,0.7)));
         m_octaeder.reset(new Octaeder);
 #endif
 
@@ -230,9 +228,6 @@ void RenderingThread::initialize()
         if (m_volume)
                 m_volume->attach_gl(*m_context);
 
-        if (m_sphere)
-                m_sphere->attach_gl(*m_context);
-
         if (m_octaeder)
                 m_octaeder->attach_gl(*m_context);
 
@@ -249,13 +244,12 @@ void RenderingThread::setVolume(VolumeData::Pointer volume)
 
                 if (m_volume) {
                         m_volume->attach_gl(*m_context);
-                        if (m_sphere) {
-                                m_sphere->detach_gl(*m_context);
-                        }
                 }
         }
-        if (m_sphere)
-                m_sphere.reset(static_cast<Sphere*>(nullptr));
+        if (m_volume) {
+                m_lmp.set_viewspace_correction(m_volume->get_viewspace_scale(),
+                                               m_volume->get_viewspace_shift());
+        }
 }
 
 void RenderingThread::set_volume_iso_value(int value)

@@ -1,12 +1,17 @@
 #ifndef LANDMARKLISTPAINTER_HH
 #define LANDMARKLISTPAINTER_HH
 
+#include "landmarklist.hh"
 #include "drawable.hh"
 
 class LandmarkListPainter : public Drawable
 {
 public:
         LandmarkListPainter();
+        ~LandmarkListPainter();
+
+        void set_landmark_list(PLandmarkList list);
+        void set_viewspace_correction(const QVector3D& scale, const QVector3D& shift);
 
         virtual void detach_gl(QOpenGLContext& context);
 private:
