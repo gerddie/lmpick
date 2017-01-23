@@ -19,23 +19,27 @@
  *
  */
 
-#include "globalscenestate.hh"
+#include "landmarklist.hh"
 
-GlobalSceneState::GlobalSceneState():
-        camera(QVector3D(0,0,-550), QQuaternion(1,0,0,0), 1.0),
-        light_source(-1,-1,-20, 0),
-        viewport(0,0)
+Landmarklist::Landmarklist(const QString& name):
+        m_name(name)
 {
-        light_source.normalize();
+
 }
 
-QMatrix4x4 GlobalSceneState::get_modelview_matrix() const
+PLandmark Landmarklist::get_by_name(const QString& name)
 {
-        QMatrix4x4 modelview;
-
-        modelview.setToIdentity();
-        modelview.translate(camera.get_position());
-        modelview.rotate(camera.get_rotation());
-        return modelview;
+        auto i = m_list.find(name);
+        if (i != m_list.end())
+                return i->second;
+        return PLandmark();
 }
 
+bool Landmarklist::add(PLandmark landmark)
+{
+        auto i = m_list.find(landmark->get_name());
+        if (i != m_list.end())
+                return false;
+        m_list[landmark->get_name()] = landmark;
+        return true;
+}

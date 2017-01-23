@@ -19,23 +19,39 @@
  *
  */
 
-#include "globalscenestate.hh"
+#ifndef LANDMARKLIST_HH
+#define LANDMARKLIST_HH
 
-GlobalSceneState::GlobalSceneState():
-        camera(QVector3D(0,0,-550), QQuaternion(1,0,0,0), 1.0),
-        light_source(-1,-1,-20, 0),
-        viewport(0,0)
+#include <landmark.hh>
+#include <map>
+
+class Landmarklist
 {
-        light_source.normalize();
+public:
+        Landmarklist() = default;
+
+        explicit Landmarklist(const QString& name);
+
+        PLandmark get_by_name(const QString& name);
+
+        bool add(PLandmark landmark);
+
+        template <typename F>
+        void for_each(F apply) const;
+
+
+private:
+        QString m_name;
+
+        std::map<QString, PLandmark> m_list;
+};
+
+template <typename F>
+void Landmarklist::for_each(F apply) const
+{
+        for (auto i: m_list) {
+                apply(*i.second);
+        }
 }
 
-QMatrix4x4 GlobalSceneState::get_modelview_matrix() const
-{
-        QMatrix4x4 modelview;
-
-        modelview.setToIdentity();
-        modelview.translate(camera.get_position());
-        modelview.rotate(camera.get_rotation());
-        return modelview;
-}
-
+#endif // LANDMARKLIST_HH

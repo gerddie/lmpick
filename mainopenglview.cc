@@ -293,7 +293,7 @@ void RenderingThread::update_rotation(QMouseEvent *ev)
         // trackball like rotation
         QVector3D pnew = get_mapped_point(ev->localPos());
         QVector3D pold = get_mapped_point(m_mouse_old_position);
-        m_state.rotation  = QQuaternion::rotationTo(pold, pnew) * m_state.rotation;
+        m_state.camera.rotate(QQuaternion::rotationTo(pold, pnew));
 }
 
 bool RenderingThread::mouse_press(QMouseEvent *ev)
@@ -354,11 +354,9 @@ bool RenderingThread::mouse_wheel(QWheelEvent *ev)
         // Todo: make the boundaries and the change factor
         // a configurable option
         if (delta.y() < 0) {
-                if (m_state.zoom < 10)
-                        m_state.zoom *= 1.05;
+                m_state.camera.zoom_out();
         }else if (delta.y() > 0) {
-                if (m_state.zoom > 0.2)
-                        m_state.zoom *= 0.95;
+                m_state.camera.zoom_in();
         }else
                 return false;
 
@@ -379,13 +377,13 @@ void RenderingThread::update_projection()
         m_state.projection.setToIdentity();
         float zw, zh;
         if (m_viewport.x() > m_viewport.y()) {
-                zw = m_state.zoom * m_viewport.x() / m_viewport.y();
-                zh = m_state.zoom;
+                zw = m_state.camera.get_zoom() * m_viewport.x() / m_viewport.y();
+                zh = m_state.camera.get_zoom();
         }else{
-                zh = m_state.zoom * m_viewport.y() / m_viewport.x();
-                zw = m_state.zoom;
+                zh = m_state.camera.get_zoom()* m_viewport.y() / m_viewport.x();
+                zw = m_state.camera.get_zoom();
         }
-        m_state.projection.frustum(-zw, zw, -zh, zh, 500, 600);
+        m_state.projection.frustum(-zw, zw, -zh, zh, 540, 560);
 }
 
 void RenderingThread::detach_gl()

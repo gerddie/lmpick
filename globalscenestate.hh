@@ -22,10 +22,13 @@
 #ifndef GLOBALSCENESTATE_HH
 #define GLOBALSCENESTATE_HH
 
+#include "camera.hh"
 #include <QVector3D>
 #include <QMatrix4x4>
 #include <QQuaternion>
 #include <QSize>
+
+
 
 class GlobalSceneState
 {
@@ -34,13 +37,12 @@ public:
 
         QMatrix4x4 get_modelview_matrix() const;
 
-        QVector3D camera_location;
-        QVector3D rotation_center;
+        Camera camera;
+
         QVector4D light_source;
-        QQuaternion rotation;
         QMatrix4x4 projection;
-        float zoom;
         QSize viewport;
+
 };
 
 #endif // GLOBALSCENESTATE_HH

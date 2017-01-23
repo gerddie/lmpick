@@ -29,14 +29,20 @@ SOURCES += main.cc\
     octaeder.cc \
     globalscenestate.cc \
     drawable.cc \
-    volumedata.cc
+    volumedata.cc \
+    landmark.cc \
+    camera.cc \
+    landmarklist.cc
 
 HEADERS  += mainwindow.hh \
     mainopenglview.hh \
     octaeder.hh \
     globalscenestate.hh \
     drawable.hh \
-    volumedata.hh
+    volumedata.hh \
+    landmark.hh \
+    camera.hh \
+    landmarklist.hh
 
 FORMS    += mainwindow.ui
 

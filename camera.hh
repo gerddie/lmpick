@@ -19,23 +19,39 @@
  *
  */
 
-#include "globalscenestate.hh"
+#ifndef CAMERA_HH
+#define CAMERA_HH
 
-GlobalSceneState::GlobalSceneState():
-        camera(QVector3D(0,0,-550), QQuaternion(1,0,0,0), 1.0),
-        light_source(-1,-1,-20, 0),
-        viewport(0,0)
+#include <QVector3D>
+#include <QQuaternion>
+
+class Camera
 {
-        light_source.normalize();
-}
+public:
+        Camera();
 
-QMatrix4x4 GlobalSceneState::get_modelview_matrix() const
-{
-        QMatrix4x4 modelview;
+        Camera(const QVector3D& position, const QQuaternion& rotation, float zoom);
 
-        modelview.setToIdentity();
-        modelview.translate(camera.get_position());
-        modelview.rotate(camera.get_rotation());
-        return modelview;
-}
+        void set_rotation(const QQuaternion& r);
+        void rotate(const QQuaternion& r);
 
+        void set_position(const QVector3D& pos);
+        void set_zoom(float z);
+        void zoom_in();
+        void zoom_out();
+
+        void set_distance(float dist);
+
+
+
+        const QQuaternion& get_rotation() const;
+        const QVector3D& get_position() const;
+        float get_zoom() const;
+private:
+
+        QQuaternion m_rotation;
+        QVector3D m_position;
+        float m_zoom;
+};
+
+#endif // CAMERA_HH
