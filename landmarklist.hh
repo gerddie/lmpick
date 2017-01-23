@@ -24,13 +24,16 @@
 
 #include <landmark.hh>
 #include <map>
+#include <memory>
 
-class Landmarklist
+class LandmarkList
 {
 public:
-        Landmarklist() = default;
+        typedef std::shared_ptr<LandmarkList> Pointer;
 
-        explicit Landmarklist(const QString& name);
+        LandmarkList() = default;
+
+        explicit LandmarkList(const QString& name);
 
         bool add(PLandmark landmark);
 
@@ -49,5 +52,6 @@ private:
         std::map<QString, unsigned> m_index_map;
 };
 
+typedef LandmarkList::Pointer PLandmarkList;
 
 #endif // LANDMARKLIST_HH

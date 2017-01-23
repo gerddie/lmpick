@@ -24,13 +24,13 @@
 
 using std::for_each;
 
-Landmarklist::Landmarklist(const QString& name):
+LandmarkList::LandmarkList(const QString& name):
         m_name(name)
 {
 
 }
 
-PLandmark Landmarklist::operator [](const QString& name)
+PLandmark LandmarkList::operator [](const QString& name)
 {
         auto i = m_index_map.find(name);
         if (i != m_index_map.end()) {
@@ -40,13 +40,13 @@ PLandmark Landmarklist::operator [](const QString& name)
         return PLandmark();
 }
 
-PLandmark Landmarklist::operator [](unsigned  i)
+PLandmark LandmarkList::operator [](unsigned  i)
 {
         assert(i < m_list.size());
         return m_list[i];
 }
 
-bool Landmarklist::add(PLandmark landmark)
+bool LandmarkList::add(PLandmark landmark)
 {
         auto i = m_index_map.find(landmark->get_name());
         if (i != m_index_map.end())
@@ -57,12 +57,12 @@ bool Landmarklist::add(PLandmark landmark)
         return true;
 }
 
-size_t Landmarklist::size() const
+size_t LandmarkList::size() const
 {
         return m_list.size();
 }
 
-bool Landmarklist::remove(const QString& name)
+bool LandmarkList::remove(const QString& name)
 {
         auto i = m_index_map.find(name);
         if (i == m_index_map.end())
