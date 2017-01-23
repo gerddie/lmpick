@@ -32,26 +32,22 @@ public:
 
         explicit Landmarklist(const QString& name);
 
-        PLandmark get_by_name(const QString& name);
-
         bool add(PLandmark landmark);
 
-        template <typename F>
-        void for_each(F apply) const;
+        bool remove(const QString& name);
 
+        PLandmark operator [](unsigned i);
+
+        PLandmark operator [](const QString& name);
+
+        size_t size() const;
 
 private:
         QString m_name;
 
-        std::map<QString, PLandmark> m_list;
+        std::vector<PLandmark> m_list;
+        std::map<QString, unsigned> m_index_map;
 };
 
-template <typename F>
-void Landmarklist::for_each(F apply) const
-{
-        for (auto i: m_list) {
-                apply(*i.second);
-        }
-}
 
 #endif // LANDMARKLIST_HH

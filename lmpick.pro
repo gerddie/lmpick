@@ -33,7 +33,8 @@ SOURCES += main.cc\
     landmark.cc \
     camera.cc \
     landmarklist.cc \
-    sphere.cc
+    sphere.cc \
+    landmarklistpainter.cc
 
 HEADERS  += mainwindow.hh \
     mainopenglview.hh \
@@ -44,7 +45,8 @@ HEADERS  += mainwindow.hh \
     landmark.hh \
     camera.hh \
     landmarklist.hh \
-    sphere.hh
+    sphere.hh \
+    landmarklistpainter.hh
 
 FORMS    += mainwindow.ui
 

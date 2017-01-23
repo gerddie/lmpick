@@ -20,6 +20,9 @@
  */
 
 #include "landmarklist.hh"
+#include <cassert>
+
+using std::for_each;
 
 Landmarklist::Landmarklist(const QString& name):
         m_name(name)
@@ -27,19 +30,53 @@ Landmarklist::Landmarklist(const QString& name):
 
 }
 
-PLandmark Landmarklist::get_by_name(const QString& name)
+PLandmark Landmarklist::operator [](const QString& name)
 {
-        auto i = m_list.find(name);
-        if (i != m_list.end())
-                return i->second;
+        auto i = m_index_map.find(name);
+        if (i != m_index_map.end()) {
+                assert(i->second < m_list.size());
+                return m_list[i->second];
+        }
         return PLandmark();
+}
+
+PLandmark Landmarklist::operator [](unsigned  i)
+{
+        assert(i < m_list.size());
+        return m_list[i];
 }
 
 bool Landmarklist::add(PLandmark landmark)
 {
-        auto i = m_list.find(landmark->get_name());
-        if (i != m_list.end())
+        auto i = m_index_map.find(landmark->get_name());
+        if (i != m_index_map.end())
                 return false;
-        m_list[landmark->get_name()] = landmark;
+        m_list.push_back(landmark);
+        m_index_map[landmark->get_name()] = m_list.size();
+
+        return true;
+}
+
+size_t Landmarklist::size() const
+{
+        return m_list.size();
+}
+
+bool Landmarklist::remove(const QString& name)
+{
+        auto i = m_index_map.find(name);
+        if (i == m_index_map.end())
+                return false;
+
+        int idx = i->second;
+        m_list.erase(m_list.begin() + idx);
+        m_index_map.erase(i);
+
+        // correct index map
+        for_each(m_index_map.begin(), m_index_map.end(),
+                 [idx](std::map<QString, unsigned>::value_type& it){
+                if (it.second >= idx)
+                        --it.second;
+        });
         return true;
 }
