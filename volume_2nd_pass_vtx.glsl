@@ -26,8 +26,8 @@
 */
 
 #version 120
-attribute vec2 qt_Vertex;
-varying vec2 tex2dcoord;
+attribute highp vec2 qt_Vertex;
+varying highp vec2 tex2dcoord;
 
 void main(void)
 {

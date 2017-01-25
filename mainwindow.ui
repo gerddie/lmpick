@@ -80,6 +80,9 @@
            <height>480</height>
           </size>
          </property>
+         <property name="contextMenuPolicy">
+          <enum>Qt::ActionsContextMenu</enum>
+         </property>
         </widget>
        </item>
        <item>
@@ -220,6 +223,7 @@
      <string>&amp;Landmark</string>
     </property>
     <addaction name="action_Add"/>
+    <addaction name="action_Set"/>
     <addaction name="action_Edit"/>
     <addaction name="action_Delete"/>
     <addaction name="action_Clear"/>
@@ -327,17 +331,23 @@
   </action>
   <action name="action_Add">
    <property name="text">
-    <string>&amp;Add</string>
+    <string>&amp;Add Landmark</string>
+   </property>
+   <property name="iconText">
+    <string>Add</string>
+   </property>
+   <property name="toolTip">
+    <string>Add new landmark </string>
    </property>
   </action>
   <action name="action_Edit">
    <property name="text">
-    <string>&amp;Edit</string>
+    <string>&amp;Edit Landmark</string>
    </property>
   </action>
   <action name="action_Delete">
    <property name="text">
-    <string>&amp;Delete</string>
+    <string>&amp;Delete Landmark</string>
    </property>
   </action>
   <action name="action_Clear">
@@ -402,6 +412,11 @@
    </property>
    <property name="text">
     <string>&amp;All landmarks</string>
+   </property>
+  </action>
+  <action name="action_Set">
+   <property name="text">
+    <string>&amp;Set Landmark</string>
    </property>
   </action>
  </widget>

@@ -56,6 +56,8 @@ public:
 
         void resize(int w, int h);
 
+        bool mouse_release(QMouseEvent *ev);
+
         bool mouse_press(QMouseEvent *ev);
 
         bool mouse_tracking(QMouseEvent *ev);
@@ -107,6 +109,8 @@ MainopenGLView::MainopenGLView(QWidget *parent):
         setFormat(format);
         m_rendering = new RenderingThread(this);
         setMouseTracking( true );
+
+
 }
 
 void MainopenGLView::setVolume(VolumeData::Pointer volume)
@@ -161,7 +165,7 @@ void MainopenGLView::mouseMoveEvent(QMouseEvent *ev)
 
 void MainopenGLView::mouseReleaseEvent(QMouseEvent *ev)
 {
-        if (!m_rendering->mouse_press(ev)) {
+        if (!m_rendering->mouse_release(ev)) {
                 // handle mouse here
 
         }
@@ -182,6 +186,11 @@ void MainopenGLView::wheelEvent(QWheelEvent *ev)
                 update();
         else
                 ev->ignore();
+}
+
+void MainopenGLView::contextMenuEvent ( QContextMenuEvent * event )
+{
+        qDebug() << "Context menu requested:";
 }
 
 RenderingThread::RenderingThread(QWidget *parent):
@@ -298,40 +307,29 @@ void RenderingThread::update_rotation(QMouseEvent *ev)
         m_state.camera.rotate(QQuaternion::rotationTo(pold, pnew));
 }
 
+bool RenderingThread::mouse_release(QMouseEvent *ev)
+{
+        switch (ev->button()) {
+        case Qt::LeftButton:{
+                if (!m_mouse1_is_down)
+                        return false;
+                m_mouse1_is_down = false;
+                update_rotation(ev);
+                m_mouse_old_position = ev->localPos();
+                break;
+        }
+        default:
+                return false;
+        }
+        return true;
+}
+
 bool RenderingThread::mouse_press(QMouseEvent *ev)
 {
         switch (ev->button()) {
         case Qt::LeftButton:{
-
-                switch (ev->type()) {
-                case QEvent::MouseButtonPress:
-                        m_mouse1_is_down = true;
-                        m_mouse_old_position = ev->localPos();
-                        break;
-                case QEvent::MouseButtonRelease:
-                        if (!m_mouse1_is_down)
-                                return false;
-                        m_mouse1_is_down = false;
-                        update_rotation(ev);
-                        m_mouse_old_position = ev->localPos();
-                        break;
-                default:
-                        return false;
-                }
-                break;
-        }
-        case Qt::RightButton:{
-                switch (ev->type()) {
-                case QEvent::MouseButtonPress:
-                        if (m_volume) {
-                                qDebug() << "Left mouse at:" << ev->pos();
-                                qDebug() << "  translates to: "<<
-                                            m_volume->get_surface_coordinate(ev->pos());
-                        }
-                        break;
-                default:
-                                return false;
-                }
+                m_mouse1_is_down = true;
+                m_mouse_old_position = ev->localPos();
                 break;
         }
         default:

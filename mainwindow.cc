@@ -36,6 +36,9 @@ MainWindow::MainWindow(QWidget *parent) :
         m_iso_slider = findChild<QSlider*>("isoValueSlider");
         assert(m_iso_slider);
         connect(m_iso_slider, SIGNAL(valueChanged(int)), m_glview, SLOT(set_volume_isovalue(int)));
+
+        m_glview->addAction(ui->action_Add);
+        m_glview->addAction(ui->action_Set);
 }
 
 MainWindow::~MainWindow()
@@ -79,4 +82,9 @@ void MainWindow::on_actionOpen_Volume_triggered()
         }
 
 
+}
+
+void MainWindow::on_action_Add_triggered()
+{
+        qDebug() << "add landmark called";
 }

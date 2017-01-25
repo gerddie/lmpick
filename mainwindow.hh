@@ -43,6 +43,8 @@ private slots:
 
         void on_actionOpen_Volume_triggered();
 
+        void on_action_Add_triggered();
+
 private:
         Ui::MainWindow *ui;
         MainopenGLView *m_glview;

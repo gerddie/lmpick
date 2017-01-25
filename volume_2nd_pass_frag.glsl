@@ -66,12 +66,12 @@ uniform sampler3D volume;
 uniform sampler2D ray_start;
 uniform sampler2D ray_end;
 
-uniform vec3 step_length;
-uniform float iso_value;
+uniform highp vec3 step_length;
+uniform highp float iso_value;
 uniform highp vec3 light_source;
-uniform mat4 qt_mv;
+uniform highp mat4 qt_mv;
 
-varying vec2 tex2dcoord;
+varying highp vec2 tex2dcoord;
 
 const float zNear = 548.0;
 const float zFar = 552.0;
@@ -96,8 +96,8 @@ float depthSample(float linearDepth)
 void main(void)
 {
         // obtain start and end position of the ray
-        vec4 start = texture2D(ray_start, tex2dcoord);
-        vec4 end = texture2D(ray_end, tex2dcoord);
+        highp vec4 start = texture2D(ray_start, tex2dcoord);
+        highp vec4 end = texture2D(ray_end, tex2dcoord);
 
         // early exit if the z-value is inf
         if (start.w == 0.0 && end.w == 0.0) {
@@ -105,8 +105,8 @@ void main(void)
         }
 
         // obtain drawing direction
-        vec3 dir = (end - start).xyz;
-        vec3 adir = abs(dir);
+        highp vec3 dir = (end - start).xyz;
+        highp vec3 adir = abs(dir);
 
         // if the length of all drawing line components is smaller
         // as the corresponding step length then discard the fragment
@@ -115,18 +115,18 @@ void main(void)
         }
 
         // calculate the actually used step length
-        vec3 nf = adir  / step_length;
-        float max_nf = max(max(nf.x, nf.y), nf.z);
+        highp vec3 nf = adir  / step_length;
+        highp float max_nf = max(max(nf.x, nf.y), nf.z);
         int n = int(max_nf);
-        vec3 step = dir / n;
+        highp vec3 step = dir / n;
 
         // iterate along the ray, front to back
         bool hit = false;
         float old_iso = -1;
 
         for (int a = 0; a < n ; ++a)  {
-                vec3 x = start.xyz + a * step;
-                vec4 color = texture3D(volume, x);
+                highp vec3 x = start.xyz + a * step;
+                highp vec4 color = texture3D(volume, x);
 
                 // if we cross the iso-boundary draw the pixel
                 if (color.r > iso_value) {
