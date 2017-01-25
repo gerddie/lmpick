@@ -34,11 +34,21 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->setupUi(this);
         m_glview = findChild<MainopenGLView*>();
         m_iso_slider = findChild<QSlider*>("isoValueSlider");
+        m_landmark_list_view = findChild<QListView*>("LandmarkListView");
         assert(m_iso_slider);
         connect(m_iso_slider, SIGNAL(valueChanged(int)), m_glview, SLOT(set_volume_isovalue(int)));
 
-        m_glview->addAction(ui->action_Add);
         m_glview->addAction(ui->action_Set);
+        m_glview->addAction(ui->action_Add);
+
+
+        assert(m_landmark_list_view);
+
+        m_landmark_list_view->addAction(ui->action_Add);
+        m_landmark_list_view->addAction(ui->action_Set);
+        m_landmark_list_view->addAction(ui->action_Edit);
+        m_landmark_list_view->addAction(ui->action_Clear);
+        m_landmark_list_view->addAction(ui->action_Clear_all_locations);
 }
 
 MainWindow::~MainWindow()

@@ -149,9 +149,9 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QListView" name="listView">
+              <widget class="QListView" name="LandmarkListView">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
@@ -164,6 +164,12 @@
                  <width>200</width>
                  <height>0</height>
                 </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::StrongFocus</enum>
+               </property>
+               <property name="contextMenuPolicy">
+                <enum>Qt::ActionsContextMenu</enum>
                </property>
               </widget>
              </item>

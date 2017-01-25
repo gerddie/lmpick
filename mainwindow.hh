@@ -25,6 +25,7 @@
 #include <mainopenglview.hh>
 #include <QMainWindow>
 #include <QSlider>
+#include <QListView>
 
 namespace Ui {
 class MainWindow;
@@ -49,6 +50,8 @@ private:
         Ui::MainWindow *ui;
         MainopenGLView *m_glview;
         QSlider *m_iso_slider;
+        QListView *m_landmark_list_view;
+
 };
 
 #endif // MAINWINDOW_HH
