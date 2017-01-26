@@ -51,7 +51,8 @@ HEADERS  += mainwindow.hh \
     sphere.hh \
     landmarklistpainter.hh \
     renderingthread.hh \
-    landmarklistio.hh
+    landmarklistio.hh \
+    errormacro.hh
 
 FORMS    += mainwindow.ui
 

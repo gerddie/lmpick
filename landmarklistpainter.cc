@@ -60,12 +60,15 @@ void LandmarkListPainter::do_draw(const GlobalSceneState& state, QOpenGLContext&
         GlobalSceneState local_state = state;
         for (int i = 0; i < static_cast<int>(impl->m_the_list->size()); ++i) {
                 auto lm = (*impl->m_the_list)[i];
-                auto offset = lm->get_location() * impl->m_viewspace_scale - impl->m_viewspace_shift;
-                local_state.set_offset(offset);
-                if (i == impl->m_active_index) {
-                        impl->m_active_sphere.draw(local_state, context);
-                }else{
-                        impl->m_normal_sphere.draw(local_state, context);
+                if (lm->is_set()) {
+
+                        auto offset = lm->get_location() * impl->m_viewspace_scale - impl->m_viewspace_shift;
+                        local_state.set_offset(offset);
+                        if (i == impl->m_active_index) {
+                                impl->m_active_sphere.draw(local_state, context);
+                        }else{
+                                impl->m_normal_sphere.draw(local_state, context);
+                        }
                 }
         }
 }

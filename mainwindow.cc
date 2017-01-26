@@ -165,13 +165,14 @@ void MainWindow::on_action_Open_landmarkset_triggered()
                 return;
         }
 
-        LandmarklistIO io;
-        auto lmlist = io.read(fileNames.first());
-        if (lmlist) {
+        try {
+                LandmarklistIO io;
+                auto lmlist = io.read(fileNames.first());
                 m_current_landmarklist = lmlist;
                 m_glview->setLandmarkList(m_current_landmarklist);
-        }else{
-             QMessageBox box(QMessageBox::Information, "Error loading lndmarks", "Unable to load landmarks",
+        }
+        catch (std::exception& x) {
+             QMessageBox box(QMessageBox::Information, "Error loading lndmarks", x.what(),
                              QMessageBox::Ok);
         }
     }

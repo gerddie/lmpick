@@ -1,6 +1,7 @@
 #include "landmarklistio.hh"
 #include "landmarklist.hh"
 #include "landmark.hh"
+#include "errormacro.hh"
 
 #include <QDomDocument>
 #include <QFile>
@@ -99,7 +100,7 @@ static pair<bool, Camera> read_camera(const QDomElement& parent)
         if (dist.first)
                 camera.set_distance(dist.second);
 
-        return make_pair(false, camera);
+        return make_pair(true, camera);
 }
 
 static PLandmark read_landmark(const QDomElement& elm)
@@ -113,19 +114,21 @@ static PLandmark read_landmark(const QDomElement& elm)
         if (picfile.first)
                 result->set_template_image_file(picfile.second);
 
+
         auto isovalue = read_tag<float>(elm, "isovalue");
-        if (isovalue.first)
-                result->set_iso_value(isovalue.second);
-
         auto location = read_tag<QVector3D>(elm, "location");
-        if (location.first)
-                result->set_location(location.second);
-
         auto camera = read_camera(elm);
-        if (camera.first)
-                result->set_camera(camera.second);
-
-        qDebug() << "Read landmark:" << name.second << " at " << location.second;
+        bool complete = isovalue.first && location.first && camera.first;
+        if (complete) {
+                result->set(location.second, isovalue.second, camera.second);
+        }else{
+                if (isovalue.first)
+                        result->set_iso_value(isovalue.second);
+                if (location.first)
+                        result->set_location(location.second);
+                if (camera.first)
+                        result->set_camera(camera.second);
+        }
         return result;
 }
 
@@ -135,22 +138,19 @@ PLandmarkList LandmarklistIO::read(const QString& filename)
 
         QFile file(filename);
         if (!file.open(QFile::ReadOnly | QFile::Text)) {
-                qWarning() << "Unable to open file:"<< filename;
-                return nullptr;
+                throw create_exception<std::runtime_error>("Unable to open file:", filename);
         }
 
         if (!reader.setContent(&file)) {
-                qWarning() << "Unable to read file as XML:"<< filename;
                 file.close();
-                return nullptr;
+                throw create_exception<std::runtime_error>("Unable to read file as XML:", filename);
         }
-
         file.close();
 
         auto list_elm = reader.documentElement();
         if (list_elm.tagName() != "list") {
-                qWarning() << filename << " not a landmark list, got tag <" << list_elm.tagName() << "> expected <list>";
-                return nullptr;
+                throw create_exception<std::runtime_error>(filename, " not a landmark list, got tag <",
+                                                           list_elm.tagName(),"> but expected <list>");
         }
         // read name
         auto name_child = list_elm.firstChildElement("name");
@@ -169,7 +169,8 @@ PLandmarkList LandmarklistIO::read(const QString& filename)
                 auto lm = read_landmark(landmark_elm);
                 if (lm)
                         result->add(lm);
-
+                else
+                        qWarning() << filename << ": Skipped empty landmark tag";
                 landmark_elm = landmark_elm.nextSiblingElement("landmark");
         }
         return result;
