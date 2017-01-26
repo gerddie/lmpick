@@ -149,7 +149,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QListView" name="LandmarkListView">
+              <widget class="QTableView" name="LandmarkTableView">
                <property name="enabled">
                 <bool>true</bool>
                </property>

@@ -25,7 +25,7 @@
 #include "mainopenglview.hh"
 #include <QMainWindow>
 #include <QSlider>
-#include <QListView>
+#include <QTableView>
 
 namespace Ui {
 class MainWindow;
@@ -52,7 +52,7 @@ private:
         Ui::MainWindow *ui;
         MainopenGLView *m_glview;
         QSlider *m_iso_slider;
-        QListView *m_landmark_list_view;
+        QTableView *m_landmark_list_view;
 
         PVolumeData m_current_volume;
         PLandmarkList m_current_landmarklist;

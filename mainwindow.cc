@@ -80,7 +80,7 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->setupUi(this);
         m_glview = findChild<MainopenGLView*>();
         m_iso_slider = findChild<QSlider*>("isoValueSlider");
-        m_landmark_list_view = findChild<QListView*>("LandmarkListView");
+        m_landmark_list_view = findChild<QTableView *>("LandmarkTableView");
         assert(m_iso_slider);
         connect(m_iso_slider, SIGNAL(valueChanged(int)), m_glview, SLOT(set_volume_isovalue(int)));
 
