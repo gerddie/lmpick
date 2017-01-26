@@ -43,6 +43,8 @@ public:
 
         const QQuaternion& get_rotation() const;
         const QVector3D& get_position() const;
+
+
         float get_zoom() const;
 private:
 

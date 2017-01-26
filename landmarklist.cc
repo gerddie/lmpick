@@ -68,7 +68,7 @@ bool LandmarkList::remove(const QString& name)
         if (i == m_index_map.end())
                 return false;
 
-        int idx = i->second;
+        unsigned idx = i->second;
         m_list.erase(m_list.begin() + idx);
         m_index_map.erase(i);
 

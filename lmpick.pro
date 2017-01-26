@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl
+QT       += core gui opengl xml
 
 greaterThan(QT_MAJOR_VERSION, 5): QT += widgets
 
@@ -35,7 +35,8 @@ SOURCES += main.cc\
     landmarklist.cc \
     sphere.cc \
     landmarklistpainter.cc \
-    renderingthread.cc
+    renderingthread.cc \
+    landmarklistio.cc
 
 
 HEADERS  += mainwindow.hh \
@@ -49,7 +50,8 @@ HEADERS  += mainwindow.hh \
     landmarklist.hh \
     sphere.hh \
     landmarklistpainter.hh \
-    renderingthread.hh
+    renderingthread.hh \
+    landmarklistio.hh
 
 FORMS    += mainwindow.ui
 

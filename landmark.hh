@@ -42,9 +42,7 @@ public:
 
         void set_template_image_file(const QString& fname);
 
-
-
-        void set(const QVector3D& location, const Camera& best_view);
+        void set(const QVector3D& location, float iso, const Camera& best_view);
 
         const QString& get_name() const;
 
@@ -53,12 +51,23 @@ public:
         const QVector3D& get_location() const;
 
         const Camera& get_camera() const;
+
+        float get_iso_value()const;
+
+
+        void set_location(const QVector3D& loc);
+
+        void set_iso_value(float iso);
+
+        void set_camera(const Camera& camera);
+
 private:
         QString m_name;
         bool m_is_set;
         QString m_template_image_filename;
         QVector3D m_location;
         Camera m_best_view;
+        float m_iso_value;
 
 
 };

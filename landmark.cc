@@ -46,16 +46,32 @@ bool Landmark::is_set() const
         return m_is_set;
 }
 
-void Landmark::set(const QVector3D& location, const Camera& best_view)
+void Landmark::set(const QVector3D& location, float iso, const Camera& best_view)
 {
         m_location = location;
+        m_iso_value = iso;
         m_best_view = best_view;
         m_is_set = true;
+}
+
+void  Landmark::set_location(const QVector3D& loc)
+{
+        m_location = loc;
+}
+
+void  Landmark::set_camera(const Camera& camera)
+{
+        m_best_view = camera;
 }
 
 const QString& Landmark::get_name() const
 {
         return m_name;
+}
+
+void Landmark::set_template_image_file(const QString& fname)
+{
+        m_template_image_filename = fname;
 }
 
 const QString& Landmark::get_template_filename() const
@@ -71,4 +87,14 @@ const QVector3D& Landmark::get_location() const
 const Camera& Landmark::get_camera() const
 {
         return m_best_view;
+}
+
+void Landmark::set_iso_value(float iso)
+{
+        m_iso_value = iso;
+}
+
+float Landmark::get_iso_value() const
+{
+        return m_iso_value;
 }
