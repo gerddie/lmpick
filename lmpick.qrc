@@ -9,13 +9,13 @@
         <file>icons/document-open-volume.png</file>
     </qresource>
     <qresource prefix="/shaders">
-        <file>view.glsl</file>
-        <file>basic_frag.glsl</file>
-        <file>volume_2nd_pass_vtx.glsl</file>
-        <file>volume_1st_pass_frag.glsl</file>
-        <file>volume_1st_pass_vtx.glsl</file>
-        <file>volume_2nd_pass_frag.glsl</file>
-        <file>volume_blit_frag.glsl</file>
-        <file>shere_vtx.glsl</file>
+        <file>shaders/view.glsl</file>
+        <file>shaders/basic_frag.glsl</file>
+        <file>shaders/volume_2nd_pass_vtx.glsl</file>
+        <file>shaders/volume_1st_pass_frag.glsl</file>
+        <file>shaders/volume_1st_pass_vtx.glsl</file>
+        <file>shaders/volume_2nd_pass_frag.glsl</file>
+        <file>shaders/volume_blit_frag.glsl</file>
+        <file>shaders/shere_vtx.glsl</file>
     </qresource>
 </RCC>

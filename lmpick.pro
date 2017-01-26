@@ -34,7 +34,9 @@ SOURCES += main.cc\
     camera.cc \
     landmarklist.cc \
     sphere.cc \
-    landmarklistpainter.cc
+    landmarklistpainter.cc \
+    renderingthread.cc
+
 
 HEADERS  += mainwindow.hh \
     mainopenglview.hh \
@@ -46,20 +48,28 @@ HEADERS  += mainwindow.hh \
     camera.hh \
     landmarklist.hh \
     sphere.hh \
-    landmarklistpainter.hh
+    landmarklistpainter.hh \
+    renderingthread.hh
 
 FORMS    += mainwindow.ui
 
 DISTFILES += \
-    view.glsl \
-    basic_frag.glsl \
+    shaders/view.glsl \
+    shaders/basic_frag.glsl \
     README.md \
-    volume_2nd_pass_vtx.glsl \
-    volume_1st_pass_frag.glsl \
-    volume_1st_pass_vtx.glsl \
-    volume_2nd_pass_frag.glsl \
-    volume_blit_frag.glsl \
-    shere_vtx.glsl
+    shaders/volume_2nd_pass_vtx.glsl \
+    shaders/volume_1st_pass_frag.glsl \
+    shaders/volume_1st_pass_vtx.glsl \
+    shaders/volume_2nd_pass_frag.glsl \
+    shaders/volume_blit_frag.glsl \
+    shaders/shere_vtx.glsl \
+    src/icons/auto_snapshot.png \
+    src/icons/auto_snapshot_on.png \
+    src/icons/document-open-volume.png \
+    src/icons/document-open.png \
+    src/icons/document-save-as.png \
+    src/icons/document-save.png \
+    src/icons/snapshot.png
 
 RESOURCES += \
     lmpick.qrc

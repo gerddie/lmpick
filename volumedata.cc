@@ -22,7 +22,6 @@
 #include "volumedata.hh"
 #include <mia/core/filter.hh>
 #include <mia/3d/imageio.hh>
-#include <mia/2d/rgbimageio.hh>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObjectFormat>
@@ -333,9 +332,9 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         m_indexBuf.bind();
         m_indexBuf.allocate(plain_cube_indices, sizeof(plain_cube_indices));
 
-        compile_and_link(m_prep_program, ":/shaders/volume_1st_pass_vtx.glsl", ":/shaders/volume_1st_pass_frag.glsl");
-        compile_and_link(m_volume_program, ":/shaders/volume_2nd_pass_vtx.glsl", ":/shaders/volume_2nd_pass_frag.glsl");
-        compile_and_link(m_blit_program, ":/shaders/volume_2nd_pass_vtx.glsl", ":/shaders/volume_blit_frag.glsl");
+        compile_and_link(m_prep_program, ":/shaders/shaders/volume_1st_pass_vtx.glsl", ":/shaders/shaders/volume_1st_pass_frag.glsl");
+        compile_and_link(m_volume_program, ":/shaders/shaders/volume_2nd_pass_vtx.glsl", ":/shaders/shaders/volume_2nd_pass_frag.glsl");
+        compile_and_link(m_blit_program, ":/shaders/shaders/volume_2nd_pass_vtx.glsl", ":/shaders/shaders/volume_blit_frag.glsl");
 
         m_voltex_param = m_volume_program.uniformLocation("volume");
         if (m_voltex_param == -1)

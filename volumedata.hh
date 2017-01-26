@@ -65,4 +65,6 @@ private:
         struct VolumeDataImpl *impl;
 };
 
+typedef VolumeData::Pointer PVolumeData;
+
 #endif // VOLUMEDATA_HH

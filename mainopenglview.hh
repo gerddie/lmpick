@@ -23,6 +23,7 @@
 #define MAINOPENGLVIEW_HH
 
 #include "volumedata.hh"
+#include "landmarklist.hh"
 #include <QOpenGLWidget>
 
 class RenderingThread;
@@ -35,7 +36,9 @@ public:
 
         ~MainopenGLView();
 
-        void setVolume(VolumeData::Pointer volume);
+        void setVolume(PVolumeData volume);
+        void setLandmarkList(PLandmarkList list);
+
 private slots:
         void detachGL();
 

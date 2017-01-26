@@ -27,6 +27,50 @@
 #include <mia/3d/imageio.hh>
 #include <sstream>
 
+
+using std::make_shared;
+
+#ifdef INITIAL_TESTING
+
+static PLandmarkList create_debug_list()
+{
+        PLandmarkList result = make_shared<LandmarkList>("Test list");
+        std::vector<QVector3D> v{{251.8, 140.8 ,128},
+                                 {140.8, 251.8,128},
+                                 {140.8,140.8, 239},
+                                 {140.8,30,128},
+                                 {30,140.8,128},
+                                 {140.8,140.8, 17}};
+        Camera c;
+        const char n[][2] = {"a", "b", "c", "d", "e", "f"};
+
+        for(int i = 0; i < 6; ++i) {
+                result->add(PLandmark(new Landmark(n[i], v[i], c)));
+        }
+        return result;
+}
+
+
+static PVolumeData create_debug_volume()
+{
+        auto img = new mia::C3DFImage(mia::C3DBounds(128,256,128));
+
+        auto i = img->begin();
+        for (unsigned int z = 0; z < 128; ++z) {
+                float fz = sin (z * M_PI / 127);
+                for (unsigned int y = 0; y < 256; ++y) {
+                        float fy = sin (y * M_PI / 255) * fz;
+                        for (unsigned int x = 0; x < 128; ++x, ++i)  {
+                                *i = fy * sin (x * M_PI / 127);
+                        }
+                }
+        }
+        img->set_voxel_size(mia::C3DFVector(2.2, 1.1, 2.0));
+        return PVolumeData(new VolumeData(mia::P3DImage(img)));
+}
+
+#endif
+
 MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::MainWindow)
@@ -49,7 +93,17 @@ MainWindow::MainWindow(QWidget *parent) :
         m_landmark_list_view->addAction(ui->action_Edit);
         m_landmark_list_view->addAction(ui->action_Clear);
         m_landmark_list_view->addAction(ui->action_Clear_all_locations);
+
+#ifdef INITIAL_TESTING
+        m_current_landmarklist = create_debug_list();
+        m_glview->setLandmarkList(m_current_landmarklist);
+
+        m_current_volume = create_debug_volume();
+        m_glview->setVolume(m_current_volume);
+#endif
 }
+
+
 
 MainWindow::~MainWindow()
 {
@@ -84,14 +138,12 @@ void MainWindow::on_actionOpen_Volume_triggered()
                     return;
             }
             auto volume = mia::load_image3d(fileNames.first().toStdString());
-            VolumeData::Pointer obj = std::make_shared<VolumeData>(volume);
-            auto intensity_range = obj->get_intensity_range();
-            m_glview->setVolume(obj);
+            m_current_volume = std::make_shared<VolumeData>(volume);
+            auto intensity_range = m_current_volume->get_intensity_range();
+            m_glview->setVolume(m_current_volume);
             m_iso_slider->setRange(intensity_range.first+1, intensity_range.second);
             m_iso_slider->setValue((intensity_range.second - intensity_range.first) / 2);
         }
-
-
 }
 
 void MainWindow::on_action_Add_triggered()

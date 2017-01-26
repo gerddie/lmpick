@@ -59,7 +59,6 @@ void LandmarkListPainter::do_draw(const GlobalSceneState& state, QOpenGLContext&
         for (int i = 0; i < static_cast<int>(impl->m_the_list->size()); ++i) {
                 auto lm = (*impl->m_the_list)[i];
                 auto offset = lm->get_location() * impl->m_viewspace_scale - impl->m_viewspace_shift;
-                qDebug() << "landmark("<< lm->get_name() <<  "):" << offset;
                 local_state.set_offset(offset);
                 if (i == impl->m_active_index) {
                         impl->m_active_sphere.draw(local_state, context);
@@ -77,19 +76,4 @@ LandmarkListPainterImpl::LandmarkListPainterImpl():
         m_viewspace_scale(1,1,1),
         m_viewspace_shift(0,0,0)
 {
-#if 1
-        std::vector<QVector3D> v{{251.8, 140.8 ,128},
-                                 {140.8, 251.8,128},
-                                 {140.8,140.8, 239},
-                                 {140.8,30,128},
-                                 {30,140.8,128},
-                                 {140.8,140.8, 17}};
-        Camera c;
-        const char n[][2] = {"a", "b", "c", "d", "e", "f"};
-
-        for(int i = 0; i < 6; ++i) {
-                m_the_list->add(PLandmark(new Landmark(n[i], v[i], c)));
-        }
-        m_active_index = 1;
-#endif
 }

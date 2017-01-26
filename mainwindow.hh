@@ -22,7 +22,7 @@
 #ifndef MAINWINDOW_HH
 #define MAINWINDOW_HH
 
-#include <mainopenglview.hh>
+#include "mainopenglview.hh"
 #include <QMainWindow>
 #include <QSlider>
 #include <QListView>
@@ -51,6 +51,9 @@ private:
         MainopenGLView *m_glview;
         QSlider *m_iso_slider;
         QListView *m_landmark_list_view;
+
+        PVolumeData m_current_volume;
+        PLandmarkList m_current_landmarklist;
 
 };
 

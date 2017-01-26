@@ -110,10 +110,10 @@ void SphereImpl::attach_gl()
 
         create_sphere(m_radius);
 
-        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/shere_vtx.glsl"))
+        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/shaders/shere_vtx.glsl"))
                 qWarning() << "Error compiling ':/shaders/shere_vtx.glsl', view will be clobbered\n";
 
-        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/basic_frag.glsl"))
+        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/shaders/basic_frag.glsl"))
                 qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
 
         if (!m_program.link())
