@@ -160,11 +160,7 @@ void MainWindow::on_action_Open_landmarkset_triggered()
 
     if (dialog.exec()) {
         auto fileNames = dialog.selectedFiles();
-        if ( fileNames.empty()) {
-                qWarning() << "Open landmark list:  no files selected";
-                return;
-        }
-
+        assert(!fileNames.empty());
         try {
                 LandmarklistIO io;
                 auto lmlist = io.read(fileNames.first());
@@ -172,8 +168,9 @@ void MainWindow::on_action_Open_landmarkset_triggered()
                 m_glview->setLandmarkList(m_current_landmarklist);
         }
         catch (std::exception& x) {
-             QMessageBox box(QMessageBox::Information, "Error loading lndmarks", x.what(),
+             QMessageBox box(QMessageBox::Information, "Error loading landmarks", x.what(),
                              QMessageBox::Ok);
+             box.exec();
         }
     }
 }
