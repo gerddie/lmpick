@@ -37,19 +37,16 @@ public:
         GlobalSceneState();
 
         QMatrix4x4 get_modelview_matrix() const;
+        void set_offset(const QVector3D& v);
+        void delete_offset();
 
         Camera camera;
-
         QVector3D light_source;
         QMatrix4x4 projection;
         QSize viewport;
 
-        void set_offset(const QVector3D& v);
-        void delete_offset();
 private:
-
         QVector3D m_offset;
-
 };
 
 #endif // GLOBALSCENESTATE_HH

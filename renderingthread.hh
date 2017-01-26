@@ -19,7 +19,9 @@ public:
 
         ~RenderingThread();
 
-        void initialize();
+        void attach_gl();
+
+        void detach_gl();
 
         void run();
 
@@ -35,39 +37,35 @@ public:
 
         bool mouse_wheel(QWheelEvent *ev);
 
-        void setVolume(PVolumeData volume);
+        void set_volume(PVolumeData volume);
 
-        void setLandmarkList(PLandmarkList list);
+        void set_landmark_list(PLandmarkList list);
 
         void set_volume_iso_value(int value);
 
-        void detach_gl();
-
 private:
         void update_rotation(QMouseEvent *ev);
+
         QVector3D get_mapped_point(const QPointF& localPos) const;
+
         void update_projection();
 
+
         QWidget *m_parent;
+
+        // OpenGL state and view context
         bool m_is_gl_attached;
         QOpenGLContext *m_context;
-
         GlobalSceneState m_state;
-
-
-        // the shader (must be moved into the actual geometries
-        QOpenGLShaderProgram m_view_program;
-
 
         // used for mouse tracking
         bool m_mouse1_is_down;
         QPointF m_mouse_old_position;
-
-
         QVector2D m_viewport;
 
+        // Data to display
         VolumeData::Pointer m_volume;
-        Octaeder::Pointer m_octaeder;
+
         LandmarkListPainter m_lmp;
 };
 

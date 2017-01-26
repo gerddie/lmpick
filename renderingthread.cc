@@ -16,7 +16,7 @@ RenderingThread::~RenderingThread()
 {
 }
 
-void RenderingThread::initialize()
+void RenderingThread::attach_gl()
 {
         initializeOpenGLFunctions();
         m_context =  QOpenGLContext::currentContext();
@@ -27,14 +27,11 @@ void RenderingThread::initialize()
         if (m_volume)
                 m_volume->attach_gl(*m_context);
 
-        if (m_octaeder)
-                m_octaeder->attach_gl(*m_context);
-
         m_lmp.attach_gl(*m_context);
 
 }
 
-void RenderingThread::setVolume(VolumeData::Pointer volume)
+void RenderingThread::set_volume(VolumeData::Pointer volume)
 {
         std::swap(m_volume, volume);
         if (m_is_gl_attached) {
@@ -51,7 +48,7 @@ void RenderingThread::setVolume(VolumeData::Pointer volume)
         }
 }
 
-void RenderingThread::setLandmarkList(PLandmarkList list)
+void RenderingThread::set_landmark_list(PLandmarkList list)
 {
         m_lmp.set_landmark_list(list);
 }
@@ -73,9 +70,6 @@ void RenderingThread::paint()
 
         if (m_volume)
                 m_volume->draw(m_state, *m_context);
-
-        if ( m_octaeder )
-                m_octaeder->draw(m_state, *m_context);
 
         m_lmp.draw(m_state, *m_context);
 }
@@ -188,9 +182,7 @@ void RenderingThread::detach_gl()
         if (m_volume)
                 m_volume->detach_gl(*m_context);
 
-        if(m_octaeder)
-                m_octaeder->detach_gl(*m_context);
-
+        m_lmp.detach_gl(*m_context);
 }
 
 void RenderingThread::run()

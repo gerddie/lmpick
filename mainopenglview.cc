@@ -65,14 +65,14 @@ MainopenGLView::MainopenGLView(QWidget *parent):
 void MainopenGLView::setVolume(VolumeData::Pointer volume)
 {
         makeCurrent();
-        m_rendering->setVolume(volume);
+        m_rendering->set_volume(volume);
         doneCurrent();
 }
 
 void MainopenGLView::setLandmarkList(PLandmarkList list)
 {
         makeCurrent();
-        m_rendering->setLandmarkList(list);
+        m_rendering->set_landmark_list(list);
         doneCurrent();
 }
 
@@ -94,7 +94,7 @@ void MainopenGLView::detachGL()
 
 void MainopenGLView::initializeGL()
 {
-        m_rendering->initialize();
+        m_rendering->attach_gl();
         connect(QOpenGLContext::currentContext(), SIGNAL(aboutToBeDestroyed()),
                 this, SLOT(detachGL()));
 }

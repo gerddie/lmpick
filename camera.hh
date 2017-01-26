@@ -32,17 +32,14 @@ public:
 
         Camera(const QVector3D& position, const QQuaternion& rotation, float zoom);
 
+        void set_position(const QVector3D& pos);
         void set_rotation(const QQuaternion& r);
         void rotate(const QQuaternion& r);
 
-        void set_position(const QVector3D& pos);
         void set_zoom(float z);
         void zoom_in();
         void zoom_out();
-
         void set_distance(float dist);
-
-
 
         const QQuaternion& get_rotation() const;
         const QVector3D& get_position() const;
