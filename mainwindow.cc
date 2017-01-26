@@ -21,11 +21,13 @@
 
 #include "mainwindow.hh"
 #include "volumedata.hh"
+#include "landmarklistio.hh"
 #include "ui_mainwindow.h"
 
 #include <QFileDialog>
 #include <mia/3d/imageio.hh>
 #include <sstream>
+#include <QMessageBox>
 
 
 using std::make_shared;
@@ -127,7 +129,7 @@ void MainWindow::on_actionOpen_Volume_triggered()
                 filetypes << "*." << i.c_str() << " ";
         filetypes << ")";
         QFileDialog dialog(this, "Open volume data set", ".", filetypes.str().c_str());
-
+        dialog.setFileMode(QFileDialog::ExistingFile);
         if (dialog.exec()) {
             auto fileNames = dialog.selectedFiles();
             if ( fileNames.length() > 1) {
@@ -149,4 +151,28 @@ void MainWindow::on_actionOpen_Volume_triggered()
 void MainWindow::on_action_Add_triggered()
 {
         qDebug() << "add landmark called";
+}
+
+void MainWindow::on_action_Open_landmarkset_triggered()
+{
+    QFileDialog dialog(this, "Open landmark list", ".", "(MIA landmark list *.lmx)");
+    dialog.setFileMode(QFileDialog::ExistingFile);
+
+    if (dialog.exec()) {
+        auto fileNames = dialog.selectedFiles();
+        if ( fileNames.empty()) {
+                qWarning() << "Open landmark list:  no files selected";
+                return;
+        }
+
+        LandmarklistIO io;
+        auto lmlist = io.read(fileNames.first());
+        if (lmlist) {
+                m_current_landmarklist = lmlist;
+                m_glview->setLandmarkList(m_current_landmarklist);
+        }else{
+             QMessageBox box(QMessageBox::Information, "Error loading lndmarks", "Unable to load landmarks",
+                             QMessageBox::Ok);
+        }
+    }
 }

@@ -10,9 +10,9 @@ class LandmarklistIO
 public:
         LandmarklistIO();
 
-        PLandmarkList read(const char *filename);
+        PLandmarkList read(const QString& filename);
 
-        bool write(const char *filename, const LandmarkList& list);
+        bool write(const QString& filename, const LandmarkList& list);
 };
 
 #endif // LANDMARKLISTIO_HH

@@ -83,7 +83,7 @@ static pair<bool, Camera> read_camera(const QDomElement& parent)
         if (elm.isNull())
                 return make_pair(false, Camera());
 
-        auto loc = read_tag<QVector3D>(elm, "loction");
+        auto loc = read_tag<QVector3D>(elm, "location");
         if (loc.first)
                 camera.set_position(loc.second);
 
@@ -117,17 +117,19 @@ static PLandmark read_landmark(const QDomElement& elm)
         if (isovalue.first)
                 result->set_iso_value(isovalue.second);
 
-        auto location = read_tag<QVector3D>(elm, "loction");
+        auto location = read_tag<QVector3D>(elm, "location");
         if (location.first)
                 result->set_location(location.second);
 
         auto camera = read_camera(elm);
         if (camera.first)
                 result->set_camera(camera.second);
+
+        qDebug() << "Read landmark:" << name.second << " at " << location.second;
         return result;
 }
 
-PLandmarkList LandmarklistIO::read(const char *filename)
+PLandmarkList LandmarklistIO::read(const QString& filename)
 {
         QDomDocument reader;
 
@@ -145,25 +147,11 @@ PLandmarkList LandmarklistIO::read(const char *filename)
 
         file.close();
 
-        auto elm = reader.documentElement();
-        auto node = elm.firstChild();
-
-        if (node.isNull()) {
-                qWarning() << "Bogus file, empty XML structure in:"<< filename;
-                return nullptr;
-        }
-
-        auto list_elm = node.toElement();
-        if (list_elm.isNull()) {
-                qWarning() << "Bogus file, empty XML <list> element in:"<< filename;
-                return nullptr;
-        }
-
+        auto list_elm = reader.documentElement();
         if (list_elm.tagName() != "list") {
                 qWarning() << filename << " not a landmark list, got tag <" << list_elm.tagName() << "> expected <list>";
                 return nullptr;
         }
-
         // read name
         auto name_child = list_elm.firstChildElement("name");
         QString list_name("(unknown)");
@@ -187,7 +175,7 @@ PLandmarkList LandmarklistIO::read(const char *filename)
         return result;
 }
 
-bool LandmarklistIO::write(const char *filename, const LandmarkList& list)
+bool LandmarklistIO::write(const QString& filename, const LandmarkList& list)
 {
         return false;
 }

@@ -46,6 +46,8 @@ private slots:
 
         void on_action_Add_triggered();
 
+        void on_action_Open_landmarkset_triggered();
+
 private:
         Ui::MainWindow *ui;
         MainopenGLView *m_glview;

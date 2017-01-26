@@ -55,6 +55,8 @@ void LandmarkListPainter::do_attach_gl(QOpenGLContext& context)
 
 void LandmarkListPainter::do_draw(const GlobalSceneState& state, QOpenGLContext& context) const
 {
+        if (!impl->m_the_list)
+                return;
         GlobalSceneState local_state = state;
         for (int i = 0; i < static_cast<int>(impl->m_the_list->size()); ++i) {
                 auto lm = (*impl->m_the_list)[i];
