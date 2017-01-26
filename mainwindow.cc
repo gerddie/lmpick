@@ -131,20 +131,27 @@ void MainWindow::on_actionOpen_Volume_triggered()
         QFileDialog dialog(this, "Open volume data set", ".", filetypes.str().c_str());
         dialog.setFileMode(QFileDialog::ExistingFile);
         if (dialog.exec()) {
-            auto fileNames = dialog.selectedFiles();
-            if ( fileNames.length() > 1) {
-                    qWarning() << "Open volume data:  selected " << fileNames.length()
-                               << "files, only first one will be used";
-            }else if (fileNames.empty()) {
-                    qWarning() << "Open volume data:  no files selected";
-                    return;
-            }
-            auto volume = mia::load_image3d(fileNames.first().toStdString());
-            m_current_volume = std::make_shared<VolumeData>(volume);
-            auto intensity_range = m_current_volume->get_intensity_range();
-            m_glview->setVolume(m_current_volume);
-            m_iso_slider->setRange(intensity_range.first+1, intensity_range.second);
-            m_iso_slider->setValue((intensity_range.second - intensity_range.first) / 2);
+                auto fileNames = dialog.selectedFiles();
+                if ( fileNames.length() > 1) {
+                        qWarning() << "Open volume data:  selected " << fileNames.length()
+                                   << "files, only first one will be used";
+                }else if (fileNames.empty()) {
+                        qWarning() << "Open volume data:  no files selected";
+                        return;
+                }
+                try {
+                        auto volume = mia::load_image3d(fileNames.first().toStdString());
+                        m_current_volume = std::make_shared<VolumeData>(volume);
+                        auto intensity_range = m_current_volume->get_intensity_range();
+                        m_glview->setVolume(m_current_volume);
+                        m_iso_slider->setRange(intensity_range.first+1, intensity_range.second);
+                        m_iso_slider->setValue((intensity_range.second - intensity_range.first) / 2);
+                }
+                catch (std::exception& x) {
+                        QMessageBox box(QMessageBox::Information, "Error loading volume data", x.what(),
+                                        QMessageBox::Ok);
+                        box.exec();
+                }
         }
 }
 
@@ -155,22 +162,22 @@ void MainWindow::on_action_Add_triggered()
 
 void MainWindow::on_action_Open_landmarkset_triggered()
 {
-    QFileDialog dialog(this, "Open landmark list", ".", "(MIA landmark list *.lmx)");
-    dialog.setFileMode(QFileDialog::ExistingFile);
+        QFileDialog dialog(this, "Open landmark list", ".", "(MIA landmark list *.lmx)");
+        dialog.setFileMode(QFileDialog::ExistingFile);
 
-    if (dialog.exec()) {
-        auto fileNames = dialog.selectedFiles();
-        assert(!fileNames.empty());
-        try {
-                LandmarklistIO io;
-                auto lmlist = io.read(fileNames.first());
-                m_current_landmarklist = lmlist;
-                m_glview->setLandmarkList(m_current_landmarklist);
+        if (dialog.exec()) {
+                auto fileNames = dialog.selectedFiles();
+                assert(!fileNames.empty());
+                try {
+                        LandmarklistIO io;
+                        auto lmlist = io.read(fileNames.first());
+                        m_current_landmarklist = lmlist;
+                        m_glview->setLandmarkList(m_current_landmarklist);
+                }
+                catch (std::exception& x) {
+                        QMessageBox box(QMessageBox::Information, "Error loading landmarks", x.what(),
+                                        QMessageBox::Ok);
+                        box.exec();
+                }
         }
-        catch (std::exception& x) {
-             QMessageBox box(QMessageBox::Information, "Error loading landmarks", x.what(),
-                             QMessageBox::Ok);
-             box.exec();
-        }
-    }
 }
