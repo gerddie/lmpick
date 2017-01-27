@@ -21,9 +21,11 @@
 
 #include "camera.hh"
 
-Camera::Camera()
+Camera::Camera():
+        m_rotation(1,0,0,0),
+        m_position(0,0,-550),
+        m_zoom(1.0)
 {
-
 }
 
 Camera::Camera(const QVector3D& position, const QQuaternion& rotation, float zoom):
@@ -42,8 +44,6 @@ void Camera::rotate(const QQuaternion& r)
 {
         m_rotation  = r * m_rotation;
 }
-
-
 
 void Camera::set_position(const QVector3D& pos)
 {

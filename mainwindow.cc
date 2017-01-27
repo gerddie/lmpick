@@ -48,7 +48,7 @@ static PLandmarkList create_debug_list()
         const char n[][2] = {"a", "b", "c", "d", "e", "f"};
 
         for(int i = 0; i < 6; ++i) {
-                result->add(PLandmark(new Landmark(n[i], v[i], 0.3, c)));
+                result->add(PLandmark(new Landmark(n[i], v[i], 64, c)));
         }
         return result;
 }

@@ -52,6 +52,12 @@ void RenderingThread::set_volume(VolumeData::Pointer volume)
 void RenderingThread::set_selected_landmark(int idx)
 {
         m_lmp.set_active_landmark(idx);
+        auto& lm = m_lmp.get_active_landmark();
+
+        m_state.camera = lm.get_camera();
+        update_projection();
+        if (m_volume)
+                m_volume->set_iso_value(lm.get_iso_value());
 }
 
 
