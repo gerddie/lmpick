@@ -96,7 +96,6 @@ void RenderingThread::set_volume_iso_value(int value)
 
 void RenderingThread::paint()
 {
-        qDebug() << "rot=" << m_state.camera.get_rotation();
         glClearColor(0.1,0.1,0.1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
