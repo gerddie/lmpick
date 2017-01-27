@@ -49,6 +49,12 @@ void RenderingThread::set_volume(VolumeData::Pointer volume)
         }
 }
 
+void RenderingThread::set_selected_landmark(int idx)
+{
+        m_lmp.set_active_landmark(idx);
+}
+
+
 void RenderingThread::set_landmark_model(LandmarkTableModel *ltm)
 {
         m_landmark_tm = ltm;

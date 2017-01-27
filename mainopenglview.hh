@@ -47,6 +47,8 @@ private slots:
 
         void set_volume_isovalue(int value);
 
+        void on_selected_landmark_changed(const QModelIndex& idx, const QModelIndex& other_idx);
+
         void on_set_landmark();
         void on_add_landmark();
 private:

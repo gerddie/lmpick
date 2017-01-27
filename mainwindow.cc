@@ -103,6 +103,9 @@ MainWindow::MainWindow(QWidget *parent) :
         m_glview->setVolume(m_current_volume);
 #endif
         m_landmark_tv->setModel(m_landmark_lm);
+
+        connect(m_landmark_tv->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+                m_glview, SLOT(on_selected_landmark_changed(QModelIndex,QModelIndex)));
 }
 
 

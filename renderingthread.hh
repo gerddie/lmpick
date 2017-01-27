@@ -40,7 +40,7 @@ public:
 
         void set_volume(PVolumeData volume);
 
-        void set_landmark_list(PLandmarkList list) __attribute_deprecated__;
+        void set_landmark_list(PLandmarkList list);
 
         void set_landmark_model(LandmarkTableModel *ltm);
 
@@ -51,6 +51,8 @@ public:
         const QString get_active_landmark() const;
 
         bool add_landmark(const QString& name, const QPoint& mouse_loc);
+
+        void set_selected_landmark(int idx);
 
 private:
         void update_rotation(QMouseEvent *ev);

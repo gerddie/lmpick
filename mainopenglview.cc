@@ -39,13 +39,6 @@
 #include <cmath>
 
 
-
-/*
-  This class implemnts the actuaal OpenGL rendering. It is planned
-  to move the OpenGL handling to a separate thread that will be
-  encaapuslated by this here.
-*/
-
 using mia::C3DFVector;
 
 MainopenGLView::MainopenGLView(QWidget *parent):
@@ -81,6 +74,14 @@ void MainopenGLView::setVolume(VolumeData::Pointer volume)
 void MainopenGLView::setLandmarkModel(LandmarkTableModel *model)
 {
         m_rendering->set_landmark_model(model);
+}
+
+void MainopenGLView::on_selected_landmark_changed(const QModelIndex& idx, const QModelIndex& other_idx)
+{
+        Q_UNUSED(other_idx);
+        qDebug() << "on_selected_landmark_changed:" << idx;
+        m_rendering->set_selected_landmark(idx.row());
+        update();
 }
 
 void MainopenGLView::setLandmarkList(PLandmarkList list)
@@ -160,11 +161,10 @@ void MainopenGLView::wheelEvent(QWheelEvent *ev)
 
 void MainopenGLView::contextMenuEvent ( QContextMenuEvent * event)
 {
-        qDebug() << "Am I here?";
         QMenu context(tr("Landmarks"), this);
 
         QString active_landmark = m_rendering->get_active_landmark();
-        m_set_landmark_action->setText(tr("Set location of landmark ')") + active_landmark + "'");
+        m_set_landmark_action->setText(tr("Set location of landmark '") + active_landmark + "'");
 
         if (!active_landmark.isEmpty()) {
                 m_set_landmark_action->setData(QVariant(event->pos()));

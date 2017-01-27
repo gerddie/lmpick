@@ -3,7 +3,6 @@
 LandmarkTableModel::LandmarkTableModel(QObject *parent):
         QAbstractTableModel(parent)
 {
-
 }
 
 void LandmarkTableModel::setLandmarkList(PLandmarkList landmarks)
@@ -42,7 +41,7 @@ QVariant LandmarkTableModel::data(const QModelIndex &index, int role) const
         if (!index.isValid() || !m_the_list)
                 return QVariant();
 
-        if (index.row() >= m_the_list->size() || index.row() < 0)
+        if (static_cast<size_t>(index.row()) >= m_the_list->size() || index.row() < 0)
                 return QVariant();
 
         if (role == Qt::DisplayRole) {
