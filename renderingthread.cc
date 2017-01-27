@@ -7,9 +7,8 @@ RenderingThread::RenderingThread(QWidget *parent):
         m_parent(parent),
         m_is_gl_attached(false),
         m_context(nullptr),
-
-        m_mouse1_is_down(false)
-
+        m_mouse1_is_down(false),
+        m_landmark_tm(nullptr)
 {
 
 }
@@ -50,10 +49,16 @@ void RenderingThread::set_volume(VolumeData::Pointer volume)
         }
 }
 
+void RenderingThread::set_landmark_model(LandmarkTableModel *ltm)
+{
+        m_landmark_tm = ltm;
+}
+
 void RenderingThread::set_landmark_list(PLandmarkList list)
 {
+        assert(m_landmark_tm);
         m_lmp.set_landmark_list(list);
-        m_current_landmarks = list;
+        m_landmark_tm->setLandmarkList(list);
 }
 
 void RenderingThread::acquire_landmark_details(Landmark& lm, const QPoint& loc) const
@@ -208,7 +213,10 @@ const QString RenderingThread::get_active_landmark() const
 
 bool RenderingThread::add_landmark(const QString& name, const QPoint& mouse_loc)
 {
-        if (m_current_landmarks->has(name))
+        assert(m_landmark_tm);
+        auto lml = m_landmark_tm->getLandmarkList();
+
+        if (lml->has(name))
                 return false;
 
         auto location = m_volume->get_surface_coordinate(mouse_loc);
@@ -216,11 +224,12 @@ bool RenderingThread::add_landmark(const QString& name, const QPoint& mouse_loc)
                 float iso = m_volume->get_iso_value();
                 Camera c = m_state.camera;
                 PLandmark lm = make_shared<Landmark>(name, location.second, iso, c);
-                m_current_landmarks->add(lm);
+                m_landmark_tm->addLandmark(lm);
                 qDebug() << "Add landmark at " << location.second;
         }else{
                 PLandmark lm = make_shared<Landmark>(name);
-                m_current_landmarks->add(lm);
+                m_landmark_tm->addLandmark(lm);
+
                 qDebug() << "RenderingThread::acquire_landmark_details: "
                          <<"no landmark coordinates available, because hit empty space.";
 

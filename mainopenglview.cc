@@ -78,6 +78,11 @@ void MainopenGLView::setVolume(VolumeData::Pointer volume)
         doneCurrent();
 }
 
+void MainopenGLView::setLandmarkModel(LandmarkTableModel *model)
+{
+        m_rendering->set_landmark_model(model);
+}
+
 void MainopenGLView::setLandmarkList(PLandmarkList list)
 {
         makeCurrent();

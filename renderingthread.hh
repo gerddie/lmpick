@@ -3,6 +3,7 @@
 
 #include "volumedata.hh"
 #include "landmarklistpainter.hh"
+#include "landmarktablemodel.hh"
 
 #include "octaeder.hh"
 
@@ -39,7 +40,9 @@ public:
 
         void set_volume(PVolumeData volume);
 
-        void set_landmark_list(PLandmarkList list);
+        void set_landmark_list(PLandmarkList list) __attribute_deprecated__;
+
+        void set_landmark_model(LandmarkTableModel *ltm);
 
         void set_volume_iso_value(int value);
 
@@ -71,8 +74,11 @@ private:
 
         // Data to display
         VolumeData::Pointer m_volume;
+        LandmarkTableModel *m_landmark_tm;
+
         PLandmarkList m_current_landmarks;
         LandmarkListPainter m_lmp;
+
 
 };
 

@@ -18,6 +18,7 @@ public:
         QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
         void setLandmarkList(PLandmarkList landmarks);
+        PLandmarkList getLandmarkList() const;
 
         void addLandmark(PLandmark lm);
 private:

@@ -24,6 +24,7 @@
 
 #include "volumedata.hh"
 #include "landmarklist.hh"
+#include "landmarktablemodel.hh"
 #include <QOpenGLWidget>
 #include <QAction>
 
@@ -39,6 +40,7 @@ public:
 
         void setVolume(PVolumeData volume);
         void setLandmarkList(PLandmarkList list);
+        void setLandmarkModel(LandmarkTableModel *model);
 
 private slots:
         void detachGL();

@@ -8,11 +8,19 @@ LandmarkTableModel::LandmarkTableModel(QObject *parent):
 
 void LandmarkTableModel::setLandmarkList(PLandmarkList landmarks)
 {
-        if (m_the_list)
-                removeRows(0, m_the_list->size());
-        m_the_list = landmarks;
-        if (m_the_list)
-                insertRows(0,m_the_list->size());
+
+        size_t old_size = m_the_list ? m_the_list->size(): 0;
+        size_t new_size = landmarks ? landmarks->size() : 0;
+
+        if (old_size > new_size) {
+                beginRemoveRows(QModelIndex(), old_size , new_size);
+                m_the_list = landmarks;
+                endRemoveRows();
+        }else if (new_size > old_size) {
+                beginInsertRows(QModelIndex(), old_size , new_size);
+                m_the_list = landmarks;
+                endInsertRows();
+        }
 }
 
 int LandmarkTableModel::rowCount(const QModelIndex &parent) const
@@ -86,7 +94,12 @@ QVariant LandmarkTableModel::headerData(int section, Qt::Orientation orientation
 
 void LandmarkTableModel::addLandmark(PLandmark lm)
 {
-        beginInsertRows(QModelIndex(), m_the_list->size(), m_the_list->size() + 1);
+        beginInsertRows(QModelIndex(), m_the_list->size(), m_the_list->size());
         m_the_list->add(lm);
         endInsertRows();
+}
+
+PLandmarkList LandmarkTableModel::getLandmarkList() const
+{
+        return m_the_list;
 }

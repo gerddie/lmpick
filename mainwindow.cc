@@ -93,6 +93,7 @@ MainWindow::MainWindow(QWidget *parent) :
         m_landmark_tv->addAction(ui->action_Clear);
         m_landmark_tv->addAction(ui->action_Clear_all_locations);
 
+        m_glview->setLandmarkModel(m_landmark_lm);
 #ifdef INITIAL_TESTING
         m_current_landmarklist = create_debug_list();
         m_glview->setLandmarkList(m_current_landmarklist);
