@@ -40,6 +40,12 @@ PLandmark LandmarkList::operator [](const QString& name)
         return PLandmark();
 }
 
+const Landmark& LandmarkList::at(unsigned  i) const
+{
+        assert(i < m_list.size());
+        return *m_list[i];
+}
+
 PLandmark LandmarkList::operator [](unsigned  i)
 {
         assert(i < m_list.size());
@@ -60,6 +66,23 @@ bool LandmarkList::add(PLandmark landmark)
 size_t LandmarkList::size() const
 {
         return m_list.size();
+}
+
+void LandmarkList::remove(unsigned idx, unsigned count)
+{
+        unsigned end = idx + count;
+
+        for (unsigned  i = idx; i < end; ++i) {
+                m_index_map.erase(m_list[i]->get_name());
+        }
+
+        m_list.erase(m_list.begin() + idx, m_list.begin() + end);
+
+        for_each(m_index_map.begin(), m_index_map.end(),
+                 [idx,count](std::map<QString, unsigned>::value_type& it){
+                if (it.second >= idx)
+                        it.second -= count;
+        });
 }
 
 bool LandmarkList::remove(const QString& name)

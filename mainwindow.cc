@@ -76,29 +76,32 @@ static PVolumeData create_debug_volume()
 
 MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent),
-        ui(new Ui::MainWindow)
+        ui(new Ui::MainWindow),
+        m_landmark_lm(new LandmarkTableModel(this))
 {
         ui->setupUi(this);
         m_glview = findChild<MainopenGLView*>();
         m_iso_slider = findChild<QSlider*>("isoValueSlider");
-        m_landmark_list_view = findChild<QTableView *>("LandmarkTableView");
+        m_landmark_tv = findChild<LandmarkTableView *>("LandmarkTableView");
         assert(m_iso_slider);
         connect(m_iso_slider, SIGNAL(valueChanged(int)), m_glview, SLOT(set_volume_isovalue(int)));
 
         assert(m_landmark_list_view);
 
-        m_landmark_list_view->addAction(ui->action_Add);
-        m_landmark_list_view->addAction(ui->action_Edit);
-        m_landmark_list_view->addAction(ui->action_Clear);
-        m_landmark_list_view->addAction(ui->action_Clear_all_locations);
+        m_landmark_tv->addAction(ui->action_Add);
+        m_landmark_tv->addAction(ui->action_Edit);
+        m_landmark_tv->addAction(ui->action_Clear);
+        m_landmark_tv->addAction(ui->action_Clear_all_locations);
 
 #ifdef INITIAL_TESTING
         m_current_landmarklist = create_debug_list();
         m_glview->setLandmarkList(m_current_landmarklist);
+        m_landmark_lm->setLandmarkList(m_current_landmarklist);
 
         m_current_volume = create_debug_volume();
         m_glview->setVolume(m_current_volume);
 #endif
+        m_landmark_tv->setModel(m_landmark_model);
 }
 
 

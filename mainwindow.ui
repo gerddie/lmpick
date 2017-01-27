@@ -146,7 +146,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QTableView" name="LandmarkTableView">
+              <widget class="LandmarkTableView" name="LandmarkTableView">
                <property name="enabled">
                 <bool>true</bool>
                </property>
@@ -429,6 +429,11 @@
    <class>MainopenGLView</class>
    <extends>QOpenGLWidget</extends>
    <header>mainopenglview.hh</header>
+  </customwidget>
+  <customwidget>
+   <class>LandmarkTableView</class>
+   <extends>QTableView</extends>
+   <header>landmarktableview.hh</header>
   </customwidget>
  </customwidgets>
  <resources>

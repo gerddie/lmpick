@@ -23,6 +23,8 @@
 #define MAINWINDOW_HH
 
 #include "mainopenglview.hh"
+#include "landmarkltableview.hh"
+#include "landmarktablemodel.hh"
 #include <QMainWindow>
 #include <QSlider>
 #include <QTableView>
@@ -54,7 +56,8 @@ private:
         Ui::MainWindow *ui;
         MainopenGLView *m_glview;
         QSlider *m_iso_slider;
-        QTableView *m_landmark_list_view;
+        LandmarkTableView *m_landmark_tv;
+        LandmarkTableModel *m_landmark_lm;
 
         PVolumeData m_current_volume;
         PLandmarkList m_current_landmarklist;

@@ -39,11 +39,15 @@ public:
 
         bool remove(const QString& name);
 
+        void remove(unsigned  idx, unsigned  count);
+
         bool has(const QString& name) const;
 
         PLandmark operator [](unsigned i);
 
         PLandmark operator [](const QString& name);
+
+        const Landmark& at(unsigned  i) const;
 
         size_t size() const;
 

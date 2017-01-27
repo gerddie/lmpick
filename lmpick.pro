@@ -36,7 +36,9 @@ SOURCES += main.cc\
     sphere.cc \
     landmarklistpainter.cc \
     renderingthread.cc \
-    landmarklistio.cc
+    landmarklistio.cc \
+    landmarktablemodel.cc \
+    landmarkltableview.cc
 
 
 HEADERS  += mainwindow.hh \
@@ -52,7 +54,9 @@ HEADERS  += mainwindow.hh \
     landmarklistpainter.hh \
     renderingthread.hh \
     landmarklistio.hh \
-    errormacro.hh
+    errormacro.hh \
+    landmarktablemodel.hh \
+    landmarkltableview.hh
 
 FORMS    += mainwindow.ui
 
