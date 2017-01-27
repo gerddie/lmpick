@@ -67,8 +67,10 @@ void RenderingThread::set_landmark_list(PLandmarkList list)
         m_landmark_tm->setLandmarkList(list);
 }
 
-void RenderingThread::acquire_landmark_details(Landmark& lm, const QPoint& loc) const
+void RenderingThread::set_active_landmark_details(const QPoint& loc)
 {
+        auto& lm = m_lmp.get_active_landmark();
+
         auto location = m_volume->get_surface_coordinate(loc);
         if (location.first) {
                 float iso = m_volume->get_iso_value();
@@ -212,7 +214,7 @@ void RenderingThread::detach_gl()
         m_lmp.detach_gl(*m_context);
 }
 
-const QString RenderingThread::get_active_landmark() const
+const QString RenderingThread::get_active_landmark_name() const
 {
         return m_lmp.get_active_landmark_name();
 }

@@ -46,6 +46,13 @@ const Landmark& LandmarkList::at(unsigned  i) const
         return *m_list[i];
 }
 
+Landmark& LandmarkList::at(unsigned i)
+{
+        assert(i < m_list.size());
+        return *m_list[i];
+}
+
+
 PLandmark LandmarkList::operator [](unsigned  i)
 {
         assert(i < m_list.size());

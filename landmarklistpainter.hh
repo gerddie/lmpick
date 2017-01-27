@@ -13,6 +13,7 @@ public:
         void set_landmark_list(PLandmarkList list);
         void set_viewspace_correction(const QVector3D& scale, const QVector3D& shift);
 
+        Landmark& get_active_landmark();
         void set_active_landmark(int idx);
         const QString get_active_landmark_name() const;
 

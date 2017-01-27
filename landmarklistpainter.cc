@@ -1,7 +1,7 @@
 #include "landmarklistpainter.hh"
 #include "landmarklist.hh"
 #include "sphere.hh"
-
+#include <cassert>
 
 struct LandmarkListPainterImpl {
 
@@ -79,6 +79,14 @@ const QString LandmarkListPainter::get_active_landmark_name() const
             static_cast<size_t>(impl->m_active_index) >= impl->m_the_list->size())
                 return QString();
         return (*impl->m_the_list)[impl->m_active_index]->get_name();
+}
+
+Landmark& LandmarkListPainter::get_active_landmark()
+{
+        assert (impl->m_active_index >= 0 &&
+            static_cast<size_t>(impl->m_active_index) < impl->m_the_list->size());
+
+        return impl->m_the_list->at(impl->m_active_index);
 }
 
 void LandmarkListPainter::set_active_landmark(int idx)

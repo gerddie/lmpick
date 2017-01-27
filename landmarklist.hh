@@ -49,6 +49,8 @@ public:
 
         const Landmark& at(unsigned  i) const;
 
+        Landmark& at(unsigned i);
+
         size_t size() const;
 
 private:

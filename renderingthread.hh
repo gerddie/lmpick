@@ -46,9 +46,9 @@ public:
 
         void set_volume_iso_value(int value);
 
-        void acquire_landmark_details(Landmark& lm, const QPoint& loc) const;
+        void set_active_landmark_details(const QPoint& loc);
 
-        const QString get_active_landmark() const;
+        const QString get_active_landmark_name() const;
 
         bool add_landmark(const QString& name, const QPoint& mouse_loc);
 

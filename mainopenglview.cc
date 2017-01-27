@@ -163,7 +163,7 @@ void MainopenGLView::contextMenuEvent ( QContextMenuEvent * event)
 {
         QMenu context(tr("Landmarks"), this);
 
-        QString active_landmark = m_rendering->get_active_landmark();
+        QString active_landmark = m_rendering->get_active_landmark_name();
         m_set_landmark_action->setText(tr("Set location of landmark '") + active_landmark + "'");
 
         if (!active_landmark.isEmpty()) {
@@ -178,7 +178,9 @@ void MainopenGLView::contextMenuEvent ( QContextMenuEvent * event)
 
 void MainopenGLView::on_set_landmark()
 {
-
+        QVariant data = m_add_landmark_action->data();
+        m_rendering->set_active_landmark_details(data.toPoint());
+        update();
 }
 
 void MainopenGLView::on_add_landmark()
