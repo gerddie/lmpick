@@ -35,7 +35,7 @@ int LandmarkTableModel::rowCount(const QModelIndex &parent) const
 int LandmarkTableModel::columnCount(const QModelIndex &parent) const
 {
         Q_UNUSED(parent);
-        return 4;
+        return 2;
 }
 
 QVariant LandmarkTableModel::data(const QModelIndex &index, int role) const
@@ -54,15 +54,16 @@ QVariant LandmarkTableModel::data(const QModelIndex &index, int role) const
                         if (!lm.is_set())
                                 return QVariant();
 
-                        auto p = lm.get_location();
-                        switch (index.column()) {
-                        case 1: return p.x();
-                        case 2: return p.y();
-                        case 3: return p.z();
-                        default: return QVariant();
-                        }
+                        if (index.column() == 1) {
+                                auto p = lm.get_location();
+                                QString result;
+                                QTextStream ts(&result);
+                                ts.setRealNumberPrecision(4);
+                                ts << "(" << p.x() << ", " << p.y() << ", " << p.z() << "); ";
+                                return result;
+                        }else
+                                return QVariant();
                 }
-
         }
         return QVariant();
 }

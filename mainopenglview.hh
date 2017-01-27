@@ -42,14 +42,17 @@ public:
         void setLandmarkList(PLandmarkList list);
         void setLandmarkModel(LandmarkTableModel *model);
 
-private slots:
-        void detachGL();
+signals:
+        void iso_value_changed();
 
+public slots:
         void set_volume_isovalue(int value);
-
         void on_selected_landmark_changed(const QModelIndex& idx, const QModelIndex& other_idx);
 
+private slots:
+        void detachGL();
         void on_set_landmark();
+
         void on_add_landmark();
 private:
         void initializeGL()override;

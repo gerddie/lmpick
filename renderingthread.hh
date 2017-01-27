@@ -54,8 +54,11 @@ public:
 
         void set_selected_landmark(int idx);
 
+
 private:
         void update_rotation(QMouseEvent *ev);
+
+        void update_shift(QMouseEvent *ev);
 
         QVector3D get_mapped_point(const QPointF& localPos) const;
 
@@ -70,7 +73,8 @@ private:
         GlobalSceneState m_state;
 
         // used for mouse tracking
-        bool m_mouse1_is_down;
+        bool m_mouse_lb_is_down;
+        bool m_mouse_mb_is_down;
         QPointF m_mouse_old_position;
         QVector2D m_viewport;
 

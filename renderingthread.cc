@@ -7,7 +7,8 @@ RenderingThread::RenderingThread(QWidget *parent):
         m_parent(parent),
         m_is_gl_attached(false),
         m_context(nullptr),
-        m_mouse1_is_down(false),
+        m_mouse_lb_is_down(false),
+        m_mouse_mb_is_down(false),
         m_landmark_tm(nullptr)
 {
 
@@ -129,20 +130,30 @@ void RenderingThread::update_rotation(QMouseEvent *ev)
         QVector3D pnew = get_mapped_point(ev->localPos());
         QVector3D pold = get_mapped_point(m_mouse_old_position);
         m_state.camera.rotate(QQuaternion::rotationTo(pold, pnew));
+}
 
-
+void RenderingThread::update_shift(QMouseEvent *ev)
+{
+        QPointF delta = (ev->localPos() - m_mouse_old_position) * 0.004;
+        auto cpos = m_state.camera.get_position();
+        cpos.setX(cpos.x() + delta.x());
+        cpos.setY(cpos.y() - delta.y());
+        m_state.camera.set_position(cpos);
 }
 
 bool RenderingThread::mouse_release(QMouseEvent *ev)
 {
         switch (ev->button()) {
         case Qt::LeftButton:{
-                if (!m_mouse1_is_down)
+                if (!m_mouse_lb_is_down)
                         return false;
-                m_mouse1_is_down = false;
+                m_mouse_lb_is_down = false;
                 update_rotation(ev);
                 m_mouse_old_position = ev->localPos();
                 break;
+        }
+        case Qt::MiddleButton: {
+                m_mouse_mb_is_down = false;
         }
         default:
                 return false;
@@ -154,7 +165,12 @@ bool RenderingThread::mouse_press(QMouseEvent *ev)
 {
         switch (ev->button()) {
         case Qt::LeftButton:{
-                m_mouse1_is_down = true;
+                m_mouse_lb_is_down = true;
+                m_mouse_old_position = ev->localPos();
+                break;
+        }
+        case Qt::MiddleButton: {
+                m_mouse_mb_is_down = true;
                 m_mouse_old_position = ev->localPos();
                 break;
         }
@@ -166,11 +182,18 @@ bool RenderingThread::mouse_press(QMouseEvent *ev)
 
 bool RenderingThread::mouse_tracking(QMouseEvent *ev)
 {
-        if (!m_mouse1_is_down)
+        if (!m_mouse_lb_is_down && !m_mouse_mb_is_down)
                 return false;
-        update_rotation(ev);
+
+        if (m_mouse_lb_is_down)
+                update_rotation(ev);
+
+        else if (m_mouse_mb_is_down) {
+                update_shift(ev);
+        }
         m_mouse_old_position = ev->localPos();
         return true;
+
 }
 
 bool RenderingThread::mouse_wheel(QWheelEvent *ev)

@@ -50,6 +50,8 @@ private slots:
 
         void on_action_Open_landmarkset_triggered();
 
+        void on_iso_value_changed();
+
 private:
         QWidget *action_source(QAction *action);
 

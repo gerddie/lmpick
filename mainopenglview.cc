@@ -60,8 +60,6 @@ MainopenGLView::MainopenGLView(QWidget *parent):
         connect(m_add_landmark_action, SIGNAL(triggered()), this, SLOT(on_add_landmark()));
         connect(m_set_landmark_action, SIGNAL(triggered()), this, SLOT(on_set_landmark()));
 
-        connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
-                this, SLOT(ShowContextMenu(const QPoint &)));
 }
 
 void MainopenGLView::setVolume(VolumeData::Pointer volume)
@@ -79,8 +77,8 @@ void MainopenGLView::setLandmarkModel(LandmarkTableModel *model)
 void MainopenGLView::on_selected_landmark_changed(const QModelIndex& idx, const QModelIndex& other_idx)
 {
         Q_UNUSED(other_idx);
-        qDebug() << "on_selected_landmark_changed:" << idx;
         m_rendering->set_selected_landmark(idx.row());
+        emit iso_value_changed();
         update();
 }
 

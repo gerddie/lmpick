@@ -84,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent) :
         m_iso_slider = findChild<QSlider*>("isoValueSlider");
         m_landmark_tv = findChild<LandmarkTableView *>("LandmarkTV");
         assert(m_iso_slider);
-        connect(m_iso_slider, SIGNAL(valueChanged(int)), m_glview, SLOT(set_volume_isovalue(int)));
+        connect(m_iso_slider, &QSlider::valueChanged, m_glview, &MainopenGLView::set_volume_isovalue);
 
         assert(m_landmark_tv);
 
@@ -106,9 +106,12 @@ MainWindow::MainWindow(QWidget *parent) :
         m_landmark_lm->setLandmarkList(m_current_landmarklist);
 
         m_landmark_tv->setModel(m_landmark_lm);
+        m_landmark_tv->resizeColumnsToContents();
 
-        connect(m_landmark_tv->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-                m_glview, SLOT(on_selected_landmark_changed(QModelIndex,QModelIndex)));
+        connect(m_landmark_tv->selectionModel(), &QItemSelectionModel::currentRowChanged,
+                m_glview, &MainopenGLView::on_selected_landmark_changed);
+
+        connect(m_glview, &MainopenGLView::iso_value_changed, this, &MainWindow::on_iso_value_changed);
 }
 
 
@@ -212,6 +215,7 @@ void MainWindow::on_action_Open_landmarkset_triggered()
                         auto lmlist = io.read(fileNames.first());
                         m_current_landmarklist = lmlist;
                         m_glview->setLandmarkList(m_current_landmarklist);
+                        m_landmark_tv->resizeColumnsToContents();
                 }
                 catch (std::exception& x) {
                         QMessageBox box(QMessageBox::Information, "Error loading landmarks", x.what(),
@@ -219,4 +223,9 @@ void MainWindow::on_action_Open_landmarkset_triggered()
                         box.exec();
                 }
         }
+}
+
+void MainWindow::on_iso_value_changed()
+{
+        m_iso_slider->setValue( m_current_volume->get_iso_value() );
 }
