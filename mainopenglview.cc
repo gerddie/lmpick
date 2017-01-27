@@ -32,6 +32,8 @@
 #include <QOpenGLVertexArrayObject>
 #include <QMouseEvent>
 #include <QMatrix4x4>
+#include <QMenu>
+#include <QInputDialog>
 #include <cassert>
 #include <memory>
 #include <cmath>
@@ -59,7 +61,14 @@ MainopenGLView::MainopenGLView(QWidget *parent):
         m_rendering = new RenderingThread(this);
         setMouseTracking( true );
 
+        m_add_landmark_action = new QAction(tr("Add new landmark here"), this);
+        m_set_landmark_action = new QAction(tr("Set landmark location"), this);
 
+        connect(m_add_landmark_action, SIGNAL(triggered()), this, SLOT(on_add_landmark()));
+        connect(m_set_landmark_action, SIGNAL(triggered()), this, SLOT(on_set_landmark()));
+
+        connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
+                this, SLOT(ShowContextMenu(const QPoint &)));
 }
 
 void MainopenGLView::setVolume(VolumeData::Pointer volume)
@@ -144,7 +153,56 @@ void MainopenGLView::wheelEvent(QWheelEvent *ev)
                 ev->ignore();
 }
 
-void MainopenGLView::contextMenuEvent ( QContextMenuEvent * event )
+void MainopenGLView::contextMenuEvent ( QContextMenuEvent * event)
 {
-        qDebug() << "Context menu requested:";
+        qDebug() << "Am I here?";
+        QMenu context(tr("Landmarks"), this);
+
+        QString active_landmark = m_rendering->get_active_landmark();
+        m_set_landmark_action->setText(tr("Set location of landmark ')") + active_landmark + "'");
+
+        if (!active_landmark.isEmpty()) {
+                m_set_landmark_action->setData(QVariant(event->pos()));
+                context.addAction(m_set_landmark_action);
+        }
+
+        m_add_landmark_action->setData(QVariant(event->pos()));
+        context.addAction(m_add_landmark_action);
+        context.exec(event->globalPos());
 }
+
+void MainopenGLView::on_set_landmark()
+{
+
+}
+
+void MainopenGLView::on_add_landmark()
+{
+        QString prompt(tr("Name:"));
+
+        while (true) {
+                bool ok_pressed = false;
+                QString name = QInputDialog::getText(this, tr("Add new landmark"),
+                                                     prompt, QLineEdit::Normal,
+                                                     QString(), &ok_pressed);
+                if (!ok_pressed) {
+                        qDebug() << "Canceled input";
+                        break;
+                }
+
+                if (!name.isEmpty()) {
+                        qDebug() << "Will add landmark ..." << name;
+                        QVariant data = m_add_landmark_action->data();
+                        qDebug() << "... from " << data.toPoint();
+                        if (m_rendering->add_landmark(name, data.toPoint())){
+                            update();
+                            break;
+                        }else{
+                                prompt =QString(tr("Name (") + name + tr(" is already in list):"));
+                        }
+                }else{
+                        prompt =QString(tr("Name (must not be empty):"));
+                }
+        }
+}
+

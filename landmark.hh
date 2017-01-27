@@ -36,7 +36,7 @@ public:
 
         explicit Landmark(const QString& name);
 
-        Landmark(const QString& name, const QVector3D& location, const Camera& best_view);
+        Landmark(const QString& name, const QVector3D& location, float iso, const Camera& best_view);
 
         bool is_set() const;
 

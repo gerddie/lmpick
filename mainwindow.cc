@@ -25,10 +25,11 @@
 #include "ui_mainwindow.h"
 
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QInputDialog>
+
 #include <mia/3d/imageio.hh>
 #include <sstream>
-#include <QMessageBox>
-
 
 using std::make_shared;
 
@@ -47,7 +48,7 @@ static PLandmarkList create_debug_list()
         const char n[][2] = {"a", "b", "c", "d", "e", "f"};
 
         for(int i = 0; i < 6; ++i) {
-                result->add(PLandmark(new Landmark(n[i], v[i], c)));
+                result->add(PLandmark(new Landmark(n[i], v[i], 0.3, c)));
         }
         return result;
 }
@@ -84,14 +85,9 @@ MainWindow::MainWindow(QWidget *parent) :
         assert(m_iso_slider);
         connect(m_iso_slider, SIGNAL(valueChanged(int)), m_glview, SLOT(set_volume_isovalue(int)));
 
-        m_glview->addAction(ui->action_Set);
-        m_glview->addAction(ui->action_Add);
-
-
         assert(m_landmark_list_view);
 
         m_landmark_list_view->addAction(ui->action_Add);
-        m_landmark_list_view->addAction(ui->action_Set);
         m_landmark_list_view->addAction(ui->action_Edit);
         m_landmark_list_view->addAction(ui->action_Clear);
         m_landmark_list_view->addAction(ui->action_Clear_all_locations);
@@ -123,7 +119,6 @@ void MainWindow::on_actionOpen_Volume_triggered()
         auto file_types = imageio.get_supported_suffix_set();
         std::ostringstream filetypes;
 
-        QStringList filters;
         filetypes << "(";
         for (auto i: file_types)
                 filetypes << "*." << i.c_str() << " ";
@@ -155,9 +150,43 @@ void MainWindow::on_actionOpen_Volume_triggered()
         }
 }
 
+QWidget *MainWindow::action_source(QAction *action)
+{
+        auto possible_sources = action->associatedWidgets();
+        auto source = possible_sources.begin();
+        qDebug() << "source: " << *source;
+
+        while (!(*source)->hasFocus()  && source != possible_sources.end()) {
+                ++source;
+                qDebug() << "source: " << *source;
+        }
+        return *source;
+}
+
 void MainWindow::on_action_Add_triggered()
 {
-        qDebug() << "add landmark called";
+        QString prompt(tr("Name:"));
+
+        while (true) {
+                bool ok;
+                QString name = QInputDialog::getText(this, tr("Add Landmark"),
+                                                     prompt, QLineEdit::Normal,
+                                                     QString(), &ok);
+                if (!ok)
+                        break;
+
+                if (!name.isEmpty()) {
+                        if (!m_current_landmarklist->has(name)) {
+                                PLandmark new_lm = make_shared<Landmark>(name);
+                                m_current_landmarklist->add(new_lm);
+                                break;
+                        }else{
+                                prompt =QString(tr("Name (") + name + tr(" is already in list):"));
+                        }
+                }else{
+                        prompt =QString(tr("Name (must not be empty):"));
+                }
+        }
 }
 
 void MainWindow::on_action_Open_landmarkset_triggered()

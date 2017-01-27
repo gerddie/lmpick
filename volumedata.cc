@@ -190,6 +190,11 @@ VolumeData::~VolumeData()
         delete impl;
 }
 
+float VolumeData::get_iso_value() const
+{
+        return impl->m_iso_value / impl->m_intenisity_scale + impl->m_intenisity_shift;
+}
+
 void VolumeData::set_iso_value(float iso)
 {
         impl->m_iso_value = impl->m_intenisity_scale * (iso - impl->m_intenisity_shift);
@@ -200,18 +205,20 @@ QVector3D VolumeData::get_viewspace_shift() const
         return QVector3D(1,1,1) * impl->m_scale;
 }
 
-QVector3D VolumeData::get_surface_coordinate(const QPoint& location) const
+std::pair<bool, QVector3D> VolumeData::get_surface_coordinate(const QPoint& location) const
 {
         qDebug() << "location:" << location << " in(" << impl->m_width << ":" << impl->m_height <<")";
         QVector3D result(-1, -1, -1);
+        bool found = false;
         if (location.x() < impl->m_width && location.y() < impl->m_height) {
                 QVector4D t = impl->m_tex_coordinates[impl->m_width * (impl->m_height - location.y() - 1) + location.x()];
                 qDebug() << "Tex=" << t;
                 if (t.w() > 0) {
                         result =  QVector3D(t.x(), t.y(), t.z()) * impl->m_physical_size;
+                        found = true;
                 }
         }
-        return result;
+        return make_pair(found, result);
 }
 
 QVector3D VolumeData::get_viewspace_scale() const

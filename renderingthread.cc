@@ -1,6 +1,8 @@
 #include "renderingthread.hh"
 
 #include <QMouseEvent>
+
+using std::make_shared;
 RenderingThread::RenderingThread(QWidget *parent):
         m_parent(parent),
         m_is_gl_attached(false),
@@ -51,6 +53,20 @@ void RenderingThread::set_volume(VolumeData::Pointer volume)
 void RenderingThread::set_landmark_list(PLandmarkList list)
 {
         m_lmp.set_landmark_list(list);
+        m_current_landmarks = list;
+}
+
+void RenderingThread::acquire_landmark_details(Landmark& lm, const QPoint& loc) const
+{
+        auto location = m_volume->get_surface_coordinate(loc);
+        if (location.first) {
+                float iso = m_volume->get_iso_value();
+                Camera c = m_state.camera;
+                lm.set(location.second, iso, c);
+        }else{
+                qDebug() << "RenderingThread::acquire_landmark_details: "
+                         <<"no landmark coordinates available, because hit empty space.";
+        }
 }
 
 void RenderingThread::set_volume_iso_value(int value)
@@ -183,6 +199,33 @@ void RenderingThread::detach_gl()
                 m_volume->detach_gl(*m_context);
 
         m_lmp.detach_gl(*m_context);
+}
+
+const QString RenderingThread::get_active_landmark() const
+{
+        return m_lmp.get_active_landmark_name();
+}
+
+bool RenderingThread::add_landmark(const QString& name, const QPoint& mouse_loc)
+{
+        if (m_current_landmarks->has(name))
+                return false;
+
+        auto location = m_volume->get_surface_coordinate(mouse_loc);
+        if (location.first) {
+                float iso = m_volume->get_iso_value();
+                Camera c = m_state.camera;
+                PLandmark lm = make_shared<Landmark>(name, location.second, iso, c);
+                m_current_landmarks->add(lm);
+                qDebug() << "Add landmark at " << location.second;
+        }else{
+                PLandmark lm = make_shared<Landmark>(name);
+                m_current_landmarks->add(lm);
+                qDebug() << "RenderingThread::acquire_landmark_details: "
+                         <<"no landmark coordinates available, because hit empty space.";
+
+        }
+        return true;
 }
 
 void RenderingThread::run()

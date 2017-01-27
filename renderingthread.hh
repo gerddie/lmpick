@@ -43,6 +43,12 @@ public:
 
         void set_volume_iso_value(int value);
 
+        void acquire_landmark_details(Landmark& lm, const QPoint& loc) const;
+
+        const QString get_active_landmark() const;
+
+        bool add_landmark(const QString& name, const QPoint& mouse_loc);
+
 private:
         void update_rotation(QMouseEvent *ev);
 
@@ -65,8 +71,9 @@ private:
 
         // Data to display
         VolumeData::Pointer m_volume;
-
+        PLandmarkList m_current_landmarks;
         LandmarkListPainter m_lmp;
+
 };
 
 #endif // RENDERINGTHREAD_HH

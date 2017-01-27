@@ -39,6 +39,8 @@ public:
 
         bool remove(const QString& name);
 
+        bool has(const QString& name) const;
+
         PLandmark operator [](unsigned i);
 
         PLandmark operator [](const QString& name);

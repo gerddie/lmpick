@@ -13,6 +13,8 @@ public:
         void set_landmark_list(PLandmarkList list);
         void set_viewspace_correction(const QVector3D& scale, const QVector3D& shift);
 
+        const QString get_active_landmark_name() const;
+
         virtual void detach_gl(QOpenGLContext& context);
 private:
         virtual void do_attach_gl(QOpenGLContext& context);

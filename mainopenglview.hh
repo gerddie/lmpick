@@ -25,6 +25,7 @@
 #include "volumedata.hh"
 #include "landmarklist.hh"
 #include <QOpenGLWidget>
+#include <QAction>
 
 class RenderingThread;
 
@@ -43,6 +44,9 @@ private slots:
         void detachGL();
 
         void set_volume_isovalue(int value);
+
+        void on_set_landmark();
+        void on_add_landmark();
 private:
         void initializeGL()override;
         void paintGL()override;
@@ -55,6 +59,9 @@ private:
         void contextMenuEvent ( QContextMenuEvent * event );
 
         RenderingThread *m_rendering;
+        QAction *m_add_landmark_action;
+        QAction *m_set_landmark_action;
+
 };
 
 #endif // MAINOPENGLVIEW_HH

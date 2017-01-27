@@ -49,13 +49,16 @@ public:
 
         void set_iso_value(float iso);
 
+        float get_iso_value() const;
+
         std::pair<int, int> get_intensity_range() const;
 
-        QVector3D get_surface_coordinate(const QPoint& location) const;
+        std::pair<bool, QVector3D> get_surface_coordinate(const QPoint& location) const;
 
         virtual void detach_gl(QOpenGLContext& context) override;
 
         QVector3D get_viewspace_scale() const;
+
         QVector3D get_viewspace_shift() const;
 
 private:

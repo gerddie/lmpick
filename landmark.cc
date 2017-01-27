@@ -33,11 +33,12 @@ Landmark::Landmark(const QString& name):
 }
 
 
-Landmark::Landmark(const QString& name, const QVector3D& location, const Camera& best_view):
+Landmark::Landmark(const QString& name, const QVector3D& location, float iso, const Camera& best_view):
         m_name(name),
         m_is_set(true),
         m_location(location),
-        m_best_view(best_view)
+        m_best_view(best_view),
+        m_iso_value(iso)
 {
 }
 

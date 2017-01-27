@@ -49,6 +49,8 @@ private slots:
         void on_action_Open_landmarkset_triggered();
 
 private:
+        QWidget *action_source(QAction *action);
+
         Ui::MainWindow *ui;
         MainopenGLView *m_glview;
         QSlider *m_iso_slider;

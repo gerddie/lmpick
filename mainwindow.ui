@@ -80,9 +80,6 @@
            <height>480</height>
           </size>
          </property>
-         <property name="contextMenuPolicy">
-          <enum>Qt::ActionsContextMenu</enum>
-         </property>
         </widget>
        </item>
        <item>

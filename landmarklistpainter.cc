@@ -73,6 +73,14 @@ void LandmarkListPainter::do_draw(const GlobalSceneState& state, QOpenGLContext&
         }
 }
 
+const QString LandmarkListPainter::get_active_landmark_name() const
+{
+        if (impl->m_active_index < 0 ||
+            impl->m_active_index >= impl->m_the_list->size())
+                return QString();
+        return (*impl->m_the_list)[impl->m_active_index]->get_name();
+}
+
 LandmarkListPainterImpl::LandmarkListPainterImpl():
         m_the_list(new LandmarkList),
         m_active_index(-1),
