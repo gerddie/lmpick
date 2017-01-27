@@ -23,7 +23,7 @@
 
 Camera::Camera():
         m_rotation(1,0,0,0),
-        m_position(0,0,-550),
+        m_position(0,0,-250),
         m_zoom(1.0)
 {
 }

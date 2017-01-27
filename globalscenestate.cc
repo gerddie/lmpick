@@ -21,9 +21,10 @@
 
 #include "globalscenestate.hh"
 #include <cassert>
+#include <cmath>
 
 GlobalSceneState::GlobalSceneState():
-        camera(QVector3D(0,0,-550), QQuaternion(1,0,0,0), 1.0),
+        camera(QVector3D(0,0,-250), QQuaternion(1,0, 0, 0), 1.0),
         light_source(-1,-1,-20),
         viewport(0,0)
 {

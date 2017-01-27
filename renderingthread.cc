@@ -207,7 +207,7 @@ void RenderingThread::update_projection()
                 zh = m_state.camera.get_zoom()* m_viewport.y() / m_viewport.x();
                 zw = m_state.camera.get_zoom();
         }
-        m_state.projection.frustum(-zw, zw, -zh, zh, 548, 552);
+        m_state.projection.frustum(-zw, zw, -zh, zh, 240, 260);
 }
 
 void RenderingThread::detach_gl()
