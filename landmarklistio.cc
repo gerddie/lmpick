@@ -60,8 +60,8 @@ struct read_tag_dispatch<QQuaternion> {
                 float x = v.at(0).toFloat();
                 float y = v.at(1).toFloat();
                 float z = v.at(2).toFloat();
-                float w = v.at(2).toFloat();
-                return QQuaternion(x,y,z, w);
+                float w = v.at(3).toFloat();
+                return QQuaternion(w, x, y, z);
         }
 };
 
@@ -84,6 +84,7 @@ static pair<bool, Camera> read_camera(const QDomElement& parent)
         if (elm.isNull())
                 return make_pair(false, Camera());
 
+
         auto loc = read_tag<QVector3D>(elm, "location");
         if (loc.first)
                 camera.set_position(loc.second);
@@ -98,7 +99,7 @@ static pair<bool, Camera> read_camera(const QDomElement& parent)
 
         auto dist = read_tag<float>(elm, "distance");
         if (dist.first)
-                camera.set_distance(dist.second);
+                camera.set_distance(-dist.second);
 
         return make_pair(true, camera);
 }

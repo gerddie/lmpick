@@ -96,6 +96,7 @@ void RenderingThread::set_volume_iso_value(int value)
 
 void RenderingThread::paint()
 {
+        qDebug() << "rot=" << m_state.camera.get_rotation();
         glClearColor(0.1,0.1,0.1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -129,6 +130,8 @@ void RenderingThread::update_rotation(QMouseEvent *ev)
         QVector3D pnew = get_mapped_point(ev->localPos());
         QVector3D pold = get_mapped_point(m_mouse_old_position);
         m_state.camera.rotate(QQuaternion::rotationTo(pold, pnew));
+
+
 }
 
 bool RenderingThread::mouse_release(QMouseEvent *ev)
@@ -207,7 +210,7 @@ void RenderingThread::update_projection()
                 zh = m_state.camera.get_zoom()* m_viewport.y() / m_viewport.x();
                 zw = m_state.camera.get_zoom();
         }
-        m_state.projection.frustum(-zw, zw, -zh, zh, 240, 260);
+        m_state.projection.frustum(-zw, zw, -zh, zh, 200, 300);
 }
 
 void RenderingThread::detach_gl()
