@@ -19,7 +19,9 @@ void LandmarkTableModel::setLandmarkList(PLandmarkList landmarks)
                 beginInsertRows(QModelIndex(), old_size , new_size);
                 m_the_list = landmarks;
                 endInsertRows();
-        }
+        }else
+                m_the_list = landmarks;
+
 }
 
 int LandmarkTableModel::rowCount(const QModelIndex &parent) const

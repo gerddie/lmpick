@@ -96,12 +96,15 @@ MainWindow::MainWindow(QWidget *parent) :
         m_glview->setLandmarkModel(m_landmark_lm);
 #ifdef INITIAL_TESTING
         m_current_landmarklist = create_debug_list();
-        m_glview->setLandmarkList(m_current_landmarklist);
-        m_landmark_lm->setLandmarkList(m_current_landmarklist);
 
         m_current_volume = create_debug_volume();
         m_glview->setVolume(m_current_volume);
+#else
+        m_current_landmarklist = make_shared<LandmarkList>("unnamed");
 #endif
+        m_glview->setLandmarkList(m_current_landmarklist);
+        m_landmark_lm->setLandmarkList(m_current_landmarklist);
+
         m_landmark_tv->setModel(m_landmark_lm);
 
         connect(m_landmark_tv->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),

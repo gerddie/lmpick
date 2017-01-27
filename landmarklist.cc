@@ -114,5 +114,4 @@ bool LandmarkList::remove(const QString& name)
 bool LandmarkList::has(const QString& name) const
 {
         return m_index_map.find(name) != m_index_map.end();
-
 }
