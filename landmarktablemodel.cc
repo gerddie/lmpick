@@ -84,3 +84,9 @@ QVariant LandmarkTableModel::headerData(int section, Qt::Orientation orientation
            return QVariant();
 }
 
+void LandmarkTableModel::addLandmark(PLandmark lm)
+{
+        beginInsertRows(QModelIndex(), m_the_list->size(), m_the_list->size() + 1);
+        m_the_list->add(lm);
+        endInsertRows();
+}

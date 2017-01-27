@@ -82,11 +82,11 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->setupUi(this);
         m_glview = findChild<MainopenGLView*>();
         m_iso_slider = findChild<QSlider*>("isoValueSlider");
-        m_landmark_tv = findChild<LandmarkTableView *>("LandmarkTableView");
+        m_landmark_tv = findChild<LandmarkTableView *>("LandmarkTV");
         assert(m_iso_slider);
         connect(m_iso_slider, SIGNAL(valueChanged(int)), m_glview, SLOT(set_volume_isovalue(int)));
 
-        assert(m_landmark_list_view);
+        assert(m_landmark_tv);
 
         m_landmark_tv->addAction(ui->action_Add);
         m_landmark_tv->addAction(ui->action_Edit);
@@ -101,7 +101,7 @@ MainWindow::MainWindow(QWidget *parent) :
         m_current_volume = create_debug_volume();
         m_glview->setVolume(m_current_volume);
 #endif
-        m_landmark_tv->setModel(m_landmark_model);
+        m_landmark_tv->setModel(m_landmark_lm);
 }
 
 
@@ -181,7 +181,7 @@ void MainWindow::on_action_Add_triggered()
                 if (!name.isEmpty()) {
                         if (!m_current_landmarklist->has(name)) {
                                 PLandmark new_lm = make_shared<Landmark>(name);
-                                m_current_landmarklist->add(new_lm);
+                                m_landmark_lm->addLandmark(new_lm);
                                 break;
                         }else{
                                 prompt =QString(tr("Name (") + name + tr(" is already in list):"));

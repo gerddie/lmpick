@@ -23,7 +23,7 @@
 #define MAINWINDOW_HH
 
 #include "mainopenglview.hh"
-#include "landmarkltableview.hh"
+#include "landmarktableview.hh"
 #include "landmarktablemodel.hh"
 #include <QMainWindow>
 #include <QSlider>

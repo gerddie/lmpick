@@ -38,7 +38,7 @@ SOURCES += main.cc\
     renderingthread.cc \
     landmarklistio.cc \
     landmarktablemodel.cc \
-    landmarkltableview.cc
+    landmarktableview.cc
 
 
 HEADERS  += mainwindow.hh \
@@ -56,7 +56,7 @@ HEADERS  += mainwindow.hh \
     landmarklistio.hh \
     errormacro.hh \
     landmarktablemodel.hh \
-    landmarkltableview.hh
+    landmarktableview.hh
 
 FORMS    += mainwindow.ui
 

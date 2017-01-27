@@ -19,6 +19,7 @@ public:
 
         void setLandmarkList(PLandmarkList landmarks);
 
+        void addLandmark(PLandmark lm);
 private:
 
         PLandmarkList m_the_list;
