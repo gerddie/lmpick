@@ -82,6 +82,11 @@ const QVector3D& Camera::get_position() const
         return m_position;
 }
 
+void Camera::move(const QVector3D& delta)
+{
+        m_position += delta;
+}
+
 float Camera::get_zoom() const
 {
         return m_zoom;

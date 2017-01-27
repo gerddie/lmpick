@@ -25,27 +25,44 @@
 #include <QVector3D>
 #include <QQuaternion>
 
+/**
+  \brief OpenGL view defining camera
+
+  This class implements the camera that is used for visualizing
+  the graphic scene.
+
+*/
+
 class Camera
 {
 public:
+        /// Default constructor to define the default view
         Camera();
 
+        /**
+          Camera
+           \param position
+           \param rotation
+           \param zoom
+        */
         Camera(const QVector3D& position, const QQuaternion& rotation, float zoom);
 
-        void set_position(const QVector3D& pos);
+
         void set_rotation(const QQuaternion& r);
+        const QQuaternion& get_rotation() const;
         void rotate(const QQuaternion& r);
 
         void set_zoom(float z);
         void zoom_in();
         void zoom_out();
+        float get_zoom() const;
+
+        const QVector3D& get_position() const;
+        void set_position(const QVector3D& pos);
+        void move(const QVector3D& delta);
         void set_distance(float dist);
 
-        const QQuaternion& get_rotation() const;
-        const QVector3D& get_position() const;
 
-
-        float get_zoom() const;
 private:
 
         QQuaternion m_rotation;

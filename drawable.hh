@@ -27,6 +27,11 @@
 #include <QOpenGLVertexArrayObject>
 #include <memory>
 
+/**
+
+\brief base class for all objects to be drawn in the scene
+
+*/
 class Drawable {
 public:
         typedef std::shared_ptr<Drawable> Pointer;
@@ -43,7 +48,5 @@ private:
 
 
 };
-
-
 
 #endif // DRAWABLE_HH
