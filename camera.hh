@@ -62,6 +62,7 @@ public:
         void move(const QVector3D& delta);
         void set_distance(float dist);
 
+        QMatrix4x4 get_modelview_matrix() const;
 
 private:
 

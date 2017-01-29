@@ -75,11 +75,13 @@ Sphere::~Sphere()
 
 void Sphere::detach_gl(QOpenGLContext& context)
 {
+        Q_UNUSED(context);
         --m_instances_gl_attached;
 }
 
 void Sphere::do_attach_gl(QOpenGLContext& context)
 {
+        Q_UNUSED(context);
         if (!m_instances_gl_attached)
                 impl->attach_gl();
         ++m_instances_gl_attached;

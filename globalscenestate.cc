@@ -24,7 +24,6 @@
 #include <cmath>
 
 GlobalSceneState::GlobalSceneState():
-        camera(QVector3D(0,0,-250), QQuaternion(1, 0, 0, 0), 1.0),
         light_source(-1,-1,-20),
         viewport(0,0)
 {
@@ -33,13 +32,8 @@ GlobalSceneState::GlobalSceneState():
 
 QMatrix4x4 GlobalSceneState::get_modelview_matrix() const
 {
-        QMatrix4x4 modelview;
-
-        modelview.setToIdentity();
-        modelview.translate(camera.get_position());
-        modelview.rotate(camera.get_rotation());
+        auto modelview = camera.get_modelview_matrix();
         modelview.translate(m_offset);
-
         return modelview;
 }
 

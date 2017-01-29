@@ -20,12 +20,14 @@
  */
 
 #include "camera.hh"
+#include <QMatrix4x4>
 
 Camera::Camera():
         m_rotation(1,0,0,0),
         m_position(0,0,-250),
         m_zoom(1.0)
 {
+        m_rotation.normalize();
 }
 
 Camera::Camera(const QVector3D& position, const QQuaternion& rotation, float zoom):
@@ -92,3 +94,17 @@ float Camera::get_zoom() const
         return m_zoom;
 }
 
+QMatrix4x4 Camera::get_modelview_matrix() const
+{
+        QMatrix4x4 modelview;
+
+        modelview.setToIdentity();
+        modelview.translate(m_position);
+        modelview.rotate(m_rotation);
+
+        QVector4D v(0,0,0,1);
+        qDebug() << "Modelview:" << modelview;
+
+        qDebug() << "  v(000) = " << modelview * v;
+        return modelview;
+}
