@@ -412,6 +412,7 @@ void VolumeDataImpl::detach_gl(QOpenGLContext& context)
 }
 
 
+// todo: Consider pre-allocating the FBOs in the attach_gl() function
 void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& context)
 {
         auto modelview = state.get_modelview_matrix();
@@ -507,54 +508,44 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         m_indexBuf_2nd_pass.bind();
 
 
-        // consider putting this all into its own FBO
+        // consider putting this all into its own FBO class
         auto glex = context.extraFunctions();
 
-        // get FBO of current output
-        int current_fbo = context.defaultFramebufferObject();
+        // get FBO
         GLuint space_coord_rb;
 
-        // if this is really an FBO (in QT it should be) then do the thing
-        if (current_fbo) {
-
-                // attach a new renderbuffer for writing the texture coordinates
-                glex->glGenRenderbuffers(1, &space_coord_rb);
-                glex->glBindRenderbuffer(GL_RENDERBUFFER, space_coord_rb);
-                glex->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, state.viewport.width(), state.viewport.height());
-                glex->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
-                                                GL_RENDERBUFFER, space_coord_rb);
+        // attach a new renderbuffer for writing the texture coordinates
+        glex->glGenRenderbuffers(1, &space_coord_rb);
+        glex->glBindRenderbuffer(GL_RENDERBUFFER, space_coord_rb);
+        glex->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, state.viewport.width(), state.viewport.height());
+        glex->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
+                                        GL_RENDERBUFFER, space_coord_rb);
 
 
-                // Set both buffers to write and clear
-                GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-                glex->glDrawBuffers(2, buffers);
+        // Set both buffers to write and clear
+        GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+        glex->glDrawBuffers(2, buffers);
 
 
-                glClear(GL_COLOR_BUFFER_BIT);
-
-        }else{
-                qWarning() << "Not rendering to FBO";
-        }
+        glClear(GL_COLOR_BUFFER_BIT);
 
         // render the volume data
         ogl.glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, 0);
 
-        // if we were drwaing to a FBO, we have the render buffer with the
-        // texture coordinates
-        if (current_fbo) {
 
-                // grap the texture coordinates and write them out for debuggung
-                glex->glReadBuffer(GL_COLOR_ATTACHMENT1);
-                // finish rendering before reading back
-                // this is no high-speed game, we can wait for glReadPixles
-                ogl.glFinish();
-                ogl.glReadPixels(0,0,state.viewport.width(), state.viewport.height(), GL_RGBA, GL_FLOAT, &m_tex_coordinates[0]);
+        // grab the texture coordinates to have them for landmark picking
+        glex->glReadBuffer(GL_COLOR_ATTACHMENT1);
 
-                // detach and release the render buffer
-                glex->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
-                                                GL_RENDERBUFFER, 0);
-                glex->glDeleteRenderbuffers(1, &space_coord_rb);
-        }
+        // finish rendering before reading back
+        // this is no high-speed game, we can wait for glReadPixles
+        ogl.glFinish();
+        ogl.glReadPixels(0,0,state.viewport.width(), state.viewport.height(), GL_RGBA, GL_FLOAT, &m_tex_coordinates[0]);
+
+        // detach and release the render buffer
+        // should not be needed, since the fbo is destroyed when leaving the function ...
+        glex->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
+                                        GL_RENDERBUFFER, 0);
+        glex->glDeleteRenderbuffers(1, &space_coord_rb);
 
         m_volume_program.release();
         fbo_volume.release();
@@ -565,8 +556,7 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
         ogl.glBindTexture(GL_TEXTURE_2D, 0);
 
 
-
-        // now blit it to the output surface
+        // now blit it to the output surface (normally the screen)
         ogl.glActiveTexture(GL_TEXTURE0);
         ogl.glBindTexture(GL_TEXTURE_2D, fbo_volume.texture());
 
