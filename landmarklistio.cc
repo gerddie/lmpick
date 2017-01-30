@@ -384,11 +384,14 @@ struct to_string<QQuaternion> {
 
 void LandmarkSaver::save_landmark(QDomDocument& xml, QDomElement& parent, const Landmark& lm)
 {
+        auto lm_flags = lm.get_flags();
         auto xml_lm = xml.createElement("landmark");
         auto lm_loc_tag = xml.createElement("location");
-        auto lm_loc_tag = xml.createElement("name");
-        auto lm_loc_tag = xml.createElement("picfile");
-        auto lm_loc_tag = xml.createElement("isovalue");
+        auto lm_name_tag = xml.createElement("name");
+        auto lm_pic_tag = xml.createElement("picfile");
+        auto lm_iso_tag = xml.createElement("isovalue");
+
+
 
 
 

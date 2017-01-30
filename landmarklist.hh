@@ -31,6 +31,10 @@ class LandmarkList
 public:
         typedef std::shared_ptr<LandmarkList> Pointer;
 
+        std::vector<PLandmark>::const_iterator const_iterator;
+
+        std::vector<PLandmark>::iterator iterator;
+
         LandmarkList() = default;
 
         explicit LandmarkList(const QString& name);
@@ -56,6 +60,18 @@ public:
         QString get_filename() const;
 
         void set_filename(const QString &filename);
+
+        QString get_name() const;
+
+        void set_name(const QString &name);
+
+        const_iterator begin() const;
+
+        const_iterator end() const;
+
+        iterator begin();
+
+        iterator end();
 
 private:
         QString m_name;
