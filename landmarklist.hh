@@ -31,9 +31,9 @@ class LandmarkList
 public:
         typedef std::shared_ptr<LandmarkList> Pointer;
 
-        std::vector<PLandmark>::const_iterator const_iterator;
+        typedef std::vector<PLandmark>::const_iterator const_iterator;
 
-        std::vector<PLandmark>::iterator iterator;
+        typedef std::vector<PLandmark>::iterator iterator;
 
         LandmarkList() = default;
 

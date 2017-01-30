@@ -52,6 +52,8 @@ private slots:
 
         void on_iso_value_changed();
 
+        void on_actionSave_landmark_set_As_triggered();
+
 private:
         Ui::MainWindow *ui;
         MainopenGLView *m_glview;

@@ -22,7 +22,8 @@
 #include "landmark.hh"
 
 Landmark::Landmark():
-        m_is_set(false)
+        m_is_set(false),
+        m_flags(lm_none)
 {
 }
 
@@ -30,6 +31,7 @@ Landmark::Landmark(const QString& name):
         m_name(name),
         m_is_set(false)
 {
+        m_flags = lm_name;
 }
 
 
@@ -40,6 +42,12 @@ Landmark::Landmark(const QString& name, const QVector3D& location, float iso, co
         m_best_view(best_view),
         m_iso_value(iso)
 {
+        m_flags = lm_name | lm_location | lm_camera | lm_iso_value;
+}
+
+bool Landmark::has(EFlags flag) const
+{
+        return (flag &   m_flags) == flag;
 }
 
 bool Landmark::is_set() const
@@ -53,16 +61,20 @@ void Landmark::set(const QVector3D& location, float iso, const Camera& best_view
         m_iso_value = iso;
         m_best_view = best_view;
         m_is_set = true;
+
+        m_flags = m_flags  | lm_location | lm_camera | lm_iso_value;
 }
 
 void  Landmark::set_location(const QVector3D& loc)
 {
         m_location = loc;
+        m_flags = m_flags | lm_location;
 }
 
 void  Landmark::set_camera(const Camera& camera)
 {
         m_best_view = camera;
+        m_flags = m_flags |lm_camera;
 }
 
 const QString& Landmark::get_name() const
@@ -73,6 +85,7 @@ const QString& Landmark::get_name() const
 void Landmark::set_template_image_file(const QString& fname)
 {
         m_template_image_filename = fname;
+        m_flags = m_flags | lm_picfile;
 }
 
 const QString& Landmark::get_template_filename() const
@@ -93,6 +106,7 @@ const Camera& Landmark::get_camera() const
 void Landmark::set_iso_value(float iso)
 {
         m_iso_value = iso;
+        m_flags = m_flags | lm_iso_value;
 }
 
 float Landmark::get_iso_value() const
