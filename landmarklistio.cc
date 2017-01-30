@@ -1,4 +1,4 @@
-/* -*- mia-c++  -*-
+﻿/* -*- mia-c++  -*-
  *
  * This file is part of qtlmpick- a tool for landmark picking and
  * visualization in volume data
@@ -287,7 +287,8 @@ PLandmark LandmarkReader::read_landmark(const QDomElement& elm)
 }
 
 
-bool write_landmarklist(const QString& filename, const LandmarkList& list)
+bool write_landmarklist(const QString& filename, const LandmarkList& list, int prefer_version)
 {
-        return false;
+
+
 }

@@ -28,6 +28,6 @@ class LandmarkList;
 
 PLandmarkList read_landmarklist(const QString& filename);
 
-bool write_landmarklist(const QString& filename, const LandmarkList& list);
+bool write_landmarklist(const QString& filename, const LandmarkList& list, int prefer_version = 1);
 
 #endif // LANDMARKLISTIO_HH
