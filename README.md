@@ -2,7 +2,12 @@
 
 A landmark picker and visualizer for 3D volume data.
 
+Pre-alpha 
+
+
 === Requirements ===
+
+
 
 ==== Build ====
 
