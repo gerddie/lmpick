@@ -30,6 +30,15 @@
 class Landmark
 {
 public:
+        enum EFlags {
+                none = 0,
+                name = 1,
+                picfile = 2,
+                location = 4,
+                iso_value = 8,
+                camera = 16
+        };
+
         typedef std::shared_ptr<Landmark> Pointer;
 
         Landmark();
@@ -54,7 +63,6 @@ public:
 
         float get_iso_value()const;
 
-
         void set_location(const QVector3D& loc);
 
         void set_iso_value(float iso);
@@ -69,6 +77,7 @@ private:
         Camera m_best_view;
         float m_iso_value;
 
+        enum Flags m_flags;
 
 };
 

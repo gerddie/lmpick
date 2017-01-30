@@ -286,9 +286,112 @@ PLandmark LandmarkReader::read_landmark(const QDomElement& elm)
         return result;
 }
 
+class LandmarkSaver {
+public:
+        bool save(const QString& filename, const LandmarkList& list);
+
+public:
+        void save_landmark(QDomDocument& xml, QDomElement& parent, const Landmark& lm);
+        virtual void write_camera(QDomDocument& xml, QDomElement& parent, const Camera& c) = 0;
+};
 
 bool write_landmarklist(const QString& filename, const LandmarkList& list, int prefer_version)
 {
+        std::unique_ptr<LandmarkSaver> saver_backend;
+
+        if (prefer_version == 1) {
+                saver_backend.reset(new LandmarkSaverV1)
+        }else{
+                assert(0 && "Only landmark saver V1 implmented");
+        }
+
+        return saver_backend->save(filename, list);
+}
+
+
+bool LandmarkSaver::save(const QString& filename, const LandmarkList& list)
+{
+        QFile save_file(filename);
+        if (!save_file.open(QFile::WriteOnly| QFile::Text)) {
+                throw create_exception<std::runtime_error>(tr("Unable to open '"), filename,
+                                                           tr("' for writing."));
+        }
+
+        QDomDocument xml;
+        xml.createProcessingInstruction( "xml", "version=\"1.0\"" );
+        auto root = xml.createElement("list");
+        xml.appendChild(list);
+
+        auto  name = xml.createElement("name");
+        root.appendChild(name);
+        auto name_text = xml.createTextNode(list.get_name());
+        name.appendChild(name_text);
+
+        for (auto i: list) {
+                save_landmark(xml, root, *i);
+        }
+
+}
+
+template <typename T>
+struct to_string {
+        static QString apply(T value) {
+                static_assert(sizeof(T) == 0, "Needs specialization");
+        }
+};
+
+template <>
+struct to_string<float> {
+        static QString apply(float value) {
+                QString s;
+                QTextStream ts(s);
+                ts << s;
+                return s;
+        }
+};
+
+template <>
+struct to_string<int> {
+        static QString apply(int value) {
+                QString s;
+                QTextStream ts(s);
+                ts << s;
+                return s;
+        }
+};
+
+template <>
+struct to_string<QVector3D> {
+        static QString apply(const QVector3D& v) {
+                QString s;
+                QTextStream ts(s);
+                ts << v.x() << " " << v.y() << " " << v.z();
+                return s;
+        }
+};
+
+
+template <>
+struct to_string<QQuaternion> {
+        static QString apply(const QQuaternion& v) {
+                QString s;
+                QTextStream ts(s);
+                ts << v.x() << " " << v.y() << " " << v.z() << " " << v.scalar();
+                return s;
+        }
+};
+
+
+void LandmarkSaver::save_landmark(QDomDocument& xml, QDomElement& parent, const Landmark& lm)
+{
+        auto xml_lm = xml.createElement("landmark");
+        auto lm_loc_tag = xml.createElement("location");
+        auto lm_loc_tag = xml.createElement("name");
+        auto lm_loc_tag = xml.createElement("picfile");
+        auto lm_loc_tag = xml.createElement("isovalue");
+
 
 
 }
+
+

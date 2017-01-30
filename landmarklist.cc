@@ -85,11 +85,21 @@ void LandmarkList::set_filename(const QString &filename)
     m_filename = filename;
 }
 
+QString LandmarkList::get_name() const
+{
+        return m_name;
+}
+
+void LandmarkList::set_name(const QString &name)
+{
+        m_name = name;
+}
+
 void LandmarkList::remove(unsigned idx, unsigned count)
 {
-    unsigned end = idx + count;
-    
-    for (unsigned  i = idx; i < end; ++i) {
+        unsigned end = idx + count;
+
+        for (unsigned  i = idx; i < end; ++i) {
         m_index_map.erase(m_list[i]->get_name());
         }
 
@@ -124,4 +134,24 @@ bool LandmarkList::remove(const QString& name)
 bool LandmarkList::has(const QString& name) const
 {
         return m_index_map.find(name) != m_index_map.end();
+}
+
+const_iterator LandmarkList::begin() const
+{
+        return m_list.begin();
+}
+
+const_iterator LandmarkList::end() const
+{
+        return m_list.end();
+}
+
+iterator LandmarkList::begin()
+{
+        return m_list.begin();
+}
+
+iterator LandmarkList::end()
+{
+        return m_list.end();
 }
