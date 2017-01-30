@@ -75,12 +75,22 @@ size_t LandmarkList::size() const
         return m_list.size();
 }
 
+QString LandmarkList::get_filename() const
+{
+    return m_filename;
+}
+
+void LandmarkList::set_filename(const QString &filename)
+{
+    m_filename = filename;
+}
+
 void LandmarkList::remove(unsigned idx, unsigned count)
 {
-        unsigned end = idx + count;
-
-        for (unsigned  i = idx; i < end; ++i) {
-                m_index_map.erase(m_list[i]->get_name());
+    unsigned end = idx + count;
+    
+    for (unsigned  i = idx; i < end; ++i) {
+        m_index_map.erase(m_list[i]->get_name());
         }
 
         m_list.erase(m_list.begin() + idx, m_list.begin() + end);

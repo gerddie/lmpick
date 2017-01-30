@@ -31,10 +31,70 @@ using std::make_pair;
 using std::make_shared;
 using std::pair;
 
-LandmarklistIO::LandmarklistIO()
+
+class LandmarkReader {
+public:
+        LandmarkReader(const QString& filename);
+        PLandmarkList read(const QDomElement& root);
+private:
+        PLandmark read_landmark(const QDomElement& root);
+        virtual pair<bool, Camera> read_camera(const QDomElement& elm) = 0;
+        QString m_filename;
+
+};
+
+class LandmarkReaderV1 : public LandmarkReader {
+public:
+        using LandmarkReader::LandmarkReader;
+private:
+        pair<bool, Camera> read_camera(const QDomElement& elm) override;
+};
+
+class LandmarkReaderV2 : public LandmarkReader {
+public:
+        using LandmarkReader::LandmarkReader;
+private:
+        pair<bool, Camera> read_camera(const QDomElement& elm) override;
+};
+
+
+PLandmarkList read_landmarklist(const QString& filename)
 {
+        QDomDocument reader;
+
+        QFile file(filename);
+        if (!file.open(QFile::ReadOnly | QFile::Text)) {
+                throw create_exception<std::runtime_error>("Unable to open file:", filename);
+        }
+
+        if (!reader.setContent(&file)) {
+                file.close();
+                throw create_exception<std::runtime_error>("Unable to read file as XML:", filename);
+        }
+        file.close();
+
+        auto list_elm = reader.documentElement();
+        if (list_elm.tagName() != "list") {
+                throw create_exception<std::runtime_error>(filename, " not a landmark list, got tag <",
+                                                           list_elm.tagName(),"> but expected <list>");
+        }
+        // try to read version attribute
+        int version = list_elm.attribute("version", "1").toInt();
+
+        std::unique_ptr<LandmarkReader> reader_backend;
+
+        if (version < 2)
+                reader_backend.reset(new LandmarkReaderV1(filename));
+        else
+                reader_backend.reset(new LandmarkReaderV2(filename));
+
+        auto result = reader_backend->read(list_elm);
+
+        result->set_filename(filename);
+        return result;
 
 }
+
 
 template <typename T>
 struct read_tag_dispatch {
@@ -54,6 +114,13 @@ template <>
 struct read_tag_dispatch<float> {
         static float apply(const QString& value) {
                 return value.toFloat();
+        }
+};
+
+template <>
+struct read_tag_dispatch<int> {
+        static int apply(const QString& value) {
+                return value.toInt();
         }
 };
 
@@ -97,7 +164,49 @@ pair<bool, T> read_tag(const QDomElement& parent, const QString& tag)
         return make_pair(true, value);
 }
 
-static pair<bool, Camera> read_camera(const QDomElement& parent)
+LandmarkReader::LandmarkReader(const QString& filename):
+        m_filename(filename)
+{
+}
+
+pair<bool, Camera> LandmarkReaderV1::read_camera(const QDomElement& parent)
+{
+        Camera camera;
+
+        auto elm = parent.firstChildElement("camera");
+        if (elm.isNull())
+                return make_pair(false, Camera());
+
+
+        auto loc = read_tag<QVector3D>(elm, "location");
+        if (loc.first)
+                camera.set_position(loc.second);
+
+        auto zoom = read_tag<float>(elm, "zoom");
+        if (zoom.first)
+                camera.set_zoom(zoom.second);
+
+        // Other than QT the old code uses
+        // the inverse rotation, correct this here and
+        // when savong to version 1
+
+        auto rot = read_tag<QQuaternion>(elm, "rotation");
+        if (rot.first) {
+                rot.second = rot.second.inverted();
+                camera.set_rotation(rot.second);
+        }
+
+        // the camera position is interpreted
+        // differently with the old code, correct here
+        // when loading
+        auto dist = read_tag<float>(elm, "distance");
+        if (dist.first)
+                camera.set_distance(-dist.second);
+
+        return make_pair(true, camera);
+}
+
+pair<bool, Camera> LandmarkReaderV2::read_camera(const QDomElement& parent)
 {
         Camera camera;
 
@@ -118,14 +227,37 @@ static pair<bool, Camera> read_camera(const QDomElement& parent)
         if (rot.first)
                 camera.set_rotation(rot.second);
 
-        auto dist = read_tag<float>(elm, "distance");
-        if (dist.first)
-                camera.set_distance(-dist.second);
-
         return make_pair(true, camera);
 }
 
-static PLandmark read_landmark(const QDomElement& elm)
+
+PLandmarkList LandmarkReader::read(const QDomElement& root)
+{
+        auto name_child = root.firstChildElement("name");
+        QString list_name("(unknown)");
+        if (!name_child.isNull()) {
+                list_name = name_child.text();
+        }else{
+                qWarning() << m_filename << ":List has no name entry, assign '(unknown)'";
+        }
+
+        PLandmarkList result = make_shared<LandmarkList>(list_name);
+        result->set_filename(m_filename);
+
+        auto landmark_elm = root.firstChildElement("landmark");
+
+        while (!landmark_elm.isNull()) {
+                auto lm = read_landmark(landmark_elm);
+                if (lm)
+                        result->add(lm);
+                else
+                        qWarning() << m_filename << ": Skipped empty landmark tag";
+                landmark_elm = landmark_elm.nextSiblingElement("landmark");
+        }
+        return result;
+}
+
+PLandmark LandmarkReader::read_landmark(const QDomElement& elm)
 {
         auto name = read_tag<QString>(elm, "name");
         if (!name.first)
@@ -154,51 +286,8 @@ static PLandmark read_landmark(const QDomElement& elm)
         return result;
 }
 
-PLandmarkList LandmarklistIO::read(const QString& filename)
-{
-        QDomDocument reader;
 
-        QFile file(filename);
-        if (!file.open(QFile::ReadOnly | QFile::Text)) {
-                throw create_exception<std::runtime_error>("Unable to open file:", filename);
-        }
-
-        if (!reader.setContent(&file)) {
-                file.close();
-                throw create_exception<std::runtime_error>("Unable to read file as XML:", filename);
-        }
-        file.close();
-
-        auto list_elm = reader.documentElement();
-        if (list_elm.tagName() != "list") {
-                throw create_exception<std::runtime_error>(filename, " not a landmark list, got tag <",
-                                                           list_elm.tagName(),"> but expected <list>");
-        }
-        // read name
-        auto name_child = list_elm.firstChildElement("name");
-        QString list_name("(unknown)");
-        if (!name_child.isNull()) {
-                list_name = name_child.text();
-        }else{
-                qWarning() << filename << ":List has no name entry, assign '(unknown)'";
-        }
-
-        PLandmarkList result = make_shared<LandmarkList>(list_name);
-
-        auto landmark_elm = list_elm.firstChildElement("landmark");
-
-        while (!landmark_elm.isNull()) {
-                auto lm = read_landmark(landmark_elm);
-                if (lm)
-                        result->add(lm);
-                else
-                        qWarning() << filename << ": Skipped empty landmark tag";
-                landmark_elm = landmark_elm.nextSiblingElement("landmark");
-        }
-        return result;
-}
-
-bool LandmarklistIO::write(const QString& filename, const LandmarkList& list)
+bool write_landmarklist(const QString& filename, const LandmarkList& list)
 {
         return false;
 }

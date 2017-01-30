@@ -163,19 +163,6 @@ void MainWindow::on_actionOpen_Volume_triggered()
         }
 }
 
-QWidget *MainWindow::action_source(QAction *action)
-{
-        auto possible_sources = action->associatedWidgets();
-        auto source = possible_sources.begin();
-        qDebug() << "source: " << *source;
-
-        while (!(*source)->hasFocus()  && source != possible_sources.end()) {
-                ++source;
-                qDebug() << "source: " << *source;
-        }
-        return *source;
-}
-
 void MainWindow::on_action_Add_triggered()
 {
         QString prompt(tr("Name:"));
@@ -211,8 +198,7 @@ void MainWindow::on_action_Open_landmarkset_triggered()
                 auto fileNames = dialog.selectedFiles();
                 assert(!fileNames.empty());
                 try {
-                        LandmarklistIO io;
-                        auto lmlist = io.read(fileNames.first());
+                        auto lmlist = read_landmarklist(fileNames.first());
                         m_current_landmarklist = lmlist;
                         m_glview->setLandmarkList(m_current_landmarklist);
                         m_landmark_tv->resizeColumnsToContents();

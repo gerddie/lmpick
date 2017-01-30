@@ -26,14 +26,8 @@
 
 class LandmarkList;
 
-class LandmarklistIO
-{
-public:
-        LandmarklistIO();
+PLandmarkList read_landmarklist(const QString& filename);
 
-        PLandmarkList read(const QString& filename);
-
-        bool write(const QString& filename, const LandmarkList& list);
-};
+bool write_landmarklist(const QString& filename, const LandmarkList& list);
 
 #endif // LANDMARKLISTIO_HH

@@ -53,8 +53,13 @@ public:
 
         size_t size() const;
 
+        QString get_filename() const;
+
+        void set_filename(const QString &filename);
+
 private:
         QString m_name;
+        QString m_filename;
 
         std::vector<PLandmark> m_list;
         std::map<QString, unsigned> m_index_map;

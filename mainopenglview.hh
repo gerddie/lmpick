@@ -52,7 +52,6 @@ public slots:
 private slots:
         void detachGL();
         void on_set_landmark();
-
         void on_add_landmark();
 private:
         void initializeGL()override;

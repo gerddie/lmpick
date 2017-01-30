@@ -102,9 +102,5 @@ QMatrix4x4 Camera::get_modelview_matrix() const
         modelview.translate(m_position);
         modelview.rotate(m_rotation);
 
-        QVector4D v(0,0,0,1);
-        qDebug() << "Modelview:" << modelview;
-
-        qDebug() << "  v(000) = " << modelview * v;
         return modelview;
 }

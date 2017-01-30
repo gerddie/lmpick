@@ -53,8 +53,6 @@ private slots:
         void on_iso_value_changed();
 
 private:
-        QWidget *action_source(QAction *action);
-
         Ui::MainWindow *ui;
         MainopenGLView *m_glview;
         QSlider *m_iso_slider;
@@ -63,7 +61,6 @@ private:
 
         PVolumeData m_current_volume;
         PLandmarkList m_current_landmarklist;
-
 };
 
 #endif // MAINWINDOW_HH
