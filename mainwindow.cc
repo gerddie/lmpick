@@ -215,3 +215,21 @@ void MainWindow::on_iso_value_changed()
 {
         m_iso_slider->setValue( m_current_volume->get_iso_value() );
 }
+
+void MainWindow::on_actionSave_landmark_set_As_triggered()
+{
+        QFileDialog dialog(this, "Save landmark list as", ".", "(MIA landmark list *.lmx)");
+
+        if (dialog.exec()) {
+                auto fileNames = dialog.selectedFiles();
+                assert(!fileNames.empty());
+                try {
+                        write_landmarklist(fileNames.first(), *m_current_landmarklist);
+                }
+                catch (std::exception& x) {
+                        QMessageBox box(QMessageBox::Information, "Error loading landmarks", x.what(),
+                                        QMessageBox::Ok);
+                        box.exec();
+                }
+        }
+}

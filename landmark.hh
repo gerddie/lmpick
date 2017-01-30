@@ -31,12 +31,12 @@ class Landmark
 {
 public:
         enum EFlags {
-                none = 0,
-                name = 1,
-                picfile = 2,
-                location = 4,
-                iso_value = 8,
-                camera = 16
+                lm_none = 0,
+                lm_name = 1,
+                lm_picfile = 2,
+                lm_location = 4,
+                lm_iso_value = 8,
+                lm_camera = 16
         };
 
         typedef std::shared_ptr<Landmark> Pointer;
@@ -69,6 +69,7 @@ public:
 
         void set_camera(const Camera& camera);
 
+        bool has(EFlags flag) const;
 private:
         QString m_name;
         bool m_is_set;
@@ -77,9 +78,22 @@ private:
         Camera m_best_view;
         float m_iso_value;
 
-        enum Flags m_flags;
+        enum EFlags m_flags;
 
 };
+
+
+inline Landmark::EFlags operator | (Landmark::EFlags lhs, Landmark::EFlags rhs)
+{
+        return static_cast<Landmark::EFlags>(static_cast<int>(lhs) | static_cast<int>(rhs));
+}
+
+inline Landmark::EFlags operator & (Landmark::EFlags lhs, Landmark::EFlags rhs)
+{
+        return static_cast<Landmark::EFlags>(static_cast<int>(lhs) & static_cast<int>(rhs));
+}
+
+
 
 typedef Landmark::Pointer PLandmark;
 

@@ -24,8 +24,10 @@
 #include "landmark.hh"
 #include "errormacro.hh"
 
+#include <QWidget>
 #include <QDomDocument>
 #include <QFile>
+#include <cassert>
 
 using std::make_pair;
 using std::make_shared;
@@ -292,7 +294,11 @@ public:
 
 public:
         void save_landmark(QDomDocument& xml, QDomElement& parent, const Landmark& lm);
-        virtual void write_camera(QDomDocument& xml, QDomElement& parent, const Camera& c) = 0;
+        virtual void save_camera(QDomDocument& xml, QDomElement& parent, const Camera& c) = 0;
+};
+
+class LandmarkSaverV1 : public LandmarkSaver {
+        void save_camera(QDomDocument& xml, QDomElement& parent, const Camera& c) override;
 };
 
 bool write_landmarklist(const QString& filename, const LandmarkList& list, int prefer_version)
@@ -300,7 +306,7 @@ bool write_landmarklist(const QString& filename, const LandmarkList& list, int p
         std::unique_ptr<LandmarkSaver> saver_backend;
 
         if (prefer_version == 1) {
-                saver_backend.reset(new LandmarkSaverV1)
+                saver_backend.reset(new LandmarkSaverV1);
         }else{
                 assert(0 && "Only landmark saver V1 implmented");
         }
@@ -313,14 +319,14 @@ bool LandmarkSaver::save(const QString& filename, const LandmarkList& list)
 {
         QFile save_file(filename);
         if (!save_file.open(QFile::WriteOnly| QFile::Text)) {
-                throw create_exception<std::runtime_error>(tr("Unable to open '"), filename,
-                                                           tr("' for writing."));
+                throw create_exception<std::runtime_error>("Unable to open '", filename,
+                                                           "' for writing.");
         }
 
         QDomDocument xml;
         xml.createProcessingInstruction( "xml", "version=\"1.0\"" );
         auto root = xml.createElement("list");
-        xml.appendChild(list);
+        xml.appendChild(root);
 
         auto  name = xml.createElement("name");
         root.appendChild(name);
@@ -331,12 +337,18 @@ bool LandmarkSaver::save(const QString& filename, const LandmarkList& list)
                 save_landmark(xml, root, *i);
         }
 
+        QTextStream s(&save_file);
+        s << xml.toString();
+        save_file.close();
+
+        return true;
 }
 
 template <typename T>
 struct to_string {
         static QString apply(T value) {
                 static_assert(sizeof(T) == 0, "Needs specialization");
+                return QString();
         }
 };
 
@@ -344,8 +356,8 @@ template <>
 struct to_string<float> {
         static QString apply(float value) {
                 QString s;
-                QTextStream ts(s);
-                ts << s;
+                QTextStream ts(&s);
+                ts << value;
                 return s;
         }
 };
@@ -354,8 +366,8 @@ template <>
 struct to_string<int> {
         static QString apply(int value) {
                 QString s;
-                QTextStream ts(s);
-                ts << s;
+                QTextStream ts(&s);
+                ts << value;
                 return s;
         }
 };
@@ -364,7 +376,7 @@ template <>
 struct to_string<QVector3D> {
         static QString apply(const QVector3D& v) {
                 QString s;
-                QTextStream ts(s);
+                QTextStream ts(&s);
                 ts << v.x() << " " << v.y() << " " << v.z();
                 return s;
         }
@@ -375,7 +387,7 @@ template <>
 struct to_string<QQuaternion> {
         static QString apply(const QQuaternion& v) {
                 QString s;
-                QTextStream ts(s);
+                QTextStream ts(&s);
                 ts << v.x() << " " << v.y() << " " << v.z() << " " << v.scalar();
                 return s;
         }
@@ -384,17 +396,67 @@ struct to_string<QQuaternion> {
 
 void LandmarkSaver::save_landmark(QDomDocument& xml, QDomElement& parent, const Landmark& lm)
 {
-        auto lm_flags = lm.get_flags();
         auto xml_lm = xml.createElement("landmark");
-        auto lm_loc_tag = xml.createElement("location");
-        auto lm_name_tag = xml.createElement("name");
-        auto lm_pic_tag = xml.createElement("picfile");
-        auto lm_iso_tag = xml.createElement("isovalue");
-
-
-
-
-
+        if (lm.has(Landmark::lm_name)) {
+                auto tag = xml.createElement("name");
+                auto content = xml.createTextNode(lm.get_name());
+                tag.appendChild(content);
+                xml_lm.appendChild(tag);
+        }
+        if (lm.has(Landmark::lm_location)) {
+                auto tag = xml.createElement("location");
+                auto loc_string = to_string<QVector3D>::apply(lm.get_location());
+                auto content = xml.createTextNode(loc_string);
+                tag.appendChild(content);
+                xml_lm.appendChild(tag);
+        }
+        if (lm.has(Landmark::lm_picfile)) {
+                auto tag = xml.createElement("picfile");
+                auto content = xml.createTextNode(lm.get_template_filename());
+                tag.appendChild(content);
+                xml_lm.appendChild(tag);
+        }
+        if (lm.has(Landmark::lm_iso_value)) {
+                auto tag = xml.createElement("isovalue");
+                auto iso_string = to_string<float>::apply(lm.get_iso_value());
+                auto content = xml.createTextNode(iso_string);
+                tag.appendChild(content);
+                xml_lm.appendChild(tag);
+        }
+        if (lm.has(Landmark::lm_camera)) {
+                save_camera(xml, xml_lm, lm.get_camera());
+        }
+        parent.appendChild(xml_lm);
 }
 
+void LandmarkSaverV1::save_camera(QDomDocument& xml, QDomElement& parent, const Camera& c)
+{
+        auto xml_camera = xml.createElement("camera");
 
+        auto loc_tag = xml.createElement("location");
+        QVector3D loc(c.get_position().x(), c.get_position().y(), 0);
+        auto loc_string = to_string<QVector3D>::apply(loc);
+        auto loc_content = xml.createTextNode(loc_string);
+        loc_tag.appendChild(loc_content);
+        xml_camera.appendChild(loc_tag);
+
+        auto rot_tag = xml.createElement("rotation");
+        auto rot_string = to_string<QQuaternion>::apply(c.get_rotation().inverted());
+        auto rot_content = xml.createTextNode(rot_string);
+        rot_tag.appendChild(rot_content);
+        xml_camera.appendChild(rot_tag);
+
+        auto zoom_tag = xml.createElement("zoom");
+        auto zoom_string = to_string<float>::apply(c.get_zoom());
+        auto zoom_content = xml.createTextNode(zoom_string);
+        zoom_tag.appendChild(zoom_content);
+        xml_camera.appendChild(zoom_tag);
+
+        auto dist_tag = xml.createElement("distance");
+        auto dist_string = to_string<float>::apply(-c.get_position().z());
+        auto dist_content = xml.createTextNode(dist_string);
+        dist_tag.appendChild(dist_content);
+        xml_camera.appendChild(dist_tag);
+
+        parent.appendChild(xml_camera);
+}

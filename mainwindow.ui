@@ -103,7 +103,7 @@
     <addaction name="action_New_landmarkset"/>
     <addaction name="action_Open_landmarkset"/>
     <addaction name="action_Save_Landmark_set"/>
-    <addaction name="actionSave_landmrk_set_As"/>
+    <addaction name="actionSave_landmark_set_As"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_Volume"/>
     <addaction name="separator"/>
@@ -164,7 +164,7 @@
    <addaction name="separator"/>
    <addaction name="action_Open_landmarkset"/>
    <addaction name="action_Save_Landmark_set"/>
-   <addaction name="actionSave_landmrk_set_As"/>
+   <addaction name="actionSave_landmark_set_As"/>
    <addaction name="separator"/>
    <addaction name="action_This_view"/>
    <addaction name="action_All_landmarks"/>
@@ -316,14 +316,17 @@
     <string>&amp;Save Landmark set</string>
    </property>
   </action>
-  <action name="actionSave_landmrk_set_As">
+  <action name="actionSave_landmark_set_As">
    <property name="icon">
     <iconset>
      <normalon>:/icons/icons/document-save-as.png</normalon>
     </iconset>
    </property>
    <property name="text">
-    <string>Save landmrk set &amp;As </string>
+    <string>Save landmark set &amp;As </string>
+   </property>
+   <property name="toolTip">
+    <string>Save landmark set As</string>
    </property>
   </action>
   <action name="action_Create_template">

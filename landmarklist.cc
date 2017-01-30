@@ -136,22 +136,22 @@ bool LandmarkList::has(const QString& name) const
         return m_index_map.find(name) != m_index_map.end();
 }
 
-const_iterator LandmarkList::begin() const
+LandmarkList::const_iterator LandmarkList::begin() const
 {
         return m_list.begin();
 }
 
-const_iterator LandmarkList::end() const
+LandmarkList::const_iterator LandmarkList::end() const
 {
         return m_list.end();
 }
 
-iterator LandmarkList::begin()
+LandmarkList::iterator LandmarkList::begin()
 {
         return m_list.begin();
 }
 
-iterator LandmarkList::end()
+LandmarkList::iterator LandmarkList::end()
 {
         return m_list.end();
 }
