@@ -253,6 +253,12 @@
             <height>200</height>
            </size>
           </property>
+          <property name="font">
+           <font>
+            <family>DejaVu Sans</family>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::StrongFocus</enum>
           </property>
