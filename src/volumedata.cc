@@ -156,7 +156,7 @@ VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
                 m_max_coord = m_physical_size.z();
 
 
-        m_gradient_delta = QVector3D(1,1,1)/m_physical_size;
+        m_gradient_delta = QVector3D(1,1,1)/QVector3D(s.x, s.y, s.z);
         m_scale = m_physical_size / m_max_coord;
 }
 

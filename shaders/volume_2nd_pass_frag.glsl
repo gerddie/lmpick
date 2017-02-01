@@ -81,14 +81,14 @@ const float zFar = 552.0;
 float linearDepth(float depthSample)
 {
     depthSample = 2.0 * depthSample - 1.0;
-    float zLinear = 2.0 * zNear * zFar / (zFar + zNear - depthSample * (zFar - zNear));
+    highp float zLinear = 2.0 * zNear * zFar / (zFar + zNear - depthSample * (zFar - zNear));
     return zLinear;
 }
 
 // result suitable for assigning to gl_FragDepth
 float depthSample(float linearDepth)
 {
-    float nonLinearDepth = (zFar + zNear - 2.0 * zNear * zFar / linearDepth) / (zFar - zNear);
+    highp float nonLinearDepth = (zFar + zNear - 2.0 * zNear * zFar / linearDepth) / (zFar - zNear);
     nonLinearDepth = (nonLinearDepth + 1.0) / 2.0;
     return nonLinearDepth;
 }
@@ -117,44 +117,49 @@ void main(void)
         // calculate the actually used step length
         highp vec3 nf = adir  / step_length;
         highp float max_nf = max(max(nf.x, nf.y), nf.z);
-        int n = int(max_nf);
-        highp vec3 step = dir / n;
+        highp vec3 step = dir / max_nf;
 
         // iterate along the ray, front to back
         bool hit = false;
-        float old_iso = -1;
+        highp float old_iso = -1;
 
-        for (int a = 0; a < n ; ++a)  {
+        for (highp float a = 0; a < max_nf ; a += 1.0)  {
                 highp vec3 x = start.xyz + a * step;
                 highp vec4 color = texture3D(volume, x);
 
                 // if we cross the iso-boundary draw the pixel
-                if (color.r > iso_value) {
+                if (color.r < iso_value) {
+                        old_iso = color.r;
+                        continue;
+                } else {
+                        highp float f = a - 1;
+                        if (color.r > iso_value) {
+                                // optimize the actual iso-value crossing coodinate
+                                highp float rel = (iso_value - old_iso) / (color.r - old_iso);
+                                f += rel;
+                        }
 
-                        // optimize the actual iso-value crossing coodinate
-                        float rel = (iso_value - old_iso) / (color.r - old_iso);
-                        float f = a - 1 + rel;
                         x = start.xyz +  f * step;
 
                         // evalute the normal by using centered finite differences
-                        float cx = (texture3D(volume, vec3(x.x - step_length.x, x.y, x.z)).r -
-                                    texture3D(volume, vec3(x.x + step_length.x, x.y, x.z)).r)/ step_length.x;
-                        float cy = (texture3D(volume, vec3(x.x, x.y - step_length.y, x.z)).r -
-                                    texture3D(volume, vec3(x.x, x.y + step_length.y, x.z)).r)/ step_length.y;
-                        float cz = (texture3D(volume, vec3(x.x, x.y, x.z - step_length.z)).r -
-                                    texture3D(volume, vec3(x.x, x.y, x.z + step_length.z)).r)/ step_length.z;
-                        vec3 normal = normalize(vec3(cx, cy, cz));
+                        highp float cx = (texture3D(volume, vec3(x.x - step_length.x, x.y, x.z)).r -
+                                    texture3D(volume, vec3(x.x + step_length.x, x.y, x.z)).r)/ step_length.x / 2.0;
+                        highp float cy = (texture3D(volume, vec3(x.x, x.y - step_length.y, x.z)).r -
+                                    texture3D(volume, vec3(x.x, x.y + step_length.y, x.z)).r)/ step_length.y / 2.0;
+                        highp float cz = (texture3D(volume, vec3(x.x, x.y, x.z - step_length.z)).r -
+                                    texture3D(volume, vec3(x.x, x.y, x.z + step_length.z)).r)/ step_length.z / 2.0;
+                        highp vec3 normal = normalize(vec3(cx, cy, cz));
 
                         // evaaluate the light inetensity
-                        float li = -dot(normal, light_source);
+                        highp float li = -dot(normal, light_source);
 
                         // evaluate the output z position (note that these are stored as
                         // inverses of the actual values).
-                        float start_depth = linearDepth(start.w);
-                        float end_depth = linearDepth(end.w);
-                        float fragment_depth = start_depth + f * (end_depth - start_depth) / n;
+                        highp float start_depth = linearDepth(start.w);
+                        highp float end_depth = linearDepth(end.w);
+                        highp float fragment_depth = start_depth + f * (end_depth - start_depth) / max_nf;
 
-                        float depth = depthSample(fragment_depth);
+                        highp float depth = depthSample(fragment_depth);
 
                         // todo: add a base color here
                         // Store depth in the alpha component off the output color.
@@ -168,9 +173,6 @@ void main(void)
                         // exit the loop and indicate that a pixel was drawn
                         hit = true;
                         break;
-                }else {
-                        // remember intensity value for later interpolation
-                        old_iso = color.r;
                 }
         }
         // if not it the iso-value, then discard the fragment
