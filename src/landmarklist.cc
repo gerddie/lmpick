@@ -25,9 +25,20 @@
 using std::for_each;
 
 LandmarkList::LandmarkList(const QString& name):
-        m_name(name)
+        m_name(name),
+        m_dirty(false)
 {
 
+}
+
+bool LandmarkList::dirty() const
+{
+        return m_dirty;
+}
+
+void LandmarkList::set_dirty_flag(bool d)
+{
+        m_dirty = d;
 }
 
 PLandmark LandmarkList::operator [](const QString& name)
@@ -67,6 +78,7 @@ bool LandmarkList::add(PLandmark landmark)
         m_list.push_back(landmark);
         m_index_map[landmark->get_name()] = m_list.size();
 
+        m_dirty = true;
         return true;
 }
 

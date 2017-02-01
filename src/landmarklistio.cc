@@ -190,7 +190,7 @@ pair<bool, Camera> LandmarkReaderV1::read_camera(const QDomElement& parent)
 
         // Other than QT the old code uses
         // the inverse rotation, correct this here and
-        // when savong to version 1
+        // when saving to version 1
 
         auto rot = read_tag<QQuaternion>(elm, "rotation");
         if (rot.first) {

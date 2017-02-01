@@ -41,6 +41,9 @@ public:
         explicit MainWindow(QWidget *parent = 0);
         ~MainWindow();
 
+public slots:
+        void on_landmarkset_changed();
+
 private slots:
         void on_actionE_xit_triggered();
 
@@ -53,8 +56,14 @@ private slots:
         void on_iso_value_changed();
 
         void on_actionSave_landmark_set_As_triggered();
+        void on_action_Save_Landmark_set_triggered();
+
+protected:
+        void closeEvent(QCloseEvent *event) override;
 
 private:
+
+
         Ui::MainWindow *ui;
         MainopenGLView *m_glview;
         QSlider *m_iso_slider;
@@ -63,6 +72,11 @@ private:
 
         PVolumeData m_current_volume;
         PLandmarkList m_current_landmarklist;
+
+        QString m_title_template;
+        QString m_volume_name;
+        QString m_landmarks_name;
+
 };
 
 #endif // MAINWINDOW_HH

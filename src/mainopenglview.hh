@@ -44,6 +44,7 @@ public:
 
 signals:
         void iso_value_changed();
+        void landmarkset_changed();
 
 public slots:
         void set_volume_isovalue(int value);

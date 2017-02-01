@@ -178,6 +178,7 @@ void MainopenGLView::on_set_landmark()
 {
         QVariant data = m_add_landmark_action->data();
         m_rendering->set_active_landmark_details(data.toPoint());
+        emit landmarkset_changed();
         update();
 }
 
@@ -200,8 +201,9 @@ void MainopenGLView::on_add_landmark()
                         QVariant data = m_add_landmark_action->data();
                         qDebug() << "... from " << data.toPoint();
                         if (m_rendering->add_landmark(name, data.toPoint())){
-                            update();
-                            break;
+                                emit landmarkset_changed();
+                                update();
+                                break;
                         }else{
                                 prompt =QString(tr("Name (") + name + tr(" is already in list):"));
                         }

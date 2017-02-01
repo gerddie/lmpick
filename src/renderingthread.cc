@@ -104,6 +104,7 @@ void RenderingThread::set_active_landmark_details(const QPoint& loc)
                 float iso = m_volume->get_iso_value();
                 Camera c = m_state.camera;
                 lm.set(location.second, iso, c);
+                m_current_landmarks->set_dirty_flag(true);
         }else{
                 qDebug() << "RenderingThread::acquire_landmark_details: "
                          <<"no landmark coordinates available, because hit empty space.";

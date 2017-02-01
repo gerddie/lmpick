@@ -73,12 +73,18 @@ public:
 
         iterator end();
 
+        bool dirty() const;
+
+        void set_dirty_flag(bool d);
+
 private:
         QString m_name;
         QString m_filename;
 
         std::vector<PLandmark> m_list;
         std::map<QString, unsigned> m_index_map;
+
+        bool m_dirty;
 };
 
 typedef LandmarkList::Pointer PLandmarkList;
