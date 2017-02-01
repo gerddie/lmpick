@@ -10,6 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 5): QT += widgets
 
 TARGET = lmpick
 TEMPLATE = app
+INCLUDEPATH += $$PWD/src
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
@@ -23,40 +24,40 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
-SOURCES += main.cc\
-        mainwindow.cc \
-    mainopenglview.cc \
-    octaeder.cc \
-    globalscenestate.cc \
-    drawable.cc \
-    volumedata.cc \
-    landmark.cc \
-    camera.cc \
-    landmarklist.cc \
-    sphere.cc \
-    landmarklistpainter.cc \
-    renderingthread.cc \
-    landmarklistio.cc \
-    landmarktablemodel.cc \
-    landmarktableview.cc
+SOURCES += src/main.cc\
+        src/mainwindow.cc \
+    src/mainopenglview.cc \
+    src/octaeder.cc \
+    src/globalscenestate.cc \
+    src/drawable.cc \
+    src/volumedata.cc \
+    src/landmark.cc \
+    src/camera.cc \
+    src/landmarklist.cc \
+    src/sphere.cc \
+    src/landmarklistpainter.cc \
+    src/renderingthread.cc \
+    src/landmarklistio.cc \
+    src/landmarktablemodel.cc \
+    src/landmarktableview.cc
 
 
-HEADERS  += mainwindow.hh \
-    mainopenglview.hh \
-    octaeder.hh \
-    globalscenestate.hh \
-    drawable.hh \
-    volumedata.hh \
-    landmark.hh \
-    camera.hh \
-    landmarklist.hh \
-    sphere.hh \
-    landmarklistpainter.hh \
-    renderingthread.hh \
-    landmarklistio.hh \
-    errormacro.hh \
-    landmarktablemodel.hh \
-    landmarktableview.hh
+HEADERS  += src/mainwindow.hh \
+    src/mainopenglview.hh \
+    src/octaeder.hh \
+    src/globalscenestate.hh \
+    src/drawable.hh \
+    src/volumedata.hh \
+    src/landmark.hh \
+    src/camera.hh \
+    src/landmarklist.hh \
+    src/sphere.hh \
+    src/landmarklistpainter.hh \
+    src/renderingthread.hh \
+    src/landmarklistio.hh \
+    src/errormacro.hh \
+    src/landmarktablemodel.hh \
+    src/landmarktableview.hh
 
 FORMS    += mainwindow.ui
 
