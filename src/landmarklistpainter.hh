@@ -38,10 +38,10 @@ public:
         void set_active_landmark(int idx);
         const QString get_active_landmark_name() const;
 
-        virtual void detach_gl(QOpenGLContext& context);
 private:
-        virtual void do_attach_gl(QOpenGLContext& context);
-        virtual void do_draw(const GlobalSceneState& state, QOpenGLContext& context) const;
+        void do_attach_gl() override;
+        void do_draw(const GlobalSceneState& state) override;
+        void do_detach_gl() override;
 
         struct LandmarkListPainterImpl *impl;
 };

@@ -37,6 +37,8 @@ struct SphereImpl {
 
         void attach_gl();
 
+        void detach_gl();
+
         void create_sphere(float r);
 
         float m_radius;
@@ -61,7 +63,7 @@ Sphere::Sphere(const QVector4D& color):
         m_base_color(color)
 {
         if (!m_instances) {
-                impl = new SphereImpl(0.02);
+                impl = new SphereImpl(0.01);
         }
         m_instances++;
 }
@@ -73,23 +75,23 @@ Sphere::~Sphere()
                 delete impl;
 }
 
-void Sphere::detach_gl(QOpenGLContext& context)
+void Sphere::do_detach_gl()
 {
-        Q_UNUSED(context);
         --m_instances_gl_attached;
+        if (!m_instances_gl_attached)
+                impl->detach_gl();
 }
 
-void Sphere::do_attach_gl(QOpenGLContext& context)
+void Sphere::do_attach_gl()
 {
-        Q_UNUSED(context);
         if (!m_instances_gl_attached)
                 impl->attach_gl();
         ++m_instances_gl_attached;
 }
 
-void Sphere::do_draw(const GlobalSceneState& state, QOpenGLContext& context) const
+void Sphere::do_draw(const GlobalSceneState& state)
 {
-        impl->draw(state, context, m_base_color);
+        impl->draw(state, *get_context(), m_base_color);
 }
 
 int Sphere::m_instances = 0;
@@ -177,6 +179,13 @@ void SphereImpl::attach_gl()
         m_base_color_param = m_program.uniformLocation("qt_base_color");
         assert(m_base_color_param != -1);
 
+}
+
+void SphereImpl::detach_gl()
+{
+        m_arrayBuf.destroy();
+        m_indexBuf.destroy();
+        m_vao.destroy();
 }
 
 

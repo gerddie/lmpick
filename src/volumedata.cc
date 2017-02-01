@@ -44,7 +44,7 @@ struct VolumeDataImpl {
         VolumeDataImpl(mia::P3DImage data);
         ~VolumeDataImpl();
 
-        void detach_gl(QOpenGLContext& context);
+        void detach_gl();
         void do_draw(const GlobalSceneState& state, QOpenGLContext& context);
         void do_attach_gl(QOpenGLContext& context);
 
@@ -233,18 +233,18 @@ std::pair<int, int> VolumeData::get_intensity_range() const
         return make_pair(range_min, range_max);
 }
 
-void VolumeData::detach_gl(QOpenGLContext& context)
+void VolumeData::do_detach_gl()
 {
-        impl->detach_gl(context);
+        impl->detach_gl();
 }
 
-void VolumeData::do_draw(const GlobalSceneState& state, QOpenGLContext& context) const
+void VolumeData::do_draw(const GlobalSceneState& state)
 {
-        impl->do_draw(state, context);
+        impl->do_draw(state, *get_context());
 }
-void VolumeData::do_attach_gl(QOpenGLContext& context)
+void VolumeData::do_attach_gl()
 {
-        impl->do_attach_gl(context);
+        impl->do_attach_gl(*get_context());
 }
 
 struct PrepVertexData {
@@ -403,7 +403,7 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         m_vao_2nd_pass.release();
 }
 
-void VolumeDataImpl::detach_gl(QOpenGLContext& context)
+void VolumeDataImpl::detach_gl()
 {
         m_volume_tex.destroy();
         m_arrayBuf.destroy();

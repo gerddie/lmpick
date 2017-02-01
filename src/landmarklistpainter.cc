@@ -62,19 +62,19 @@ void LandmarkListPainter::set_landmark_list(PLandmarkList list)
         impl->m_active_index = -1;
 }
 
-void LandmarkListPainter::detach_gl(QOpenGLContext& context)
+void LandmarkListPainter::do_detach_gl()
 {
-        impl->m_active_sphere.detach_gl(context);
-        impl->m_normal_sphere.detach_gl(context);
+        impl->m_active_sphere.detach_gl();
+        impl->m_normal_sphere.detach_gl();
 }
 
-void LandmarkListPainter::do_attach_gl(QOpenGLContext& context)
+void LandmarkListPainter::do_attach_gl()
 {
-        impl->m_active_sphere.attach_gl(context);
-        impl->m_normal_sphere.attach_gl(context);
+        impl->m_active_sphere.attach_gl(get_context());
+        impl->m_normal_sphere.attach_gl(get_context());
 }
 
-void LandmarkListPainter::do_draw(const GlobalSceneState& state, QOpenGLContext& context) const
+void LandmarkListPainter::do_draw(const GlobalSceneState& state)
 {
         if (!impl->m_the_list)
                 return;
@@ -86,9 +86,9 @@ void LandmarkListPainter::do_draw(const GlobalSceneState& state, QOpenGLContext&
                         auto offset = lm->get_location() * impl->m_viewspace_scale - impl->m_viewspace_shift;
                         local_state.set_offset(offset);
                         if (i == impl->m_active_index) {
-                                impl->m_active_sphere.draw(local_state, context);
+                                impl->m_active_sphere.draw(local_state);
                         }else{
-                                impl->m_normal_sphere.draw(local_state, context);
+                                impl->m_normal_sphere.draw(local_state);
                         }
                 }
         }
@@ -118,8 +118,8 @@ void LandmarkListPainter::set_active_landmark(int idx)
 LandmarkListPainterImpl::LandmarkListPainterImpl():
         m_the_list(new LandmarkList),
         m_active_index(-1),
-        m_active_sphere(QVector4D(1, 0.5, 0, 0.7)),
-        m_normal_sphere(QVector4D(0, 0.5, 1, 0.7)),
+        m_active_sphere(QVector4D(1, 0.5, 0, 0.9)),
+        m_normal_sphere(QVector4D(0, 0.5, 1, 0.9)),
         m_viewspace_scale(1,1,1),
         m_viewspace_shift(0,0,0)
 {

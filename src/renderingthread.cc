@@ -48,9 +48,9 @@ void RenderingThread::attach_gl()
         qDebug() << "OpenGL: " << (char*)glGetString(GL_VERSION);
 
         if (m_volume)
-                m_volume->attach_gl(*m_context);
+                m_volume->attach_gl(m_context);
 
-        m_lmp.attach_gl(*m_context);
+        m_lmp.attach_gl(m_context);
 
 }
 
@@ -59,10 +59,10 @@ void RenderingThread::set_volume(VolumeData::Pointer volume)
         std::swap(m_volume, volume);
         if (m_is_gl_attached) {
                 if (volume)
-                        volume->detach_gl(*m_context);
+                        volume->detach_gl();
 
                 if (m_volume) {
-                        m_volume->attach_gl(*m_context);
+                        m_volume->attach_gl(m_context);
                 }
         }
         if (m_volume) {
@@ -126,9 +126,9 @@ void RenderingThread::paint()
         glDepthMask(GL_TRUE);
 
         if (m_volume)
-                m_volume->draw(m_state, *m_context);
+                m_volume->draw(m_state);
 
-        m_lmp.draw(m_state, *m_context);
+        m_lmp.draw(m_state);
 }
 
 QVector3D RenderingThread::get_mapped_point(const QPointF& localPos) const
@@ -261,9 +261,9 @@ void RenderingThread::detach_gl()
         m_is_gl_attached = false;
         qDebug() << "Detach";
         if (m_volume)
-                m_volume->detach_gl(*m_context);
+                m_volume->detach_gl();
 
-        m_lmp.detach_gl(*m_context);
+        m_lmp.detach_gl();
 }
 
 const QString RenderingThread::get_active_landmark_name() const

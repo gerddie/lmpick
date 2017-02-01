@@ -55,15 +55,14 @@ public:
 
         std::pair<bool, QVector3D> get_surface_coordinate(const QPoint& location) const;
 
-        virtual void detach_gl(QOpenGLContext& context) override;
-
         QVector3D get_viewspace_scale() const;
 
         QVector3D get_viewspace_shift() const;
 
 private:
-        virtual void do_draw(const GlobalSceneState& state, QOpenGLContext& context) const override;
-        virtual void do_attach_gl(QOpenGLContext& context) override;
+        void do_draw(const GlobalSceneState& state)override;
+        void do_attach_gl() override;
+        void do_detach_gl() override;
 
         struct VolumeDataImpl *impl;
 };

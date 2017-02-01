@@ -31,12 +31,24 @@ Drawable::~Drawable()
 
 }
 
-void Drawable::draw(const GlobalSceneState &state, QOpenGLContext& context) const
+void Drawable::draw(const GlobalSceneState &state)
 {
-        do_draw(state, context);
+        do_draw(state);
 }
 
-void Drawable::attach_gl(QOpenGLContext& context)
+void Drawable::attach_gl(QOpenGLContext *context)
 {
-        do_attach_gl(context);
+        m_context = context;
+        do_attach_gl();
+}
+
+void Drawable::detach_gl()
+{
+        do_detach_gl();
+}
+
+
+QOpenGLContext *Drawable::get_context() const
+{
+        return m_context;
 }
