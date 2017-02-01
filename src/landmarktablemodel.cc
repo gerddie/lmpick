@@ -33,11 +33,11 @@ void LandmarkTableModel::setLandmarkList(PLandmarkList landmarks)
         size_t new_size = landmarks ? landmarks->size() : 0;
 
         if (old_size > new_size) {
-                beginRemoveRows(QModelIndex(), old_size , new_size);
+                beginRemoveRows(QModelIndex(), new_size, old_size);
                 m_the_list = landmarks;
                 endRemoveRows();
         }else if (new_size > old_size) {
-                beginInsertRows(QModelIndex(), old_size , new_size);
+                beginInsertRows(QModelIndex(), old_size , new_size -1);
                 m_the_list = landmarks;
                 endInsertRows();
         }else
@@ -80,12 +80,13 @@ QVariant LandmarkTableModel::data(const QModelIndex &index, int role) const
                                 QString result;
                                 QTextStream ts(&result);
                                 ts.setRealNumberPrecision(4);
-                                ts << "(" << p.x() << ", " << p.y() << ", " << p.z() << "); ";
+                                ts << "(" << p.x() << ", " << p.y() << ", " << p.z() << ")";
                                 return result;
                         }else
                                 return QVariant();
                 }
         }
+
         return QVariant();
 }
 
@@ -98,16 +99,8 @@ QVariant LandmarkTableModel::headerData(int section, Qt::Orientation orientation
                 switch (section) {
                 case 0:
                         return tr("Name");
-
                 case 1:
-                       return "x";
-
-                case 2:
-                        return "y";
-
-                case 3:
-                        return "z";
-
+                        return tr("Location");
                 default:
                         return QVariant();
                 }

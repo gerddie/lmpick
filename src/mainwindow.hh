@@ -28,6 +28,7 @@
 #include <QMainWindow>
 #include <QSlider>
 #include <QTableView>
+#include <QSortFilterProxyModel>
 
 namespace Ui {
 class MainWindow;
@@ -61,6 +62,7 @@ private slots:
 protected:
         void closeEvent(QCloseEvent *event) override;
 
+        void landmarkSelectionChanged(const QModelIndex& idx, const QModelIndex& other_idx);
 private:
 
 
@@ -69,6 +71,7 @@ private:
         QSlider *m_iso_slider;
         LandmarkTableView *m_landmark_tv;
         LandmarkTableModel *m_landmark_lm;
+        QSortFilterProxyModel *m_landmark_sort_proxy;
 
         PVolumeData m_current_volume;
         PLandmarkList m_current_landmarklist;

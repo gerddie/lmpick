@@ -29,6 +29,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QCloseEvent>
+#include <QSortFilterProxyModel>
 
 #include <mia/3d/imageio.hh>
 #include <sstream>
@@ -117,11 +118,14 @@ MainWindow::MainWindow(QWidget *parent) :
         m_glview->setLandmarkList(m_current_landmarklist);
         m_landmark_lm->setLandmarkList(m_current_landmarklist);
 
-        m_landmark_tv->setModel(m_landmark_lm);
+        m_landmark_sort_proxy = new QSortFilterProxyModel();
+        m_landmark_sort_proxy->setSourceModel(m_landmark_lm);
+
+        m_landmark_tv->setModel(m_landmark_sort_proxy);
         m_landmark_tv->resizeColumnsToContents();
 
         connect(m_landmark_tv->selectionModel(), &QItemSelectionModel::currentRowChanged,
-                m_glview, &MainopenGLView::on_selected_landmark_changed);
+                this, &MainWindow::landmarkSelectionChanged);
 
         connect(m_glview, &MainopenGLView::isovalue_changed, this, &MainWindow::isovalue_changed);
 
@@ -130,8 +134,13 @@ MainWindow::MainWindow(QWidget *parent) :
         connect(m_glview, &MainopenGLView::availabledata_changed, this, &MainWindow::availabledata_changed);
 
         availabledata_changed();
+}
 
-
+void MainWindow::landmarkSelectionChanged(const QModelIndex& idx, const QModelIndex& other_idx)
+{
+        Q_UNUSED(other_idx);
+        auto mapped_index = m_landmark_sort_proxy->mapToSource(idx);
+        m_glview->selected_landmark_changed(mapped_index.row());
 }
 
 void MainWindow::availabledata_changed()

@@ -74,10 +74,9 @@ void MainopenGLView::setLandmarkModel(LandmarkTableModel *model)
         m_rendering->set_landmark_model(model);
 }
 
-void MainopenGLView::on_selected_landmark_changed(const QModelIndex& idx, const QModelIndex& other_idx)
+void MainopenGLView::selected_landmark_changed(int row)
 {
-        Q_UNUSED(other_idx);
-        m_rendering->set_selected_landmark(idx.row());
+        m_rendering->set_selected_landmark(row);
         emit isovalue_changed();
         update();
 }
