@@ -116,7 +116,7 @@ void main(void)
 
         // calculate the actually used step length
         highp vec3 nf = adir  / step_length;
-        highp float max_nf = max(max(nf.x, nf.y), nf.z);
+        highp float max_nf =max(max(nf.x, nf.y), nf.z);
         highp vec3 step = dir / max_nf;
 
         // iterate along the ray, front to back
@@ -138,17 +138,19 @@ void main(void)
                                 highp float rel = (iso_value - old_iso) / (color.r - old_iso);
                                 f += rel;
                         }
-
                         x = start.xyz +  f * step;
 
                         // evalute the normal by using centered finite differences
-                        highp float cx = (texture3D(volume, vec3(x.x - step_length.x, x.y, x.z)).r -
+                        highp float gx = (texture3D(volume, vec3(x.x - step_length.x, x.y, x.z)).r -
                                     texture3D(volume, vec3(x.x + step_length.x, x.y, x.z)).r)/ step_length.x / 2.0;
-                        highp float cy = (texture3D(volume, vec3(x.x, x.y - step_length.y, x.z)).r -
+
+                        highp float gy = (texture3D(volume, vec3(x.x, x.y - step_length.y, x.z)).r -
                                     texture3D(volume, vec3(x.x, x.y + step_length.y, x.z)).r)/ step_length.y / 2.0;
-                        highp float cz = (texture3D(volume, vec3(x.x, x.y, x.z - step_length.z)).r -
+
+                        highp float gz = (texture3D(volume, vec3(x.x, x.y, x.z - step_length.z)).r -
                                     texture3D(volume, vec3(x.x, x.y, x.z + step_length.z)).r)/ step_length.z / 2.0;
-                        highp vec3 normal = normalize(vec3(cx, cy, cz));
+
+                        highp vec3 normal = normalize(vec3(gx, gy, gz));
 
                         // evaaluate the light inetensity
                         highp float li = -dot(normal, light_source);
@@ -163,7 +165,7 @@ void main(void)
 
                         // todo: add a base color here
                         // Store depth in the alpha component off the output color.
-                        gl_FragData[0] = vec4(li, li, li, depth);
+                        gl_FragData[0] = 0.5 * vec4(li, li, li, depth);
 
                         // output texture coordinate to second render target
                         // if attached, set alpha to one. This can later be use to check
@@ -175,7 +177,7 @@ void main(void)
                         break;
                 }
         }
-        // if not it the iso-value, then discard the fragment
+        //if  not it the iso-value, then discard the fragment
         if (!hit)
                 discard;
 }

@@ -440,7 +440,7 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
 
         QOpenGLFramebufferObjectFormat fbformat;
         fbformat.setTextureTarget(GL_TEXTURE_2D);
-        fbformat.setInternalTextureFormat(GL_RGBA32F);
+        fbformat.setInternalTextureFormat(GL_RGBA);
         QOpenGLFramebufferObject fbo_ray_start(state.viewport, fbformat);
         QOpenGLFramebufferObject fbo_ray_end(state.viewport, fbformat);
 

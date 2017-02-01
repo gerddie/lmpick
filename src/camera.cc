@@ -35,6 +35,7 @@ Camera::Camera(const QVector3D& position, const QQuaternion& rotation, float zoo
         m_position(position),
         m_zoom(zoom)
 {
+         m_rotation.normalize();
 }
 
 void Camera::set_rotation(const QQuaternion& r)

@@ -46,10 +46,17 @@ static PLandmarkList create_debug_list()
                                  {140.8,30,128},
                                  {30,140.8,128},
                                  {140.8,140.8, 17}};
-        Camera c;
+
+        std::vector<QQuaternion> q{{1, 0, 0, 0},
+                                   {1, 1, 0, 0},
+                                   {1, 0, 1, 0},
+                                   {1, 0, 0, 1},
+                                   {1, -1, 0, 0},
+                                   {1, 0, -1, 0}};
         const char n[][2] = {"a", "b", "c", "d", "e", "f"};
 
         for(int i = 0; i < 6; ++i) {
+                Camera c(QVector3D(0,0,-250), q[i],1.0);
                 result->add(PLandmark(new Landmark(n[i], v[i], 64, c)));
         }
         // don't want prompt for saving by default for test data
