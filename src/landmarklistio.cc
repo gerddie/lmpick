@@ -25,6 +25,7 @@
 #include "qruntimeexeption.hh"
 
 #include <QObject>
+#include <QCoreApplication>
 #include <QDomDocument>
 #include <QFile>
 #include <cassert>
@@ -32,6 +33,11 @@
 using std::make_pair;
 using std::make_shared;
 using std::pair;
+
+inline QString _(const char *text)
+{
+        return QCoreApplication::translate("lmio", text);
+}
 
 
 class LandmarkReader : protected QObject {
@@ -66,20 +72,20 @@ PLandmarkList read_landmarklist(const QString& filename)
 
         QFile file(filename);
         if (!file.open(QFile::ReadOnly | QFile::Text)) {
-                QString msg(file.tr("Unable to open file: %1"));
+                QString msg(_("Unable to open file: %1"));
                 throw QRuntimeExeption(msg.arg(filename));
         }
 
         if (!reader.setContent(&file)) {
                 file.close();
-                QString msg(file.tr("Unable to read file as XML: %1"));
+                QString msg(_("Unable to read file as XML: %1"));
                 throw QRuntimeExeption(msg.arg(filename));
          }
         file.close();
 
         auto list_elm = reader.documentElement();
         if (list_elm.tagName() != "list") {
-                QString msg(file.tr("%1 not a landmark list file, got tag <%2> but expected <list>"));
+                QString msg(_("%1 not a landmark list file, got tag <%2> but expected <list>"));
                 throw QRuntimeExeption(msg.arg(filename).arg(list_elm.tagName()));
         }
         // try to read version attribute
@@ -133,7 +139,7 @@ struct read_tag_dispatch<QVector3D> {
         static QVector3D apply(const QString& value) {
                 QStringList v = value.split(" ");
                 if (v.length() != 3) {
-                        throw std::invalid_argument("Failed reading QVector3D");
+                        throw QRuntimeExeption(_("Failed to read '%1' as QVector3D").arg(value));
                 }
                 float x = v.at(0).toFloat();
                 float y = v.at(1).toFloat();
@@ -147,7 +153,7 @@ struct read_tag_dispatch<QQuaternion> {
         static QQuaternion apply(const QString& value) {
                 QStringList v = value.split(" ");
                 if (v.length() != 4) {
-                        throw std::invalid_argument("Failed reading QQuaternion");
+                        throw QRuntimeExeption(_("Failed to read '%1' as QQuaternion").arg(value));
                 }
                 float x = v.at(0).toFloat();
                 float y = v.at(1).toFloat();
@@ -321,8 +327,7 @@ bool LandmarkSaver::save(const QString& filename, const LandmarkList& list)
 {
         QFile save_file(filename);
         if (!save_file.open(QFile::WriteOnly| QFile::Text)) {
-                QString msg(save_file.tr("Unable to open '%1'' for writing."));
-                throw QRuntimeExeption(msg.arg(filename));
+                throw QRuntimeExeption(_("Unable to open '%1'' for writing.").arg(filename));
         }
 
         QDomDocument xml;
