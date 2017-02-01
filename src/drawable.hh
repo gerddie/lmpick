@@ -25,6 +25,8 @@
 #include "globalscenestate.hh"
 #include <QOpenGLFunctions>
 #include <QOpenGLVertexArrayObject>
+#include <QOpenGLShaderProgram>
+#include <QString>
 #include <memory>
 
 /**
@@ -43,14 +45,23 @@ public:
         void attach_gl(QOpenGLContext *context);
         void detach_gl();
 
+        static void compile_and_link(QOpenGLShaderProgram& program, const QString& vtx_prog, const QString& frag_pgrm);
+
 protected:
         QOpenGLContext *get_context() const;
+
+
+
 private:
         virtual void do_attach_gl() = 0;
         virtual void do_draw(const GlobalSceneState& state) = 0;
         virtual void do_detach_gl() = 0;
 
         QOpenGLContext *m_context;
+
+        static bool m_shader_prefix_set;
+        static QString m_shader_prefix;
+
 };
 
 #endif // DRAWABLE_HH

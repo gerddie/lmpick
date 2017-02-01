@@ -9,13 +9,21 @@
         <file>icons/document-open-volume.png</file>
     </qresource>
     <qresource prefix="/shaders">
-        <file>shaders/view.glsl</file>
-        <file>shaders/basic_frag.glsl</file>
-        <file>shaders/volume_2nd_pass_vtx.glsl</file>
-        <file>shaders/volume_1st_pass_frag.glsl</file>
-        <file>shaders/volume_1st_pass_vtx.glsl</file>
-        <file>shaders/volume_2nd_pass_frag.glsl</file>
-        <file>shaders/volume_blit_frag.glsl</file>
-        <file>shaders/shere_vtx.glsl</file>
-    </qresource>
+        <file>shaders_120/view.glsl</file>
+        <file>shaders_120/basic_frag.glsl</file>
+        <file>shaders_120/volume_2nd_pass_vtx.glsl</file>
+        <file>shaders_120/volume_1st_pass_frag.glsl</file>
+        <file>shaders_120/volume_1st_pass_vtx.glsl</file>
+        <file>shaders_120/volume_2nd_pass_frag.glsl</file>
+        <file>shaders_120/volume_blit_frag.glsl</file>
+        <file>shaders_120/shere_vtx.glsl</file>
+        <file>shaders_330/view.glsl</file>
+        <file>shaders_330/basic_frag.glsl</file>
+        <file>shaders_330/volume_2nd_pass_vtx.glsl</file>
+        <file>shaders_330/volume_1st_pass_frag.glsl</file>
+        <file>shaders_330/volume_1st_pass_vtx.glsl</file>
+        <file>shaders_330/volume_2nd_pass_frag.glsl</file>
+        <file>shaders_330/volume_blit_frag.glsl</file>
+        <file>shaders_330/shere_vtx.glsl</file>
+</qresource>
 </RCC>

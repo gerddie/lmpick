@@ -135,15 +135,7 @@ void SphereImpl::attach_gl()
 
         create_sphere(m_radius);
 
-        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/shaders/shere_vtx.glsl"))
-                qWarning() << "Error compiling ':/shaders/shere_vtx.glsl', view will be clobbered\n";
-
-        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/shaders/basic_frag.glsl"))
-                qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
-
-        if (!m_program.link())
-                qWarning() << "Error linking m_view_program', view will be clobbered\n";;
-
+        Drawable::compile_and_link(m_program, "shere_vtx.glsl", "basic_frag.glsl");
 
         // Offset for position
         int offset = 0;

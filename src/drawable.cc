@@ -19,7 +19,9 @@
  *
  */
 
+#include <QStringList>
 #include "drawable.hh"
+
 
 Drawable::Drawable()
 {
@@ -39,7 +41,38 @@ void Drawable::draw(const GlobalSceneState &state)
 void Drawable::attach_gl(QOpenGLContext *context)
 {
         m_context = context;
+        if (!m_shader_prefix_set) {
+                QString slversion((const char*)context->functions()->glGetString(GL_SHADING_LANGUAGE_VERSION));
+                QStringList v = slversion.split(".");
+
+                int major = v.at(0).toInt();
+                int minor = v.at(1).toInt();
+
+                if (major > 3 || (major == 3 && minor > 2)) {
+                        m_shader_prefix = ":/shaders/shaders_330/";
+                        m_shader_prefix_set = true;
+                } else {
+                        m_shader_prefix = ":/shaders/shaders_120/";
+                        m_shader_prefix_set = true;
+                }
+                qDebug() << "OGLSL version: " << slversion;
+        }
         do_attach_gl();
+}
+
+void Drawable::compile_and_link(QOpenGLShaderProgram& program, const QString& vtx_prog, const QString& frag_pgrm)
+{
+        QString vtx_prog_full = m_shader_prefix + vtx_prog;
+        QString frag_prog_full = m_shader_prefix + frag_pgrm;
+
+        if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, vtx_prog_full))
+                qWarning() << "Error compiling '" << vtx_prog_full << "' view will be clobbered\n";
+
+        if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, frag_prog_full))
+                qWarning() << "Error compiling '" << frag_prog_full <<  "', view will be clobbered\n";
+
+        if (!program.link())
+                qWarning() << "Error linking (" << vtx_prog_full << "," << frag_prog_full << ")', view will be clobbered\n";
 }
 
 void Drawable::detach_gl()
@@ -52,3 +85,7 @@ QOpenGLContext *Drawable::get_context() const
 {
         return m_context;
 }
+
+
+bool Drawable::m_shader_prefix_set = false;
+QString Drawable::m_shader_prefix;

@@ -161,19 +161,6 @@ VolumeDataImpl::VolumeDataImpl(mia::P3DImage data):
 }
 
 
-
-void compile_and_link(QOpenGLShaderProgram& program, const QString& vtx_prog, const QString& frag_pgrm)
-{
-        if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, vtx_prog))
-                qWarning() << "Error compiling '" << vtx_prog << "' view will be clobbered\n";
-
-        if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, frag_pgrm))
-                qWarning() << "Error compiling '" << frag_pgrm <<  "', view will be clobbered\n";
-
-        if (!program.link())
-                qWarning() << "Error linking (" <<vtx_prog << "," << frag_pgrm << ")', view will be clobbered\n";;
-}
-
 VolumeDataImpl::~VolumeDataImpl()
 {
 
@@ -339,9 +326,9 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         m_indexBuf.bind();
         m_indexBuf.allocate(plain_cube_indices, sizeof(plain_cube_indices));
 
-        compile_and_link(m_prep_program, ":/shaders/shaders/volume_1st_pass_vtx.glsl", ":/shaders/shaders/volume_1st_pass_frag.glsl");
-        compile_and_link(m_volume_program, ":/shaders/shaders/volume_2nd_pass_vtx.glsl", ":/shaders/shaders/volume_2nd_pass_frag.glsl");
-        compile_and_link(m_blit_program, ":/shaders/shaders/volume_2nd_pass_vtx.glsl", ":/shaders/shaders/volume_blit_frag.glsl");
+        Drawable::compile_and_link(m_prep_program, "volume_1st_pass_vtx.glsl", "volume_1st_pass_frag.glsl");
+        Drawable::compile_and_link(m_volume_program, "volume_2nd_pass_vtx.glsl", "volume_2nd_pass_frag.glsl");
+        Drawable::compile_and_link(m_blit_program, "volume_2nd_pass_vtx.glsl", "volume_blit_frag.glsl");
 
         m_voltex_param = m_volume_program.uniformLocation("volume");
         if (m_voltex_param == -1)
@@ -387,7 +374,11 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
 
         m_volume_program.bind();
         auto spacing_param = m_volume_program.uniformLocation("step_length");
-        m_volume_program.setUniformValue(spacing_param, m_gradient_delta);
+
+        // this parameter is not used in shader model 3.3+
+        if (spacing_param != -1)
+                m_volume_program.setUniformValue(spacing_param, m_gradient_delta);
+
 
         m_volume_blit_texture_param = m_blit_program.uniformLocation("image");
 
@@ -440,7 +431,7 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
 
         QOpenGLFramebufferObjectFormat fbformat;
         fbformat.setTextureTarget(GL_TEXTURE_2D);
-        fbformat.setInternalTextureFormat(GL_RGBA);
+        fbformat.setInternalTextureFormat(GL_RGBA32F);
         QOpenGLFramebufferObject fbo_ray_start(state.viewport, fbformat);
         QOpenGLFramebufferObject fbo_ray_end(state.viewport, fbformat);
 

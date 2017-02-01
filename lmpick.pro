@@ -67,12 +67,18 @@ DISTFILES += \
     shaders/view.glsl \
     shaders/basic_frag.glsl \
     README.md \
-    shaders/volume_2nd_pass_vtx.glsl \
-    shaders/volume_1st_pass_frag.glsl \
-    shaders/volume_1st_pass_vtx.glsl \
-    shaders/volume_2nd_pass_frag.glsl \
-    shaders/volume_blit_frag.glsl \
-    shaders/shere_vtx.glsl \
+    shaders_120/volume_2nd_pass_vtx.glsl \
+    shaders_120/volume_1st_pass_frag.glsl \
+    shaders_120/volume_1st_pass_vtx.glsl \
+    shaders_120/volume_2nd_pass_frag.glsl \
+    shaders_120/volume_blit_frag.glsl \
+    shaders_120/shere_vtx.glsl \
+    shaders_330/volume_2nd_pass_vtx.glsl \
+    shaders_330/volume_1st_pass_frag.glsl \
+    shaders_330/volume_1st_pass_vtx.glsl \
+    shaders_330/volume_2nd_pass_frag.glsl \
+    shaders_330/volume_blit_frag.glsl \
+    shaders_330/shere_vtx.glsl \
     src/icons/auto_snapshot.png \
     src/icons/auto_snapshot_on.png \
     src/icons/document-open-volume.png \

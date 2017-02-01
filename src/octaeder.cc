@@ -66,15 +66,7 @@ void Octaeder::do_attach_gl()
         m_indexBuf.bind();
         m_indexBuf.allocate(indices, sizeof(indices));
 
-        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/shaders/view.glsl"))
-                qWarning() << "Error compiling ':/shaders/view.glsl', view will be clobbered\n";
-
-        if (!m_program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/shaders/basic_frag.glsl"))
-                qWarning() << "Error compiling ':/s makeCurrent();haders/fshader.glsl', view will be clobbered\n";
-
-        if (!m_program.link())
-                qWarning() << "Error linking m_view_program', view will be clobbered\n";;
-
+        compile_and_link(m_program, "view.glsl", "basic_frag.glsl");
 
         // Offset for position
         int offset = 0;
