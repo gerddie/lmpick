@@ -39,7 +39,8 @@ SOURCES += src/main.cc\
     src/renderingthread.cc \
     src/landmarklistio.cc \
     src/landmarktablemodel.cc \
-    src/landmarktableview.cc
+    src/landmarktableview.cc \
+    src/qruntimeexeption.cc
 
 
 HEADERS  += src/mainwindow.hh \
@@ -57,7 +58,8 @@ HEADERS  += src/mainwindow.hh \
     src/landmarklistio.hh \
     src/errormacro.hh \
     src/landmarktablemodel.hh \
-    src/landmarktableview.hh
+    src/landmarktableview.hh \
+    src/qruntimeexeption.hh
 
 FORMS    += mainwindow.ui
 

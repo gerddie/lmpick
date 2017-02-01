@@ -43,8 +43,8 @@ public:
         void setLandmarkModel(LandmarkTableModel *model);
 
 signals:
-        void iso_value_changed();
-        void landmarkset_changed();
+        void isovalue_changed();
+        void availabledata_changed();
 
 public slots:
         void set_volume_isovalue(int value);

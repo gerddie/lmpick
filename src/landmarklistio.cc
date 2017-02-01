@@ -22,9 +22,9 @@
 #include "landmarklistio.hh"
 #include "landmarklist.hh"
 #include "landmark.hh"
-#include "errormacro.hh"
+#include "qruntimeexeption.hh"
 
-#include <QWidget>
+#include <QObject>
 #include <QDomDocument>
 #include <QFile>
 #include <cassert>
@@ -34,7 +34,7 @@ using std::make_shared;
 using std::pair;
 
 
-class LandmarkReader {
+class LandmarkReader : protected QObject {
 public:
         LandmarkReader(const QString& filename);
         PLandmarkList read(const QDomElement& root);
@@ -66,19 +66,21 @@ PLandmarkList read_landmarklist(const QString& filename)
 
         QFile file(filename);
         if (!file.open(QFile::ReadOnly | QFile::Text)) {
-                throw create_exception<std::runtime_error>("Unable to open file:", filename);
+                QString msg(file.tr("Unable to open file: %1"));
+                throw QRuntimeExeption(msg.arg(filename));
         }
 
         if (!reader.setContent(&file)) {
                 file.close();
-                throw create_exception<std::runtime_error>("Unable to read file as XML:", filename);
-        }
+                QString msg(file.tr("Unable to read file as XML: %1"));
+                throw QRuntimeExeption(msg.arg(filename));
+         }
         file.close();
 
         auto list_elm = reader.documentElement();
         if (list_elm.tagName() != "list") {
-                throw create_exception<std::runtime_error>(filename, " not a landmark list, got tag <",
-                                                           list_elm.tagName(),"> but expected <list>");
+                QString msg(file.tr("%1 not a landmark list file, got tag <%2> but expected <list>"));
+                throw QRuntimeExeption(msg.arg(filename).arg(list_elm.tagName()));
         }
         // try to read version attribute
         int version = list_elm.attribute("version", "1").toInt();
@@ -319,8 +321,8 @@ bool LandmarkSaver::save(const QString& filename, const LandmarkList& list)
 {
         QFile save_file(filename);
         if (!save_file.open(QFile::WriteOnly| QFile::Text)) {
-                throw create_exception<std::runtime_error>("Unable to open '", filename,
-                                                           "' for writing.");
+                QString msg(save_file.tr("Unable to open '%1'' for writing."));
+                throw QRuntimeExeption(msg.arg(filename));
         }
 
         QDomDocument xml;
@@ -341,7 +343,7 @@ bool LandmarkSaver::save(const QString& filename, const LandmarkList& list)
         s << xml.toString();
         save_file.close();
 
-        return true;
+        return s.status() == QTextStream::Ok;
 }
 
 template <typename T>

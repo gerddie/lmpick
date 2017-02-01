@@ -42,7 +42,7 @@ public:
         ~MainWindow();
 
 public slots:
-        void on_landmarkset_changed();
+        void availabledata_changed();
 
 private slots:
         void on_actionE_xit_triggered();
@@ -53,7 +53,7 @@ private slots:
 
         void on_action_Open_landmarkset_triggered();
 
-        void on_iso_value_changed();
+        void isovalue_changed();
 
         void on_actionSave_landmark_set_As_triggered();
         void on_action_Save_Landmark_set_triggered();

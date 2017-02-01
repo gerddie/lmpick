@@ -78,7 +78,7 @@ void MainopenGLView::on_selected_landmark_changed(const QModelIndex& idx, const 
 {
         Q_UNUSED(other_idx);
         m_rendering->set_selected_landmark(idx.row());
-        emit iso_value_changed();
+        emit isovalue_changed();
         update();
 }
 
@@ -178,7 +178,8 @@ void MainopenGLView::on_set_landmark()
 {
         QVariant data = m_add_landmark_action->data();
         m_rendering->set_active_landmark_details(data.toPoint());
-        emit landmarkset_changed();
+
+        emit availabledata_changed();
         update();
 }
 
@@ -201,7 +202,7 @@ void MainopenGLView::on_add_landmark()
                         QVariant data = m_add_landmark_action->data();
                         qDebug() << "... from " << data.toPoint();
                         if (m_rendering->add_landmark(name, data.toPoint())){
-                                emit landmarkset_changed();
+                                emit availabledata_changed();
                                 update();
                                 break;
                         }else{

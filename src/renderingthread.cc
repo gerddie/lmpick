@@ -92,6 +92,7 @@ void RenderingThread::set_landmark_list(PLandmarkList list)
 {
         assert(m_landmark_tm);
         m_lmp.set_landmark_list(list);
+        m_current_landmarks = list;
         m_landmark_tm->setLandmarkList(list);
 }
 

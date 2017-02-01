@@ -63,7 +63,7 @@ Sphere::Sphere(const QVector4D& color):
         m_base_color(color)
 {
         if (!m_instances) {
-                impl = new SphereImpl(0.01);
+                impl = new SphereImpl(0.015);
         }
         m_instances++;
 }

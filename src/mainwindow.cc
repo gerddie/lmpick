@@ -23,6 +23,7 @@
 #include "volumedata.hh"
 #include "landmarklistio.hh"
 #include "ui_mainwindow.h"
+#include "qruntimeexeption.hh"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -51,6 +52,8 @@ static PLandmarkList create_debug_list()
         for(int i = 0; i < 6; ++i) {
                 result->add(PLandmark(new Landmark(n[i], v[i], 64, c)));
         }
+        // don't want prompt for saving by default for test data
+        result->set_dirty_flag(false);
         return result;
 }
 
@@ -113,18 +116,18 @@ MainWindow::MainWindow(QWidget *parent) :
         connect(m_landmark_tv->selectionModel(), &QItemSelectionModel::currentRowChanged,
                 m_glview, &MainopenGLView::on_selected_landmark_changed);
 
-        connect(m_glview, &MainopenGLView::iso_value_changed, this, &MainWindow::on_iso_value_changed);
+        connect(m_glview, &MainopenGLView::isovalue_changed, this, &MainWindow::isovalue_changed);
 
         m_title_template = windowTitle();
 
-        connect(m_glview, &MainopenGLView::landmarkset_changed, this, &MainWindow::on_landmarkset_changed);
+        connect(m_glview, &MainopenGLView::availabledata_changed, this, &MainWindow::availabledata_changed);
 
-        on_landmarkset_changed();
+        availabledata_changed();
 
 
 }
 
-void MainWindow::on_landmarkset_changed()
+void MainWindow::availabledata_changed()
 {
         bool dirty = m_current_landmarklist ? m_current_landmarklist->dirty() : false;
         QString new_title = m_title_template.arg(m_volume_name).
@@ -150,32 +153,22 @@ void MainWindow::on_actionOpen_Volume_triggered()
         const auto& imageio  = mia::C3DImageIOPluginHandler::instance();
         auto file_types = imageio.get_supported_suffix_set();
         std::ostringstream filetypes;
-
         filetypes << "(";
         for (auto i: file_types)
                 filetypes << "*." << i.c_str() << " ";
         filetypes << ")";
-        QFileDialog dialog(this, "Open volume data set", ".", filetypes.str().c_str());
-        dialog.setFileMode(QFileDialog::ExistingFile);
-        if (dialog.exec()) {
-                auto fileNames = dialog.selectedFiles();
-                if ( fileNames.length() > 1) {
-                        qWarning() << "Open volume data:  selected " << fileNames.length()
-                                   << "files, only first one will be used";
-                }else if (fileNames.empty()) {
-                        qWarning() << "Open volume data:  no files selected";
-                        return;
-                }
+        QString filename = QFileDialog::getOpenFileName(this, "Open volume data set", ".", filetypes.str().c_str());
+        if (!filename.isEmpty()) {
                 try {
-                        auto volume = mia::load_image3d(fileNames.first().toStdString());
+                        auto volume = mia::load_image3d(filename.toStdString());
                         m_current_volume = std::make_shared<VolumeData>(volume);
                         auto intensity_range = m_current_volume->get_intensity_range();
                         m_glview->setVolume(m_current_volume);
                         m_iso_slider->setRange(intensity_range.first+1, intensity_range.second);
                         m_iso_slider->setValue((intensity_range.second - intensity_range.first) / 2);
-                        QFileInfo fileInfo(fileNames.first());
+                        QFileInfo fileInfo(filename);
                         m_volume_name = fileInfo.fileName();
-                        on_landmarkset_changed();
+                        availabledata_changed();
                 }
                 catch (std::exception& x) {
                         QMessageBox box(QMessageBox::Information, "Error loading volume data", x.what(),
@@ -201,7 +194,7 @@ void MainWindow::on_action_Add_triggered()
                         if (!m_current_landmarklist->has(name)) {
                                 PLandmark new_lm = make_shared<Landmark>(name);
                                 m_landmark_lm->addLandmark(new_lm);
-                                on_landmarkset_changed();
+                                availabledata_changed();
                                 break;
                         }else{
                                 prompt =QString(tr("Name (") + name + tr(" is already in list):"));
@@ -214,31 +207,28 @@ void MainWindow::on_action_Add_triggered()
 
 void MainWindow::on_action_Open_landmarkset_triggered()
 {
-        QFileDialog dialog(this, "Open landmark list", ".", "(MIA landmark list *.lmx)");
-        dialog.setFileMode(QFileDialog::ExistingFile);
+        QString filename = QFileDialog::getOpenFileName(this, tr("Open landmark list"),
+                                                        ".", "(MIA landmark list *.lmx)");
 
-        if (dialog.exec()) {
-                auto fileNames = dialog.selectedFiles();
-                assert(!fileNames.empty());
+        if (!filename.isEmpty()) {
                 try {
-                        m_current_landmarklist = read_landmarklist(fileNames.first());
+                        m_current_landmarklist = read_landmarklist(filename);
                         m_glview->setLandmarkList(m_current_landmarklist);
                         m_landmark_tv->resizeColumnsToContents();
                         m_current_landmarklist->set_dirty_flag(false);
-                        QFileInfo fileInfo(fileNames.first());
+                        QFileInfo fileInfo(filename);
                         m_landmarks_name = fileInfo.fileName();
-
-                        on_landmarkset_changed();
+                        availabledata_changed();
                 }
-                catch (std::exception& x) {
-                        QMessageBox box(QMessageBox::Information, "Error loading landmarks", x.what(),
+                catch (QRuntimeExeption& x) {
+                        QMessageBox box(QMessageBox::Information, "Error loading landmarks", x.qwhat(),
                                         QMessageBox::Ok);
                         box.exec();
                 }
         }
 }
 
-void MainWindow::on_iso_value_changed()
+void MainWindow::isovalue_changed()
 {
         m_iso_slider->setValue( m_current_volume->get_iso_value() );
 }
@@ -254,10 +244,10 @@ void MainWindow::on_actionSave_landmark_set_As_triggered()
                         QFileInfo fi(fileName);
                         m_landmarks_name = fi.fileName();
                         m_current_landmarklist->set_filename(fileName);
-                        on_landmarkset_changed();
+                        availabledata_changed();
                 }
-                catch (std::exception& x) {
-                        QMessageBox box(QMessageBox::Information, "Error saving landmarks", x.what(),
+                catch (QRuntimeExeption& x) {
+                        QMessageBox box(QMessageBox::Information, "Error saving landmarks", x.qwhat(),
                                         QMessageBox::Ok);
                         box.exec();
                 }
@@ -304,10 +294,15 @@ void MainWindow::on_action_Save_Landmark_set_triggered()
                 try {
                         if (write_landmarklist(filename, *m_current_landmarklist))
                                 m_current_landmarklist->set_dirty_flag(false);
-                        on_landmarkset_changed();
+                        availabledata_changed();
                 }
-                catch (std::exception& x) {
-                        QMessageBox box(QMessageBox::Information, "Error saving landmarks", x.what(),
+                catch (QRuntimeExeption& x) {
+                        QMessageBox box(QMessageBox::Information, tr("Error saving landmarks"), x.qwhat(),
+                                        QMessageBox::Ok);
+                        box.exec();
+                }
+                catch (std::runtime_error& x) {
+                        QMessageBox box(QMessageBox::Information, tr("Error saving landmarks"), x.what(),
                                         QMessageBox::Ok);
                         box.exec();
                 }
