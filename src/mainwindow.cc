@@ -30,6 +30,7 @@
 #include <QInputDialog>
 #include <QCloseEvent>
 #include <QSortFilterProxyModel>
+#include <QScrollBar>
 
 #include <mia/3d/imageio.hh>
 #include <sstream>
@@ -162,7 +163,8 @@ void MainWindow::availabledata_changed()
         m_landmark_tv->resizeColumnsToContents();
         int width = 1 + m_landmark_tv->verticalHeader()->width();
         for(int column = 0; column < 2; ++column)
-                width +=  m_landmark_tv->columnWidth(column) + 2;
+                width +=  m_landmark_tv->columnWidth(column)+1;
+        width += m_landmark_tv->verticalScrollBar()->width();
 
         m_landmark_tv->setMaximumWidth(width);
         m_landmark_tv->setMinimumWidth(width);
