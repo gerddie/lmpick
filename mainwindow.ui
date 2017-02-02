@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+   <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -172,15 +172,15 @@
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidget">
    <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
-     <width>320</width>
-     <height>439</height>
+     <width>442</width>
+     <height>463</height>
     </size>
    </property>
    <property name="contextMenuPolicy">
@@ -192,6 +192,9 @@
    <property name="features">
     <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
    <property name="windowTitle">
     <string>Landmark list</string>
    </property>
@@ -200,16 +203,16 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <property name="sizePolicy">
-     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
       <horstretch>0</horstretch>
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout_3">
-     <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item alignment="Qt::AlignHCenter">
       <widget class="QWidget" name="verticalWidget" native="true">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -219,22 +222,22 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <property name="spacing">
-         <number>0</number>
+         <number>2</number>
         </property>
         <property name="sizeConstraint">
          <enum>QLayout::SetDefaultConstraint</enum>
         </property>
         <property name="leftMargin">
-         <number>0</number>
+         <number>2</number>
         </property>
         <property name="topMargin">
-         <number>0</number>
+         <number>2</number>
         </property>
         <property name="rightMargin">
-         <number>0</number>
+         <number>2</number>
         </property>
         <property name="bottomMargin">
-         <number>0</number>
+         <number>2</number>
         </property>
         <item>
          <widget class="LandmarkTableView" name="LandmarkTV">
@@ -242,7 +245,7 @@
            <bool>true</bool>
           </property>
           <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+           <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -264,6 +267,9 @@
           </property>
           <property name="contextMenuPolicy">
            <enum>Qt::ActionsContextMenu</enum>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
           </property>
           <property name="sizeAdjustPolicy">
            <enum>QAbstractScrollArea::AdjustToContents</enum>
@@ -297,7 +303,7 @@
           </attribute>
          </widget>
         </item>
-        <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+        <item alignment="Qt::AlignHCenter">
          <widget class="QGraphicsView" name="graphicsView">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -310,6 +316,12 @@
             <width>200</width>
             <height>200</height>
            </size>
+          </property>
+          <property name="sizeAdjustPolicy">
+           <enum>QAbstractScrollArea::AdjustToContents</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignBottom|Qt::AlignHCenter</set>
           </property>
          </widget>
         </item>

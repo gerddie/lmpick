@@ -157,6 +157,15 @@ void MainWindow::availabledata_changed()
                             arg(m_landmarks_name.isEmpty() ? tr("(none)") : m_landmarks_name)
                             .arg((dirty ? "*" : ""));
 
+        // reset the maximum size of the table view
+
+        m_landmark_tv->resizeColumnsToContents();
+        int width = 1 + m_landmark_tv->verticalHeader()->width();
+        for(int column = 0; column < 2; ++column)
+                width +=  m_landmark_tv->columnWidth(column) + 2;
+
+        m_landmark_tv->setMaximumWidth(width);
+        m_landmark_tv->setMinimumWidth(width);
         setWindowTitle(new_title);
 }
 
@@ -237,7 +246,6 @@ void MainWindow::on_action_Open_landmarkset_triggered()
                 try {
                         m_current_landmarklist = read_landmarklist(filename);
                         m_glview->setLandmarkList(m_current_landmarklist);
-                        m_landmark_tv->resizeColumnsToContents();
                         m_current_landmarklist->set_dirty_flag(false);
                         QFileInfo fileInfo(filename);
                         m_landmarks_name = fileInfo.fileName();
