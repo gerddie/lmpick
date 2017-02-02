@@ -33,8 +33,6 @@ public:
 
         typedef std::vector<PLandmark>::const_iterator const_iterator;
 
-        typedef std::vector<PLandmark>::iterator iterator;
-
         LandmarkList() = default;
 
         explicit LandmarkList(const QString& name);

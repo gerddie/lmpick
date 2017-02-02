@@ -91,7 +91,8 @@ MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::MainWindow),
         m_landmark_lm(new LandmarkTableModel(this)),
-        m_volume_name(tr("(none)"))
+        m_volume_name(tr("(none)")),
+        m_snapshot_serial_number(0)
 {
         ui->setupUi(this);
         m_glview = findChild<MainopenGLView*>();
@@ -378,4 +379,21 @@ void MainWindow::on_action_Edit_triggered()
                 m_glview->selected_landmark_changed(idx);
                 availabledata_changed();
         }
+}
+
+void MainWindow::on_action_TakeSnapshot_triggered()
+{
+        if (m_snapshot_name_prototype.isEmpty()) {
+                auto out_dir = QFileDialog::getExistingDirectory(this, tr("Get shapshot output directory"));
+                QFileInfo out_dir_name(out_dir);
+                if (!out_dir_name.isWritable()) {
+                        // error message
+                }
+                // craate file name base
+                m_snapshot_name_prototype = out_dir + "/shapshot_%1.png";
+
+        }
+
+        QString out_file = m_snapshot_name_prototype.arg(m_snapshot_serial_number++);
+        m_glview->snapshot(out_file);
 }

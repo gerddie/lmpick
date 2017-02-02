@@ -212,3 +212,7 @@ void MainopenGLView::on_add_landmark()
         }
 }
 
+void MainopenGLView::snapshot(const QString& filename)
+{
+
+}

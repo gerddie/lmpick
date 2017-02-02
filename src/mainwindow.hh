@@ -61,6 +61,8 @@ private slots:
 
         void on_action_Edit_triggered();
 
+        void on_action_TakeSnapshot_triggered();
+
 protected:
         void closeEvent(QCloseEvent *event) override;
 
@@ -82,6 +84,9 @@ private:
         QString m_volume_name;
         QString m_landmarks_name;
 
+        // configurable data
+        QString m_snapshot_name_prototype;
+        int m_snapshot_serial_number;
 };
 
 #endif // MAINWINDOW_HH

@@ -144,7 +144,7 @@
     <property name="title">
      <string>&amp;Foto</string>
     </property>
-    <addaction name="action_This_view"/>
+    <addaction name="action_TakeSnapshot"/>
     <addaction name="action_All_landmarks"/>
    </widget>
    <addaction name="menu_File"/>
@@ -166,7 +166,7 @@
    <addaction name="action_Save_Landmark_set"/>
    <addaction name="actionSave_landmark_set_As"/>
    <addaction name="separator"/>
-   <addaction name="action_This_view"/>
+   <addaction name="action_TakeSnapshot"/>
    <addaction name="action_All_landmarks"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -455,14 +455,14 @@
     <string>&amp;About</string>
    </property>
   </action>
-  <action name="action_This_view">
+  <action name="action_TakeSnapshot">
    <property name="icon">
     <iconset resource="lmpick.qrc">
      <normaloff>:/icons/icons/snapshot.png</normaloff>
      <normalon>:/icons/icons/auto_snapshot_on.png</normalon>:/icons/icons/snapshot.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;This view</string>
+    <string>&amp;Take snapshot</string>
    </property>
   </action>
   <action name="action_All_landmarks">

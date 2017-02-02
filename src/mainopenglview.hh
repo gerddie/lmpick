@@ -41,8 +41,9 @@ public:
         void setVolume(PVolumeData volume);
         void setLandmarkList(PLandmarkList list);
         void setLandmarkModel(LandmarkTableModel *model);
-
         void selected_landmark_changed(int row);
+
+        void snapshot(const QString& filename);
 signals:
         void isovalue_changed();
         void availabledata_changed();
