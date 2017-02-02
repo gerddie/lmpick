@@ -59,6 +59,8 @@ private slots:
         void on_actionSave_landmark_set_As_triggered();
         void on_action_Save_Landmark_set_triggered();
 
+        void on_action_Edit_triggered();
+
 protected:
         void closeEvent(QCloseEvent *event) override;
 

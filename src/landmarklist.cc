@@ -75,8 +75,8 @@ bool LandmarkList::add(PLandmark landmark)
         auto i = m_index_map.find(landmark->get_name());
         if (i != m_index_map.end())
                 return false;
-        m_list.push_back(landmark);
         m_index_map[landmark->get_name()] = m_list.size();
+        m_list.push_back(landmark);
 
         m_dirty = true;
         return true;
@@ -124,8 +124,25 @@ void LandmarkList::remove(unsigned idx, unsigned count)
         });
 }
 
+int LandmarkList::rename_landmark(const QString& old_name, const QString& new_name)
+{
+        if (old_name != new_name) {
+                // the new name is already used and it is not the old name
+                if (has(new_name))
+                        return -1;
+
+                auto lm = (*this)[old_name];
+                remove(old_name);
+                lm->set_name(new_name);
+                add(lm);
+        }
+        return m_index_map[new_name];
+}
+
 bool LandmarkList::remove(const QString& name)
 {
+        qDebug() << "Sizes before removal: map(" << m_index_map.size() << ") vec (" << m_list.size() << ")";
+
         auto i = m_index_map.find(name);
         if (i == m_index_map.end())
                 return false;
@@ -140,6 +157,7 @@ bool LandmarkList::remove(const QString& name)
                 if (it.second >= idx)
                         --it.second;
         });
+        qDebug() << "Sizes after removal: map(" << m_index_map.size() << ") vec (" << m_list.size() << ")";
         return true;
 }
 

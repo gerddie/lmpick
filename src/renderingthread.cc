@@ -76,9 +76,11 @@ void RenderingThread::set_selected_landmark(int idx)
         m_lmp.set_active_landmark(idx);
         auto& lm = m_lmp.get_active_landmark();
 
-        m_state.camera = lm.get_camera();
-        update_projection();
-        if (m_volume)
+        if (lm.has(Landmark::lm_camera)) {
+                m_state.camera = lm.get_camera();
+                update_projection();
+        }
+        if (m_volume && lm.has(Landmark::lm_iso_value))
                 m_volume->set_iso_value(lm.get_iso_value());
 }
 

@@ -77,6 +77,11 @@ void  Landmark::set_camera(const Camera& camera)
         m_flags = m_flags |lm_camera;
 }
 
+void Landmark::set_name(const QString& new_name)
+{
+        m_name = new_name;
+}
+
 const QString& Landmark::get_name() const
 {
         return m_name;

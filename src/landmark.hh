@@ -29,6 +29,7 @@
 
 class Landmark
 {
+        friend class LandmarkList;
 public:
         enum EFlags {
                 lm_none = 0,
@@ -71,6 +72,9 @@ public:
 
         bool has(EFlags flag) const;
 private:
+
+        void set_name(const QString& new_name);
+
         QString m_name;
         bool m_is_set;
         QString m_template_image_filename;

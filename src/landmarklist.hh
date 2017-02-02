@@ -45,6 +45,8 @@ public:
 
         void remove(unsigned  idx, unsigned  count);
 
+        int rename_landmark(const QString& old_name, const QString& new_name);
+
         bool has(const QString& name) const;
 
         PLandmark operator [](unsigned i);

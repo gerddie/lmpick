@@ -326,3 +326,37 @@ void MainWindow::on_action_Save_Landmark_set_triggered()
                 on_actionSave_landmark_set_As_triggered();
         }
 }
+
+void MainWindow::on_action_Edit_triggered()
+{
+        auto sm = m_landmark_tv->selectionModel();
+
+        auto current_selection = sm->selection();
+        if (current_selection.isEmpty())
+                return;
+
+        auto selection = current_selection.at(0).indexes().at(0);
+        auto mapped_index = m_landmark_sort_proxy->mapToSource(selection);
+        int active_index = mapped_index.row();
+        qDebug() << "active_index:" << active_index;
+        if (active_index < 0)
+                return;
+
+        QString active_landmark = m_current_landmarklist->at(active_index).get_name();
+        bool ok = true;
+        int idx = -1;
+        while (ok && idx == -1) {
+                auto new_name = QInputDialog::getText(this, tr("Change landmark name from %1").arg(active_landmark),
+                                      tr("New name:"), QLineEdit::Normal, active_landmark, &ok);
+                if (ok) {
+                        idx = m_current_landmarklist->rename_landmark(active_landmark, new_name);
+                        qDebug() << "new index:" << idx;
+                }
+        }
+        if (ok && idx > 0) {
+                auto select_index = m_landmark_lm->index(idx, 0);
+                auto mapped_index = m_landmark_sort_proxy->mapFromSource(select_index);
+                m_landmark_tv->selectRow(mapped_index.row());
+                m_glview->selected_landmark_changed(idx);
+        }
+}
