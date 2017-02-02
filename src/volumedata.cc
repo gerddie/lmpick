@@ -291,10 +291,11 @@ void VolumeDataImpl::do_attach_gl(QOpenGLContext& context)
         ogl->glActiveTexture(GL_TEXTURE0);
         m_volume_tex.setFormat(QOpenGLTexture::R32F);
         m_volume_tex.setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Linear);
+        m_volume_tex.setWrapMode(QOpenGLTexture::ClampToBorder);
         m_volume_tex.setSize(m_image->get_size().x, m_image->get_size().y, m_image->get_size().z);
         m_volume_tex.allocateStorage();
         OGL_ERRORTEST("m_volume_tex.allocateStorage()");
-
+        m_volume_tex.setBorderColor(0,0,0,0);
         m_volume_tex.setData(0, 0, QOpenGLTexture::Red, QOpenGLTexture::Float32, &img[0]);
         OGL_ERRORTEST("m_volume_tex.setData");
 
