@@ -101,10 +101,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
         assert(m_landmark_tv);
 
-        m_landmark_tv->addAction(ui->action_Add);
+        QAction *separator = new QAction(this);
+        separator->setSeparator(true);
         m_landmark_tv->addAction(ui->action_Edit);
+        m_landmark_tv->addAction(ui->action_Add);
+        m_landmark_tv->addAction(separator);
         m_landmark_tv->addAction(ui->action_Clear);
         m_landmark_tv->addAction(ui->action_Clear_all_locations);
+        separator = new QAction(this);
+        separator->setSeparator(true);
+        m_landmark_tv->addAction(separator);
+        m_landmark_tv->addAction(ui->action_Delete);
 
         m_glview->setLandmarkModel(m_landmark_lm);
 #ifdef INITIAL_TESTING
@@ -354,6 +361,7 @@ void MainWindow::on_action_Edit_triggered()
                 }
         }
         if (ok && idx > 0) {
+
                 auto select_index = m_landmark_lm->index(idx, 0);
                 auto mapped_index = m_landmark_sort_proxy->mapFromSource(select_index);
                 m_landmark_tv->selectRow(mapped_index.row());
