@@ -115,6 +115,13 @@ void LandmarkTableModel::addLandmark(PLandmark lm)
         endInsertRows();
 }
 
+int LandmarkTableModel::renameLandmark(const QModelIndex &index, const QString& old_name, const QString& new_name)
+{
+        int idx = m_the_list->rename_landmark(old_name, new_name);
+        emit dataChanged(index, index);
+        return idx;
+}
+
 PLandmarkList LandmarkTableModel::getLandmarkList() const
 {
         return m_the_list;

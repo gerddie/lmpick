@@ -71,10 +71,6 @@ public:
 
         const_iterator end() const;
 
-        iterator begin();
-
-        iterator end();
-
         bool dirty() const;
 
         void set_dirty_flag(bool d);
