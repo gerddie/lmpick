@@ -301,6 +301,7 @@ bool RenderingThread::add_landmark(const QString& name, const QPoint& mouse_loc)
         return true;
 }
 
+
 void RenderingThread::run()
 {
 

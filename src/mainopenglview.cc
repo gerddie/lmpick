@@ -114,6 +114,7 @@ void MainopenGLView::initializeGL()
 void MainopenGLView::paintGL()
 {
         m_rendering->paint();
+
 }
 
 void MainopenGLView::resizeGL(int w, int h)
@@ -214,5 +215,7 @@ void MainopenGLView::on_add_landmark()
 
 void MainopenGLView::snapshot(const QString& filename)
 {
-
+        update();
+        QImage img  = grabFramebuffer();
+        img.save(filename);
 }

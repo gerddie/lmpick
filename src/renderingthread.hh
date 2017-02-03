@@ -28,6 +28,7 @@
 
 #include "octaeder.hh"
 
+#include <QImage>
 #include <QObject>
 #include <QOpenGLFunctions>
 
@@ -75,7 +76,6 @@ public:
 
         void set_selected_landmark(int idx);
 
-
 private:
         void update_rotation(QMouseEvent *ev);
 
@@ -106,7 +106,8 @@ private:
         PLandmarkList m_current_landmarks;
         LandmarkListPainter m_lmp;
 
-
+        bool m_snapshot_pending;
+        QImage m_last_snapshot;
 };
 
 #endif // RENDERINGTHREAD_HH
