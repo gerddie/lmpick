@@ -397,3 +397,52 @@ void MainWindow::on_action_TakeSnapshot_triggered()
         QString out_file = m_snapshot_name_prototype.arg(m_snapshot_serial_number++);
         m_glview->snapshot(out_file);
 }
+
+void MainWindow::on_action_CreateTemplate_triggered()
+{
+        while (true) {
+                auto out_dir = QFileDialog::getExistingDirectory(this, tr("Select template output directory"));
+
+                // cancel pressed
+                if (out_dir.isEmpty())
+                        break;
+
+                QFileInfo out_dir_name(out_dir);
+                if (!out_dir_name.isWritable()) {
+                        qWarning() << "Directory '" << out_dir << "' is red only";
+                        continue;
+                }
+
+                try {
+                        QString lm_picfile_name_template("/template_%1.png");
+                        for (unsigned i = 0; i < m_current_landmarklist->size(); ++i) {
+                                Landmark& lm = m_current_landmarklist->at(i);
+                                if (lm.has(Landmark::lm_camera) &&
+                                    lm.has(Landmark::lm_iso_value) &&
+                                    lm.has(Landmark::lm_location)) {
+                                        QString lm_picfile_name = lm_picfile_name_template.arg(lm.get_name());
+                                        QString snapshot_name = out_dir + "/" + lm_picfile_name;
+                                        m_glview->set_volume_isovalue(lm.get_iso_value());
+                                        m_glview->selected_landmark_changed(i);
+                                        m_glview->snapshot(snapshot_name);
+                                        lm.set_template_image_file(lm_picfile_name);
+                                }else{
+                                        qDebug() << "No snapshot for" << lm.get_name();
+                                }
+                        }
+
+                        write_landmarklist(out_dir + "/template.lmx", *m_current_landmarklist);
+                        break;
+                }
+                catch (QRuntimeExeption& x) {
+                        QMessageBox box(QMessageBox::Information, tr("Error saving landmarks"), x.qwhat(),
+                                        QMessageBox::Ok);
+                        box.exec();
+                }
+                catch (std::runtime_error& x) {
+                        QMessageBox box(QMessageBox::Information, tr("Error saving landmarks"), x.what(),
+                                        QMessageBox::Ok);
+                        box.exec();
+                }
+        }
+}

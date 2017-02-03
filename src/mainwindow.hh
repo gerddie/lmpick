@@ -63,6 +63,8 @@ private slots:
 
         void on_action_TakeSnapshot_triggered();
 
+        void on_action_CreateTemplate_triggered();
+
 protected:
         void closeEvent(QCloseEvent *event) override;
 

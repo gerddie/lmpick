@@ -145,7 +145,7 @@
      <string>&amp;Foto</string>
     </property>
     <addaction name="action_TakeSnapshot"/>
-    <addaction name="action_All_landmarks"/>
+    <addaction name="action_CreateTemplate"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Landmark"/>
@@ -167,7 +167,7 @@
    <addaction name="actionSave_landmark_set_As"/>
    <addaction name="separator"/>
    <addaction name="action_TakeSnapshot"/>
-   <addaction name="action_All_landmarks"/>
+   <addaction name="action_CreateTemplate"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidget">
@@ -331,30 +331,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="logDocker">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="allowedAreas">
-    <set>Qt::BottomDockWidgetArea</set>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="logDocker_2">
-    <property name="locale">
-     <locale language="C" country="AnyCountry"/>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <widget class="QTextBrowser" name="logBrowser"/>
-     </item>
-    </layout>
-   </widget>
-  </widget>
   <action name="actionOpen_Volume">
    <property name="icon">
     <iconset resource="lmpick.qrc">
@@ -489,13 +465,13 @@
     <string>&amp;Take snapshot</string>
    </property>
   </action>
-  <action name="action_All_landmarks">
+  <action name="action_CreateTemplate">
    <property name="icon">
     <iconset resource="lmpick.qrc">
      <normaloff>:/icons/icons/auto_snapshot_on.png</normaloff>:/icons/icons/auto_snapshot_on.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;All landmarks</string>
+    <string>&amp;Create template</string>
    </property>
   </action>
   <action name="action_Set">
