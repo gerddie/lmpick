@@ -70,6 +70,8 @@ private slots:
 
         void on_action_CreateTemplate_triggered();
 
+        void on_action_About_triggered();
+
 protected:
         void closeEvent(QCloseEvent *event) override;
 

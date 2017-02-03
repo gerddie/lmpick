@@ -24,6 +24,7 @@
 #include "landmarklistio.hh"
 #include "ui_mainwindow.h"
 #include "qruntimeexeption.hh"
+#include "aboutdialog.hh"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -463,4 +464,10 @@ void MainWindow::on_action_CreateTemplate_triggered()
                         box.exec();
                 }
         }
+}
+
+void MainWindow::on_action_About_triggered()
+{
+        AboutDialog bruce(this);
+        bruce.exec();
 }

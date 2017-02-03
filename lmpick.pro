@@ -40,7 +40,8 @@ SOURCES += src/main.cc\
     src/landmarklistio.cc \
     src/landmarktablemodel.cc \
     src/landmarktableview.cc \
-    src/qruntimeexeption.cc
+    src/qruntimeexeption.cc \
+    src/aboutdialog.cc
 
 
 HEADERS  += src/mainwindow.hh \
@@ -59,9 +60,11 @@ HEADERS  += src/mainwindow.hh \
     src/errormacro.hh \
     src/landmarktablemodel.hh \
     src/landmarktableview.hh \
-    src/qruntimeexeption.hh
+    src/qruntimeexeption.hh \
+    src/aboutdialog.hh
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    src/aboutdialog.ui
 
 DISTFILES += \
     shaders/view.glsl \
