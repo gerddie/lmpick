@@ -107,7 +107,8 @@
     <addaction name="separator"/>
     <addaction name="actionOpen_Volume"/>
     <addaction name="separator"/>
-    <addaction name="action_Create_template"/>
+    <addaction name="action_TakeSnapshot"/>
+    <addaction name="action_CreateTemplate"/>
     <addaction name="separator"/>
     <addaction name="actionE_xit"/>
    </widget>
@@ -140,16 +141,8 @@
     </property>
     <addaction name="action_About"/>
    </widget>
-   <widget class="QMenu" name="menuFoto">
-    <property name="title">
-     <string>&amp;Foto</string>
-    </property>
-    <addaction name="action_TakeSnapshot"/>
-    <addaction name="action_CreateTemplate"/>
-   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Landmark"/>
-   <addaction name="menuFoto"/>
    <addaction name="menu_View"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -342,6 +335,9 @@
    <property name="text">
     <string>Open &amp;Volume</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
   </action>
   <action name="action_Open_landmarkset">
    <property name="icon">
@@ -351,6 +347,9 @@
    <property name="text">
     <string>&amp;Open landmark set</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="action_Save_Landmark_set">
    <property name="icon">
@@ -359,6 +358,9 @@
    </property>
    <property name="text">
     <string>&amp;Save Landmark set</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionSave_landmark_set_As">
@@ -373,20 +375,24 @@
    <property name="toolTip">
     <string>Save landmark set As</string>
    </property>
-  </action>
-  <action name="action_Create_template">
-   <property name="text">
-    <string>&amp;Create template</string>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
    </property>
   </action>
   <action name="action_New_landmarkset">
    <property name="text">
     <string>&amp;New landmarkset</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
   </action>
   <action name="actionE_xit">
    <property name="text">
     <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
   <action name="action_Add">
@@ -467,6 +473,9 @@
    <property name="text">
     <string>&amp;Take snapshot</string>
    </property>
+   <property name="shortcut">
+    <string>F12</string>
+   </property>
   </action>
   <action name="action_CreateTemplate">
    <property name="icon">
@@ -475,6 +484,9 @@
    </property>
    <property name="text">
     <string>&amp;Create template</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
   <action name="action_Set">
