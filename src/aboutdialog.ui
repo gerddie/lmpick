@@ -11,7 +11,10 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>About landmarkpicker</string>
+  </property>
+  <property name="locale">
+   <locale language="Bemba" country="Zambia"/>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -133,7 +136,7 @@
        </spacer>
       </item>
       <item alignment="Qt::AlignHCenter">
-       <widget class="QDialogButtonBox" name="buttonBox_2">
+       <widget class="QDialogButtonBox" name="aboutCloseButton">
         <property name="locale">
          <locale language="C" country="AnyCountry"/>
         </property>
@@ -154,5 +157,22 @@
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>aboutCloseButton</sender>
+   <signal>clicked(QAbstractButton*)</signal>
+   <receiver>AboutDialog</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>190</x>
+     <y>193</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>192</x>
+     <y>107</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
