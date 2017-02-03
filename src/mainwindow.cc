@@ -98,6 +98,7 @@ MainWindow::MainWindow(QWidget *parent) :
         m_glview = findChild<MainopenGLView*>();
         m_iso_slider = findChild<QSlider*>("isoValueSlider");
         m_landmark_tv = findChild<LandmarkTableView *>("LandmarkTV");
+        m_template_view = findChild<QLabel*>("graphicsView");
         assert(m_iso_slider);
         connect(m_iso_slider, &QSlider::valueChanged, m_glview, &MainopenGLView::set_volume_isovalue);
 
@@ -152,6 +153,23 @@ void MainWindow::landmarkSelectionChanged(const QModelIndex& idx, const QModelIn
         Q_UNUSED(other_idx);
         auto mapped_index = m_landmark_sort_proxy->mapToSource(idx);
         m_glview->selected_landmark_changed(mapped_index.row());
+        const Landmark& lm = m_current_landmarklist->at(mapped_index.row());
+        if (lm.has(Landmark::lm_picfile)) {
+                QString imagefile = m_current_landmarklist->get_base_dir() + "/" + lm.get_template_filename();
+                auto i = m_image_cache.find(imagefile);
+                if (i == m_image_cache.end()) {
+                        QPixmap image(imagefile);
+                        if (image.isNull())
+                                qDebug() << "Error loading "<< imagefile ;
+                        m_image_cache[imagefile] = image;
+                        m_template_view->setPixmap(image);
+                        qDebug() << "Set label pixmap: " << imagefile << "\n";
+                }else
+                        m_template_view->setPixmap(i->second);
+                 m_template_view->show();
+        }else
+                 m_template_view->hide();
+
 }
 
 void MainWindow::availabledata_changed()

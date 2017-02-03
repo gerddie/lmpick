@@ -59,6 +59,8 @@ public:
 
         QString get_filename() const;
 
+        QString get_base_dir() const;
+
         void set_filename(const QString &filename);
 
         QString get_name() const;
@@ -72,6 +74,8 @@ public:
         bool dirty() const;
 
         void set_dirty_flag(bool d);
+
+        bool has_template_pictures() const;
 
 private:
         QString m_name;

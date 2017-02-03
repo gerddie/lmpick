@@ -20,6 +20,8 @@
  */
 
 #include "landmarklist.hh"
+#include <QFileInfo>
+#include <QDir>
 #include <cassert>
 
 using std::for_each;
@@ -177,3 +179,18 @@ LandmarkList::const_iterator LandmarkList::end() const
         return m_list.end();
 }
 
+bool LandmarkList::has_template_pictures() const
+{
+        for (auto lm: m_list) {
+                if (lm->has(Landmark::lm_picfile))
+                        return true;
+        }
+        return false;
+}
+
+QString LandmarkList::get_base_dir() const
+{
+        if (m_filename.isEmpty())
+                return QString();
+        return QFileInfo(m_filename).absoluteDir().absolutePath();
+}

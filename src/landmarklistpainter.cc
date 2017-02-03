@@ -118,8 +118,8 @@ void LandmarkListPainter::set_active_landmark(int idx)
 LandmarkListPainterImpl::LandmarkListPainterImpl():
         m_the_list(new LandmarkList),
         m_active_index(-1),
-        m_active_sphere(QVector4D(1, 0.5, 0, 0.9)),
-        m_normal_sphere(QVector4D(0, 0.5, 1, 0.9)),
+        m_active_sphere(QVector4D(1, 0, 0, 0.9)),
+        m_normal_sphere(QVector4D(0, 0.5, 1, 0.8)),
         m_viewspace_scale(1,1,1),
         m_viewspace_shift(0,0,0)
 {

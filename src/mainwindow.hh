@@ -29,6 +29,11 @@
 #include <QSlider>
 #include <QTableView>
 #include <QSortFilterProxyModel>
+#include <QPixmap>
+#include <map>
+
+
+class QLabel;
 
 namespace Ui {
 class MainWindow;
@@ -78,6 +83,7 @@ private:
         LandmarkTableView *m_landmark_tv;
         LandmarkTableModel *m_landmark_lm;
         QSortFilterProxyModel *m_landmark_sort_proxy;
+        QLabel *m_template_view;
 
         PVolumeData m_current_volume;
         PLandmarkList m_current_landmarklist;
@@ -89,6 +95,7 @@ private:
         // configurable data
         QString m_snapshot_name_prototype;
         int m_snapshot_serial_number;
+        std::map<QString, QPixmap> m_image_cache;
 };
 
 #endif // MAINWINDOW_HH
