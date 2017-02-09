@@ -63,26 +63,26 @@ static PLandmarkList create_debug_list()
                 result->add(PLandmark(new Landmark(n[i], v[i], 64, c)));
         }
         // don't want prompt for saving by default for test data
-        result->set_dirty_flag(false);
+        result->setDirtyFlag(false);
         return result;
 }
 
 
 static PVolumeData create_debug_volume()
 {
-        auto img = new mia::C3DFImage(mia::C3DBounds(128,256,128));
+        auto img = new mia::C3DFImage(mia::C3DBounds(128, 128, 256));
 
         auto i = img->begin();
-        for (unsigned int z = 0; z < 128; ++z) {
-                float fz = sin (z * M_PI / 127);
-                for (unsigned int y = 0; y < 256; ++y) {
-                        float fy = sin (y * M_PI / 255) * fz;
+        for (unsigned int z = 0; z < 256; ++z) {
+                float fz = sin (z * M_PI / 255);
+                for (unsigned int y = 0; y < 128; ++y) {
+                        float fy = sin (y * M_PI / 127) * fz;
                         for (unsigned int x = 0; x < 128; ++x, ++i)  {
                                 *i = fy * sin (x * M_PI / 127);
                         }
                 }
         }
-        img->set_voxel_size(mia::C3DFVector(2.2, 1.1, 2.0));
+        img->set_voxel_size(mia::C3DFVector(2.2, 2.0, 1.1));
         return PVolumeData(new VolumeData(mia::P3DImage(img)));
 }
 
@@ -144,9 +144,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
         m_title_template = windowTitle();
 
-        connect(m_glview, &MainopenGLView::availabledata_changed, this, &MainWindow::availabledata_changed);
+        connect(m_glview, &MainopenGLView::availabledata_changed, this, &MainWindow::availableDataChanged);
 
-        availabledata_changed();
+        availableDataChanged();
 }
 
 void MainWindow::landmarkSelectionChanged(const QModelIndex& idx, const QModelIndex& other_idx)
@@ -156,7 +156,7 @@ void MainWindow::landmarkSelectionChanged(const QModelIndex& idx, const QModelIn
         m_glview->selected_landmark_changed(mapped_index.row());
         const Landmark& lm = m_current_landmarklist->at(mapped_index.row());
         if (lm.has(Landmark::lm_picfile)) {
-                QString imagefile = m_current_landmarklist->get_base_dir() + "/" + lm.get_template_filename();
+                QString imagefile = m_current_landmarklist->getBaseDir() + "/" + lm.getTemplateFilename();
                 auto i = m_image_cache.find(imagefile);
                 if (i == m_image_cache.end()) {
                         QPixmap image(imagefile);
@@ -173,7 +173,7 @@ void MainWindow::landmarkSelectionChanged(const QModelIndex& idx, const QModelIn
 
 }
 
-void MainWindow::availabledata_changed()
+void MainWindow::availableDataChanged()
 {
         bool dirty = m_current_landmarklist ? m_current_landmarklist->dirty() : false;
         QString new_title = m_title_template.arg(m_volume_name).
@@ -224,7 +224,7 @@ void MainWindow::on_actionOpen_Volume_triggered()
                         m_iso_slider->setValue((intensity_range.second - intensity_range.first) / 2);
                         QFileInfo fileInfo(filename);
                         m_volume_name = fileInfo.fileName();
-                        availabledata_changed();
+                        availableDataChanged();
                 }
                 catch (std::exception& x) {
                         QMessageBox box(QMessageBox::Information, "Error loading volume data", x.what(),
@@ -250,7 +250,7 @@ void MainWindow::on_action_Add_triggered()
                         if (!m_current_landmarklist->has(name)) {
                                 PLandmark new_lm = make_shared<Landmark>(name);
                                 m_landmark_lm->addLandmark(new_lm);
-                                availabledata_changed();
+                                availableDataChanged();
                                 break;
                         }else{
                                 prompt =QString(tr("Name (") + name + tr(" is already in list):"));
@@ -270,10 +270,10 @@ void MainWindow::on_action_Open_landmarkset_triggered()
                 try {
                         m_current_landmarklist = read_landmarklist(filename);
                         m_glview->setLandmarkList(m_current_landmarklist);
-                        m_current_landmarklist->set_dirty_flag(false);
+                        m_current_landmarklist->setDirtyFlag(false);
                         QFileInfo fileInfo(filename);
                         m_landmarks_name = fileInfo.fileName();
-                        availabledata_changed();
+                        availableDataChanged();
                 }
                 catch (QRuntimeExeption& x) {
                         QMessageBox box(QMessageBox::Information, "Error loading landmarks", x.qwhat(),
@@ -296,11 +296,11 @@ void MainWindow::on_actionSave_landmark_set_As_triggered()
         if (!fileName.isEmpty() ) {
                 try {
                         if (write_landmarklist(fileName, *m_current_landmarklist))
-                                m_current_landmarklist->set_dirty_flag(false);
+                                m_current_landmarklist->setDirtyFlag(false);
                         QFileInfo fi(fileName);
                         m_landmarks_name = fi.fileName();
-                        m_current_landmarklist->set_filename(fileName);
-                        availabledata_changed();
+                        m_current_landmarklist->setFilename(fileName);
+                        availableDataChanged();
                 }
                 catch (QRuntimeExeption& x) {
                         QMessageBox box(QMessageBox::Information, "Error saving landmarks", x.qwhat(),
@@ -345,12 +345,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_action_Save_Landmark_set_triggered()
 {
-        auto filename = m_current_landmarklist->get_filename();
+        auto filename = m_current_landmarklist->getFilename();
         if (!filename.isEmpty()) {
                 try {
                         if (write_landmarklist(filename, *m_current_landmarklist))
-                                m_current_landmarklist->set_dirty_flag(false);
-                        availabledata_changed();
+                                m_current_landmarklist->setDirtyFlag(false);
+                        availableDataChanged();
                 }
                 catch (QRuntimeExeption& x) {
                         QMessageBox box(QMessageBox::Information, tr("Error saving landmarks"), x.qwhat(),
@@ -381,7 +381,7 @@ void MainWindow::on_action_Edit_triggered()
         if (active_index < 0)
                 return;
 
-        QString active_landmark = m_current_landmarklist->at(active_index).get_name();
+        QString active_landmark = m_current_landmarklist->at(active_index).getName();
         bool ok = true;
         int idx = -1;
         while (ok && idx == -1) {
@@ -397,7 +397,7 @@ void MainWindow::on_action_Edit_triggered()
                 auto mapped_index = m_landmark_sort_proxy->mapFromSource(select_index);
                 m_landmark_tv->selectRow(mapped_index.row());
                 m_glview->selected_landmark_changed(idx);
-                availabledata_changed();
+                availableDataChanged();
         }
 }
 
@@ -440,14 +440,14 @@ void MainWindow::on_action_CreateTemplate_triggered()
                                 if (lm.has(Landmark::lm_camera) &&
                                     lm.has(Landmark::lm_iso_value) &&
                                     lm.has(Landmark::lm_location)) {
-                                        QString lm_picfile_name = lm_picfile_name_template.arg(lm.get_name());
+                                        QString lm_picfile_name = lm_picfile_name_template.arg(lm.getName());
                                         QString snapshot_name = out_dir + "/" + lm_picfile_name;
-                                        m_glview->set_volume_isovalue(lm.get_iso_value());
+                                        m_glview->set_volume_isovalue(lm.getIsoValue());
                                         m_glview->selected_landmark_changed(i);
                                         m_glview->snapshot(snapshot_name);
-                                        lm.set_template_image_file(lm_picfile_name);
+                                        lm.setTemplateImageFile(lm_picfile_name);
                                 }else{
-                                        qDebug() << "No snapshot for" << lm.get_name();
+                                        qDebug() << "No snapshot for" << lm.getName();
                                 }
                         }
 
@@ -471,4 +471,11 @@ void MainWindow::on_action_About_triggered()
 {
         AboutDialog bruce(this);
         bruce.exec();
+}
+
+void MainWindow::on_action_Clear_all_locations_triggered()
+{
+    if (m_current_landmarklist)
+            m_current_landmarklist->clearAllLocations();
+    availableDataChanged();
 }

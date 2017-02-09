@@ -50,10 +50,10 @@ signals:
 
 public slots:
         void set_volume_isovalue(int value);
-
+        void detachGL();
 
 private slots:
-        void detachGL();
+
         void on_set_landmark();
         void on_add_landmark();
 private:

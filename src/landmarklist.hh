@@ -43,7 +43,7 @@ public:
 
         void remove(unsigned  idx, unsigned  count);
 
-        int rename_landmark(const QString& old_name, const QString& new_name);
+        int renameLandmark(const QString& old_name, const QString& new_name);
 
         bool has(const QString& name) const;
 
@@ -57,15 +57,15 @@ public:
 
         size_t size() const;
 
-        QString get_filename() const;
+        QString getFilename() const;
 
-        QString get_base_dir() const;
+        QString getBaseDir() const;
 
-        void set_filename(const QString &filename);
+        void setFilename(const QString &filename);
 
-        QString get_name() const;
+        QString getName() const;
 
-        void set_name(const QString &name);
+        void setName(const QString &name);
 
         const_iterator begin() const;
 
@@ -73,9 +73,11 @@ public:
 
         bool dirty() const;
 
-        void set_dirty_flag(bool d);
+        void setDirtyFlag(bool d);
 
-        bool has_template_pictures() const;
+        bool hasTemplatePictures() const;
+
+        void clearAllLocations();
 
 private:
         QString m_name;

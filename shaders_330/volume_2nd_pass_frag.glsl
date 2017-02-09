@@ -95,8 +95,8 @@ void main(void)
         highp vec4 start = texture2D(ray_start, tex2dcoord);
         highp vec4 end = texture2D(ray_end, tex2dcoord);
 
-        // early exit if the z-value is inf
-        if (start.w == 0.0 && end.w == 0.0) {
+        // early exit if the z-value is not set
+        if (start.w == 1.0 && end.w == 1.0) {
                 discard;
         }
 
@@ -133,12 +133,8 @@ void main(void)
                         old_iso = color.r;
                         continue;
                 } else {
-                        highp float f = a - 1;
-                        if (color.r > iso_value) {
-                                // optimize the actual iso-value crossing coodinate
-                                highp float rel = (iso_value - old_iso) / (color.r - old_iso);
-                                f += rel;
-                        }
+                        highp float f = a - 1 + (iso_value - old_iso) / (color.r - old_iso);
+
                         x = start.xyz +  f * step;
 
                         // evalute the normal by using centered finite differences
@@ -178,7 +174,7 @@ void main(void)
                         break;
                 }
         }
-        //if  not it the iso-value, then discard the fragment
+        //if  not hit the iso-value, then discard the fragment
         if (!hit)
                 discard;
 }

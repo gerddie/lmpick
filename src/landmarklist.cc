@@ -38,7 +38,7 @@ bool LandmarkList::dirty() const
         return m_dirty;
 }
 
-void LandmarkList::set_dirty_flag(bool d)
+void LandmarkList::setDirtyFlag(bool d)
 {
         m_dirty = d;
 }
@@ -74,10 +74,10 @@ PLandmark LandmarkList::operator [](unsigned  i)
 
 bool LandmarkList::add(PLandmark landmark)
 {
-        auto i = m_index_map.find(landmark->get_name());
+        auto i = m_index_map.find(landmark->getName());
         if (i != m_index_map.end())
                 return false;
-        m_index_map[landmark->get_name()] = m_list.size();
+        m_index_map[landmark->getName()] = m_list.size();
         m_list.push_back(landmark);
 
         m_dirty = true;
@@ -89,22 +89,22 @@ size_t LandmarkList::size() const
         return m_list.size();
 }
 
-QString LandmarkList::get_filename() const
+QString LandmarkList::getFilename() const
 {
     return m_filename;
 }
 
-void LandmarkList::set_filename(const QString &filename)
+void LandmarkList::setFilename(const QString &filename)
 {
     m_filename = filename;
 }
 
-QString LandmarkList::get_name() const
+QString LandmarkList::getName() const
 {
         return m_name;
 }
 
-void LandmarkList::set_name(const QString &name)
+void LandmarkList::setName(const QString &name)
 {
         m_name = name;
 }
@@ -114,7 +114,7 @@ void LandmarkList::remove(unsigned idx, unsigned count)
         unsigned end = idx + count;
 
         for (unsigned  i = idx; i < end; ++i) {
-        m_index_map.erase(m_list[i]->get_name());
+        m_index_map.erase(m_list[i]->getName());
         }
 
         m_list.erase(m_list.begin() + idx, m_list.begin() + end);
@@ -127,7 +127,7 @@ void LandmarkList::remove(unsigned idx, unsigned count)
         m_dirty = true;
 }
 
-int LandmarkList::rename_landmark(const QString& old_name, const QString& new_name)
+int LandmarkList::renameLandmark(const QString& old_name, const QString& new_name)
 {
         auto i = m_index_map.find(old_name);
         int idx = i->second;
@@ -179,7 +179,7 @@ LandmarkList::const_iterator LandmarkList::end() const
         return m_list.end();
 }
 
-bool LandmarkList::has_template_pictures() const
+bool LandmarkList::hasTemplatePictures() const
 {
         for (auto lm: m_list) {
                 if (lm->has(Landmark::lm_picfile))
@@ -188,9 +188,17 @@ bool LandmarkList::has_template_pictures() const
         return false;
 }
 
-QString LandmarkList::get_base_dir() const
+QString LandmarkList::getBaseDir() const
 {
         if (m_filename.isEmpty())
                 return QString();
         return QFileInfo(m_filename).absoluteDir().absolutePath();
+}
+
+void LandmarkList::clearAllLocations()
+{
+        for (auto lm: m_list) {
+                lm->clearFlag(Landmark::lm_location);
+        }
+        setDirtyFlag(true);
 }

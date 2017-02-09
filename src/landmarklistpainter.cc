@@ -81,9 +81,8 @@ void LandmarkListPainter::do_draw(const GlobalSceneState& state)
         GlobalSceneState local_state = state;
         for (int i = 0; i < static_cast<int>(impl->m_the_list->size()); ++i) {
                 auto lm = (*impl->m_the_list)[i];
-                if (lm->is_set()) {
-
-                        auto offset = lm->get_location() * impl->m_viewspace_scale - impl->m_viewspace_shift;
+                if (lm->has(Landmark::lm_location)) {
+                        auto offset = lm->getLocation() * impl->m_viewspace_scale - impl->m_viewspace_shift;
                         local_state.set_offset(offset);
                         if (i == impl->m_active_index) {
                                 impl->m_active_sphere.draw(local_state);
@@ -99,13 +98,13 @@ const QString LandmarkListPainter::get_active_landmark_name() const
         if (impl->m_active_index < 0 ||
             static_cast<size_t>(impl->m_active_index) >= impl->m_the_list->size())
                 return QString();
-        return (*impl->m_the_list)[impl->m_active_index]->get_name();
+        return (*impl->m_the_list)[impl->m_active_index]->getName();
 }
 
 Landmark& LandmarkListPainter::get_active_landmark()
 {
         assert (impl->m_active_index >= 0 &&
-            static_cast<size_t>(impl->m_active_index) < impl->m_the_list->size());
+                static_cast<size_t>(impl->m_active_index) < impl->m_the_list->size());
 
         return impl->m_the_list->at(impl->m_active_index);
 }

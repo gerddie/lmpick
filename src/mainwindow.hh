@@ -48,7 +48,7 @@ public:
         ~MainWindow();
 
 public slots:
-        void availabledata_changed();
+        void availableDataChanged();
 
 private slots:
         void on_actionE_xit_triggered();
@@ -71,6 +71,8 @@ private slots:
         void on_action_CreateTemplate_triggered();
 
         void on_action_About_triggered();
+
+        void on_action_Clear_all_locations_triggered();
 
 protected:
         void closeEvent(QCloseEvent *event) override;
