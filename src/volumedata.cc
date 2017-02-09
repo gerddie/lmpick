@@ -539,6 +539,8 @@ void VolumeDataImpl::do_draw(const GlobalSceneState& state, QOpenGLContext& cont
                                         GL_RENDERBUFFER, 0);
         glex->glDeleteRenderbuffers(1, &space_coord_rb);
 
+        // set read buffer to first render buffer
+        glex->glReadBuffer(GL_COLOR_ATTACHMENT0);
         m_volume_program.release();
         fbo_volume.release();
 
