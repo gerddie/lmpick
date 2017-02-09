@@ -35,6 +35,7 @@ struct LandmarkListPainterImpl {
         Sphere m_normal_sphere;
         QVector3D m_viewspace_scale;
         QVector3D m_viewspace_shift;
+        bool m_viewspace_is_startup;
 
 };
 
@@ -54,12 +55,43 @@ void LandmarkListPainter::set_viewspace_correction(const QVector3D& scale, const
         qDebug() << "Set new scale " << scale << " and shift "  << shift;
         impl->m_viewspace_scale = scale;
         impl->m_viewspace_shift = shift;
+        impl->m_viewspace_is_startup = false;
 }
 
 void LandmarkListPainter::set_landmark_list(PLandmarkList list)
 {
         impl->m_the_list = list;
         impl->m_active_index = -1;
+
+        if (impl->m_viewspace_is_startup) {
+                // get landmarks cover area and adjust viewspace so that all fit in a [0,1]^3 cube
+                QVector3D min_qube(3000, 3000, 3000);
+                QVector3D max_qube(0, 0, 0);
+                int n = 0;
+                for (auto lpm = impl->m_the_list->begin(); lpm != impl->m_the_list->end(); ++lpm) {
+                        if ((*lpm)->has(Landmark::lm_location)) {
+                                QVector3D p = (*lpm)->getLocation();
+                                if (p.x() < min_qube.x()) min_qube.setX(p.x());
+                                if (p.y() < min_qube.y()) min_qube.setY(p.y());
+                                if (p.z() < min_qube.z()) min_qube.setZ(p.z());
+
+                                if (p.x() > max_qube.x()) max_qube.setX(p.x());
+                                if (p.y() > max_qube.y()) max_qube.setY(p.y());
+                                if (p.z() > max_qube.z()) max_qube.setZ(p.z());
+                                ++n;
+                        }
+                }
+
+                if (n > 0) {
+                        QVector3D delta = (max_qube - min_qube);
+                        impl->m_viewspace_scale = QVector3D(1,1,1)/ delta;
+                        impl->m_viewspace_shift = QVector3D(0.5,0.5,0.5);
+
+                        qDebug() << "Set new scale " << impl->m_viewspace_scale
+                                 << " and shift "  << impl->m_viewspace_shift;
+
+                }
+        }
 }
 
 void LandmarkListPainter::do_detach_gl()
@@ -78,11 +110,15 @@ void LandmarkListPainter::do_draw(const GlobalSceneState& state)
 {
         if (!impl->m_the_list)
                 return;
+
+
+
         GlobalSceneState local_state = state;
         for (int i = 0; i < static_cast<int>(impl->m_the_list->size()); ++i) {
                 auto lm = (*impl->m_the_list)[i];
                 if (lm->has(Landmark::lm_location)) {
                         auto offset = lm->getLocation() * impl->m_viewspace_scale - impl->m_viewspace_shift;
+                        qDebug() << "offset =" << offset;
                         local_state.set_offset(offset);
                         if (i == impl->m_active_index) {
                                 impl->m_active_sphere.draw(local_state);
@@ -120,6 +156,7 @@ LandmarkListPainterImpl::LandmarkListPainterImpl():
         m_active_sphere(QVector4D(1, 0, 0, 0.9)),
         m_normal_sphere(QVector4D(0, 0.5, 1, 0.8)),
         m_viewspace_scale(1,1,1),
-        m_viewspace_shift(0,0,0)
+        m_viewspace_shift(0,0,0),
+        m_viewspace_is_startup(true)
 {
 }
