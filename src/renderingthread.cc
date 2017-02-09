@@ -77,11 +77,11 @@ void RenderingThread::set_selected_landmark(int idx)
         auto& lm = m_lmp.get_active_landmark();
 
         if (lm.has(Landmark::lm_camera)) {
-                m_state.camera = lm.get_camera();
+                m_state.camera = lm.getCamera();
                 update_projection();
         }
         if (m_volume && lm.has(Landmark::lm_iso_value))
-                m_volume->set_iso_value(lm.get_iso_value());
+                m_volume->set_iso_value(lm.getIsoValue());
 }
 
 
@@ -107,7 +107,7 @@ void RenderingThread::set_active_landmark_details(const QPoint& loc)
                 float iso = m_volume->get_iso_value();
                 Camera c = m_state.camera;
                 lm.set(location.second, iso, c);
-                m_current_landmarks->set_dirty_flag(true);
+                m_current_landmarks->setDirtyFlag(true);
         }else{
                 qDebug() << "RenderingThread::acquire_landmark_details: "
                          <<"no landmark coordinates available, because hit empty space.";
