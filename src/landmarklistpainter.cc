@@ -86,10 +86,6 @@ void LandmarkListPainter::set_landmark_list(PLandmarkList list)
                         QVector3D delta = (max_qube - min_qube);
                         impl->m_viewspace_scale = QVector3D(1,1,1)/ delta;
                         impl->m_viewspace_shift = QVector3D(0.5,0.5,0.5);
-
-                        qDebug() << "Set new scale " << impl->m_viewspace_scale
-                                 << " and shift "  << impl->m_viewspace_shift;
-
                 }
         }
 }
