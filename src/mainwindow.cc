@@ -285,7 +285,8 @@ void MainWindow::on_action_Open_landmarkset_triggered()
 
 void MainWindow::isovalue_changed()
 {
-        m_iso_slider->setValue( m_current_volume->get_iso_value() );
+        if (m_current_volume)
+                m_iso_slider->setValue( m_current_volume->get_iso_value() );
 }
 
 void MainWindow::on_actionSave_landmark_set_As_triggered()
