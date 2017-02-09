@@ -100,7 +100,7 @@ PLandmarkList read_landmarklist(const QString& filename)
 
         auto result = reader_backend->read(list_elm);
 
-        result->set_filename(filename);
+        result->setFilename(filename);
         return result;
 
 }
@@ -252,7 +252,7 @@ PLandmarkList LandmarkReader::read(const QDomElement& root)
         }
 
         PLandmarkList result = make_shared<LandmarkList>(list_name);
-        result->set_filename(m_filename);
+        result->setFilename(m_filename);
 
         auto landmark_elm = root.firstChildElement("landmark");
 
@@ -276,7 +276,7 @@ PLandmark LandmarkReader::read_landmark(const QDomElement& elm)
         PLandmark result = make_shared<Landmark>(name.second);
         auto picfile = read_tag<QString>(elm, "picfile");
         if (picfile.first)
-                result->set_template_image_file(picfile.second);
+                result->setTemplateImageFile(picfile.second);
 
 
         auto isovalue = read_tag<float>(elm, "isovalue");
@@ -287,11 +287,11 @@ PLandmark LandmarkReader::read_landmark(const QDomElement& elm)
                 result->set(location.second, isovalue.second, camera.second);
         }else{
                 if (isovalue.first)
-                        result->set_iso_value(isovalue.second);
+                        result->setIsoValue(isovalue.second);
                 if (location.first)
-                        result->set_location(location.second);
+                        result->setLocation(location.second);
                 if (camera.first)
-                        result->set_camera(camera.second);
+                        result->setCamera(camera.second);
         }
         return result;
 }
@@ -337,7 +337,7 @@ bool LandmarkSaver::save(const QString& filename, const LandmarkList& list)
 
         auto  name = xml.createElement("name");
         root.appendChild(name);
-        auto name_text = xml.createTextNode(list.get_name());
+        auto name_text = xml.createTextNode(list.getName());
         name.appendChild(name_text);
 
         for (auto i: list) {
@@ -406,32 +406,32 @@ void LandmarkSaver::save_landmark(QDomDocument& xml, QDomElement& parent, const 
         auto xml_lm = xml.createElement("landmark");
         if (lm.has(Landmark::lm_name)) {
                 auto tag = xml.createElement("name");
-                auto content = xml.createTextNode(lm.get_name());
+                auto content = xml.createTextNode(lm.getName());
                 tag.appendChild(content);
                 xml_lm.appendChild(tag);
         }
         if (lm.has(Landmark::lm_location)) {
                 auto tag = xml.createElement("location");
-                auto loc_string = to_string<QVector3D>::apply(lm.get_location());
+                auto loc_string = to_string<QVector3D>::apply(lm.getLocation());
                 auto content = xml.createTextNode(loc_string);
                 tag.appendChild(content);
                 xml_lm.appendChild(tag);
         }
         if (lm.has(Landmark::lm_picfile)) {
                 auto tag = xml.createElement("picfile");
-                auto content = xml.createTextNode(lm.get_template_filename());
+                auto content = xml.createTextNode(lm.getTemplateFilename());
                 tag.appendChild(content);
                 xml_lm.appendChild(tag);
         }
         if (lm.has(Landmark::lm_iso_value)) {
                 auto tag = xml.createElement("isovalue");
-                auto iso_string = to_string<float>::apply(lm.get_iso_value());
+                auto iso_string = to_string<float>::apply(lm.getIsoValue());
                 auto content = xml.createTextNode(iso_string);
                 tag.appendChild(content);
                 xml_lm.appendChild(tag);
         }
         if (lm.has(Landmark::lm_camera)) {
-                save_camera(xml, xml_lm, lm.get_camera());
+                save_camera(xml, xml_lm, lm.getCamera());
         }
         parent.appendChild(xml_lm);
 }

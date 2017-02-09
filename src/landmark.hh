@@ -48,29 +48,31 @@ public:
 
         Landmark(const QString& name, const QVector3D& location, float iso, const Camera& best_view);
 
-        bool is_set() const;
+        bool isSet() const;
 
-        void set_template_image_file(const QString& fname);
+        void setTemplateImageFile(const QString& fname);
 
         void set(const QVector3D& location, float iso, const Camera& best_view);
 
-        const QString& get_name() const;
+        const QString& getName() const;
 
-        const QString& get_template_filename() const;
+        const QString& getTemplateFilename() const;
 
-        const QVector3D& get_location() const;
+        const QVector3D& getLocation() const;
 
-        const Camera& get_camera() const;
+        const Camera& getCamera() const;
 
-        float get_iso_value()const;
+        float getIsoValue()const;
 
-        void set_location(const QVector3D& loc);
+        void setLocation(const QVector3D& loc);
 
-        void set_iso_value(float iso);
+        void setIsoValue(float iso);
 
-        void set_camera(const Camera& camera);
+        void setCamera(const Camera& camera);
 
         bool has(EFlags flag) const;
+
+        void clearFlag(EFlags flag);
 private:
 
         void set_name(const QString& new_name);
@@ -97,7 +99,11 @@ inline Landmark::EFlags operator & (Landmark::EFlags lhs, Landmark::EFlags rhs)
         return static_cast<Landmark::EFlags>(static_cast<int>(lhs) & static_cast<int>(rhs));
 }
 
-
+inline Landmark::EFlags operator -= (Landmark::EFlags lhs, Landmark::EFlags rhs)
+{
+        lhs = static_cast<Landmark::EFlags>(static_cast<int>(lhs) & ~static_cast<int>(rhs));
+        return lhs;
+}
 
 typedef Landmark::Pointer PLandmark;
 

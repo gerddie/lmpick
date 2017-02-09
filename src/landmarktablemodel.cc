@@ -70,18 +70,22 @@ QVariant LandmarkTableModel::data(const QModelIndex &index, int role) const
         if (role == Qt::DisplayRole) {
                 Landmark lm = m_the_list->at(index.row());
                 if (index.column() == 0)
-                        return lm.get_name();
+                        return lm.getName();
                 else {
-                        if (!lm.is_set())
+                        if (!lm.isSet())
                                 return QVariant();
 
                         if (index.column() == 1) {
-                                auto p = lm.get_location();
-                                QString result;
-                                QTextStream ts(&result);
-                                ts.setRealNumberPrecision(4);
-                                ts << "(" << p.x() << ", " << p.y() << ", " << p.z() << ")";
-                                return result;
+                                if (lm.has(Landmark::lm_location)) {
+                                        auto p = lm.getLocation();
+                                        QString result;
+                                        QTextStream ts(&result);
+                                        ts.setRealNumberPrecision(4);
+                                        ts << "(" << p.x() << ", " << p.y() << ", " << p.z() << ")";
+                                        return result;
+                                } else {
+                                        return tr("  <not set>  ");
+                                }
                         }else
                                 return QVariant();
                 }
@@ -117,7 +121,7 @@ void LandmarkTableModel::addLandmark(PLandmark lm)
 
 int LandmarkTableModel::renameLandmark(const QModelIndex &index, const QString& old_name, const QString& new_name)
 {
-        int idx = m_the_list->rename_landmark(old_name, new_name);
+        int idx = m_the_list->renameLandmark(old_name, new_name);
         emit dataChanged(index, index);
         return idx;
 }

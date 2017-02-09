@@ -38,19 +38,12 @@
 #include <memory>
 #include <cmath>
 
-
 using mia::C3DFVector;
 
 MainopenGLView::MainopenGLView(QWidget *parent):
         QOpenGLWidget(parent),
         m_rendering(nullptr)
 {
-        QSurfaceFormat format;
-        format.setDepthBufferSize(24);
-        format.setVersion(3, 3);
-        format.setRenderableType(QSurfaceFormat::OpenGL);
-        format.setProfile(QSurfaceFormat::CoreProfile);
-        setFormat(format);
         m_rendering = new RenderingThread(this);
         setMouseTracking( true );
 
@@ -101,14 +94,17 @@ MainopenGLView::~MainopenGLView()
 
 void MainopenGLView::detachGL()
 {
+        qDebug() << "MainopenGLView::detachGL()";
+        makeCurrent();
         m_rendering->detach_gl();
 }
 
 void MainopenGLView::initializeGL()
 {
+        qDebug() << "MainopenGLView::initializeGL()";
         m_rendering->attach_gl();
-        connect(QOpenGLContext::currentContext(), SIGNAL(aboutToBeDestroyed()),
-                this, SLOT(detachGL()));
+        connect(QOpenGLContext::currentContext(), &QOpenGLContext::aboutToBeDestroyed,
+                this, &MainopenGLView::detachGL);
 }
 
 void MainopenGLView::paintGL()
