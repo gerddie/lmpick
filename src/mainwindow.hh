@@ -74,11 +74,14 @@ private slots:
 
         void on_action_Clear_all_locations_triggered();
 
+        void on_action_Clear_triggered();
+
 protected:
         void closeEvent(QCloseEvent *event) override;
 
         void landmarkSelectionChanged(const QModelIndex& idx, const QModelIndex& other_idx);
 private:
+        int  getSelectedLandmarkIndex(QModelIndex *idx) const;
 
 
         Ui::MainWindow *ui;

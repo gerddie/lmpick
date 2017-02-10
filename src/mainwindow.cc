@@ -367,17 +367,25 @@ void MainWindow::on_action_Save_Landmark_set_triggered()
         }
 }
 
-void MainWindow::on_action_Edit_triggered()
+int  MainWindow::getSelectedLandmarkIndex(QModelIndex *idx) const
 {
         auto sm = m_landmark_tv->selectionModel();
 
         auto current_selection = sm->selection();
         if (current_selection.isEmpty())
-                return;
+                return -1;
 
         auto selection = current_selection.at(0).indexes().at(0);
-        auto mapped_index = m_landmark_sort_proxy->mapToSource(selection);
-        int active_index = mapped_index.row();
+        auto mi = m_landmark_sort_proxy->mapToSource(selection);
+        if (idx)
+                *idx = mi;
+        return mi.row();
+}
+
+void MainWindow::on_action_Edit_triggered()
+{
+        QModelIndex mapped_index;
+        int active_index = getSelectedLandmarkIndex(&mapped_index);
         if (active_index < 0)
                 return;
 
@@ -475,7 +483,23 @@ void MainWindow::on_action_About_triggered()
 
 void MainWindow::on_action_Clear_all_locations_triggered()
 {
-    if (m_current_landmarklist)
-            m_current_landmarklist->clearAllLocations();
-    availableDataChanged();
+        if (m_current_landmarklist)
+                m_current_landmarklist->clearAllLocations();
+        availableDataChanged();
+        m_glview->update();
+}
+
+void MainWindow::on_action_Clear_triggered()
+{
+        if (m_current_landmarklist) {
+                int active_index  = getSelectedLandmarkIndex(nullptr);
+                if (active_index  >= 0)  {
+                        m_current_landmarklist->clearLandmark(active_index );
+                        availableDataChanged();
+                        m_glview->update();
+                }
+                qDebug() << "No landmark selected, action should be disabled";
+        }else{
+                qDebug() << "No landmark list available, action should be disabled";
+        }
 }

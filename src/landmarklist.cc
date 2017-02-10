@@ -202,3 +202,16 @@ void LandmarkList::clearAllLocations()
         }
         setDirtyFlag(true);
 }
+
+bool LandmarkList::clearLandmark(int idx)
+{
+        if (idx >= 0 && static_cast<size_t>(idx) < m_list.size()) {
+                PLandmark lm = m_list[idx];
+                if (lm->has(Landmark::lm_location)) {
+                        lm->clearFlag(Landmark::lm_location);
+                        return true;
+                }
+        }
+        // nothing changed
+        return false;
+}

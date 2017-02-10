@@ -77,6 +77,8 @@ public:
 
         bool hasTemplatePictures() const;
 
+        bool clearLandmark(int idx);
+
         void clearAllLocations();
 
 private:
