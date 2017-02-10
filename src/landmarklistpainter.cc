@@ -107,14 +107,11 @@ void LandmarkListPainter::do_draw(const GlobalSceneState& state)
         if (!impl->m_the_list)
                 return;
 
-
-
         GlobalSceneState local_state = state;
         for (int i = 0; i < static_cast<int>(impl->m_the_list->size()); ++i) {
                 auto lm = (*impl->m_the_list)[i];
                 if (lm->has(Landmark::lm_location)) {
                         auto offset = lm->getLocation() * impl->m_viewspace_scale - impl->m_viewspace_shift;
-                        qDebug() << "offset =" << offset;
                         local_state.set_offset(offset);
                         if (i == impl->m_active_index) {
                                 impl->m_active_sphere.draw(local_state);

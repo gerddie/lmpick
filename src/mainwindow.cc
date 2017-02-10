@@ -503,3 +503,19 @@ void MainWindow::on_action_Clear_triggered()
                 qDebug() << "No landmark list available, action should be disabled";
         }
 }
+
+void MainWindow::on_action_Delete_triggered()
+{
+        if (m_current_landmarklist) {
+                int active_index  = getSelectedLandmarkIndex(nullptr);
+                if (active_index  >= 0)  {
+                        m_landmark_lm->removeLandmark(active_index);
+
+                        availableDataChanged();
+                        m_glview->update();
+                }
+                qDebug() << "No landmark selected, action should be disabled";
+        }else{
+                qDebug() << "No landmark list available, action should be disabled";
+        }
+}

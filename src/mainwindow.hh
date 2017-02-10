@@ -76,6 +76,8 @@ private slots:
 
         void on_action_Clear_triggered();
 
+        void on_action_Delete_triggered();
+
 protected:
         void closeEvent(QCloseEvent *event) override;
 

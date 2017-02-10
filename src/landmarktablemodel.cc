@@ -20,6 +20,7 @@
  */
 
 #include "landmarktablemodel.hh"
+#include <cassert>
 
 LandmarkTableModel::LandmarkTableModel(QObject *parent):
         QAbstractTableModel(parent)
@@ -117,6 +118,14 @@ void LandmarkTableModel::addLandmark(PLandmark lm)
         beginInsertRows(QModelIndex(), m_the_list->size(), m_the_list->size());
         m_the_list->add(lm);
         endInsertRows();
+}
+
+void LandmarkTableModel::removeLandmark(int idx)
+{
+        assert(idx > 0);
+        beginRemoveRows(QModelIndex(), idx, idx);
+        m_the_list->remove(idx, 1);
+        endRemoveRows();
 }
 
 int LandmarkTableModel::renameLandmark(const QModelIndex &index, const QString& old_name, const QString& new_name)

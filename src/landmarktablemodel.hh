@@ -43,6 +43,7 @@ public:
 
         void addLandmark(PLandmark lm);
         int renameLandmark(const QModelIndex &index, const QString& old_name, const QString& new_name);
+        void removeLandmark(int idx);
 private:
 
         PLandmarkList m_the_list;
