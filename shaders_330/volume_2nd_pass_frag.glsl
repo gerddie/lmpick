@@ -76,17 +76,13 @@ const float zFar = 552.0;
 
 float linearDepth(float depthSample)
 {
-    depthSample = 2.0 * depthSample - 1.0;
-    highp float zLinear = 2.0 * zNear * zFar / (zFar + zNear - depthSample * (zFar - zNear));
-    return zLinear;
+    return 2.0 * zNear * zFar / (zFar + zNear - depthSample * (zFar - zNear));
 }
 
 // result suitable for assigning to gl_FragDepth
 float depthSample(float linearDepth)
 {
-    highp float nonLinearDepth = (zFar + zNear - 2.0 * zNear * zFar / linearDepth) / (zFar - zNear);
-    nonLinearDepth = (nonLinearDepth + 1.0) / 2.0;
-    return nonLinearDepth;
+    return (zFar + zNear - 2.0 * zNear * zFar / linearDepth) / (zFar - zNear);
 }
 
 void main(void)

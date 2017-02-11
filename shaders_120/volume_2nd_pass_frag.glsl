@@ -59,6 +59,7 @@ Outputs:
        (Since this is an intermediate step, it could also be done in the final blit step)
      * add a base color as uniform value to color the output
        (This could also be done in the final blit step)
+     * make far and near plane parameters
 */
 
 #version 120
@@ -73,24 +74,22 @@ uniform highp mat4 qt_mv;
 
 varying highp vec2 tex2dcoord;
 
+// this should be set from the application
 const float zNear = 548.0;
 const float zFar = 552.0;
 
 // from http://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
+// simplified (i.e. removed linear scaling in both functions)
 
 float linearDepth(float depthSample)
 {
-    depthSample = 2.0 * depthSample - 1.0;
-    highp float zLinear = 2.0 * zNear * zFar / (zFar + zNear - depthSample * (zFar - zNear));
-    return zLinear;
+    return  2.0 * zNear * zFar / (zFar + zNear - depthSample * (zFar - zNear));
 }
 
 // result suitable for assigning to gl_FragDepth
 float depthSample(float linearDepth)
 {
-    highp float nonLinearDepth = (zFar + zNear - 2.0 * zNear * zFar / linearDepth) / (zFar - zNear);
-    nonLinearDepth = (nonLinearDepth + 1.0) / 2.0;
-    return nonLinearDepth;
+    return (zFar + zNear - 2.0 * zNear * zFar / linearDepth) / (zFar - zNear);
 }
 
 void main(void)
