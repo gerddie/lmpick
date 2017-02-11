@@ -8,7 +8,7 @@ void main(void)
         if (color.w > 0.0) {
                 gl_FragColor.rgb = color.rgb;
                 gl_FragColor.a = 1.0;
-                gl_FragDepth = color.w;
+                gl_FragDepth = 2.0 * color.w;
         }else
                 discard;
 }
